@@ -1,0 +1,44 @@
+package actions
+
+import (
+    {{- if .NeedsTime }}
+    "time"
+    {{- end }}
+
+    {{- if .NeedsTypes }}
+    "{{ .PackageRoot }}/types"
+    {{- end }}
+)
+
+// {{ .Name }}Input is the input for {{ .Name }}
+type {{ .Name }}Input struct {
+    {{- range $n , $p := .Input}}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}
+
+// {{ .Name }}Output is the output for {{ .Name }}
+type {{ .Name }}Output struct {
+    {{- range $n , $p := .Output}}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+    Error string `json:"plugin_error"`
+    Log string `json:"plugin_log"`
+}
+
+// Validate will validate the input is properly setup.
+func (i *{{ .Name }}Input) Validate() []error {
+    errors := make([]error, 0)
+    
+    // Custom validation code here
+    // Append errors as needed
+
+    // return
+    if len(errors) > 0 {
+        return errors
+    }
+    return nil
+}
+
+// {{ .Name }}Action is an action
+type {{ .Name }}Action struct {}

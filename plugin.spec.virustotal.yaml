@@ -1,0 +1,449 @@
+plugin_spec_version: v1
+name: virustotal
+title: "VirusTotal"
+description: "VirusTotal API"
+version: 0.1.0
+vendor: komand
+tags: ["virustotal"]
+icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAcCAYAAAByDd+UAAAAAXNSR0IArs4c6QAAAnRJREFUSA21ls9LVFEUx+eZZbVIMVIIpSAkI8xFEtRCZidEv4R2Cdam/oB21c5CEPoXhBYZLlQwQVq1a1Gb0CKKIAIxyojCFv3S6fN93St37ty5b3xOBz6ee875nnN0ZrxvCoUMK5VKvfAGZqDFlytnatIc8+t+3OgnAvE5cl2GDobe5HzC6J7i70Cfic/jF8w5n2NBJ3yALJOmM98Wr4tB3fAlslG1bq8tf8iwBvgaWahaQy0bahIx6BA0Rwaqpvc502pduDdj0jr1tQxNZZmX5QHo4z1gq5xvwU/IshUEZ5y+y8TvYdTmyjyFdrD2g8NpuGsTNfo1dFfgGqybnurvL4JxI5JTcx7TIrtM/TfK/jI3oLgN7ktVJ9OlEDcWaemLOiycC21K/CSL9pD7BE1+bZPxR/QdSZL8cftC/xb6hG51mXa0Q1EH10ILe1zBFs/2kt8Y08hLqOQl2GmyRePr4YaZf8AM+oWfSki843DQJP+3W9JLuphjyzw9YjOm628mbeCvPArHDZP4mOlRtN8Qe2RpxiNoNuwO/nYUr0LMhmwjoqGYkNptq63qEXVFhkz7jWinI/qirw/GDHgSGKKnQZvfoByo5ttbEhUXi99fQKQBr/xu4otWzHk73JNXTjXw7TuJftsT9Ai0LHSPTrgNaEZANmLznCfSTPmP+FK0jx39c87fYBlancF9xL9BJp9+RcS3grRLMA/WPnPYZfs3PEl9UbJfB59xboFToLs1Nc5N8BJcU5zevfgB6IEdMAuyVdADodIonITr1QTkxyBkY/40RHrMXYAjbi37U+SoaR4kPAuHYR+swGt4yGPo3y1CELO/7TSsgMZvwCsAAAAASUVORK5CYII="
+help: |
+  ## About
+  [VirusTotal](https://www.virustotal.com/) is a free virus, malware and URL online scanning service. 
+  File checking is done with more than 40 antivirus solutions. The VirusTotal plugin utilizes the VirusTotal 
+  [Public API](https://www.virustotal.com/en/documentation/public-api/).
+
+  ## Actions
+  ### Scan URL
+  This action is used submit a URL to VirusTotal.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |url|string|None|False|URL to scan|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|None|
+  |url|string|False|None|
+  |response_code|integer|False|None|
+  |scan_date|string|False|None|
+  |message|string|False|The message returned from the submission|
+  |scan_id|string|False|The ID of the report|
+
+  ### Scan File
+  This action is used submit a file to VirusTotal.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |content|bytes|None|False|Base64 content of files|None|
+  |filename|string|None|False|Filename to scan|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|None|
+  |resource|string|False|None|
+  |response_code|integer|False|None|
+  |sha256|string|False|None|
+  |message|string|False|The message returned from the submission|
+  |scan_id|string|False|The ID of the report|
+
+  ### Lookup File
+  This action is used to look up a file in VirusTotal and return the report.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |content|bytes|None|True|Base64 content of file|None|
+  |filename|string|None|False|Filename|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|Link to report (if found)|
+  |resource|string|False|Resource|
+  |scan_date|string|False|Scan Date|
+  |scan_id|string|False|Scan ID|
+  |found|boolean|False|True if found|
+  |positives|integer|False|Number of positives (if found)|
+  |total|integer|False|Total Scans|
+  |scans|object|False|Scans|
+
+  ### Lookup Hash
+  This action is used to look up a hash (MD5/SHA1/SHA256) in VirusTotal and return `true` or `false` if found.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |hash|string|None|False|MD5/SHA1/SHA256 hash to lookup|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|Link to report (if found)|
+  |resource|string|False|Resource|
+  |scan_date|string|False|Scan Date|
+  |scan_id|string|False|Scan ID|
+  |found|boolean|False|True if found|
+  |positives|integer|False|Number of positives (if found)|
+  |total|integer|False|Total Scans|
+  |scans|object|False|Scans|
+
+  ### Lookup Hashes
+  This action is used to look up a bulk hashes (MD5/SHA1/SHA256) in VirusTotal and return `true` or `false` for each one.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |hashes|[]string|None|False|Array of MD5/SHA1/SHA256 hashes to lookup|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |hashes_found|[]string|False|Hashes found, if any|
+  |reports_found|[]report|False|Reports found, if any|
+
+  ### Rescan File
+  This action is used to resubmit a file to VirusTotal.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |hash|string|None|False|MD5/SHA1/SHA256 of file to rescan|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|None|
+  |resource|string|False|None|
+  |response_code|integer|False|None|
+  |sha256|string|False|None|
+  |message|string|False|The message returned from the submission|
+  |scan_id|string|False|The ID of the report|
+
+  ### Scan File Report
+  This action is used fetch a scan file report from VirusTotal.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |hash|string|None|False|MD5/SHA1/SHA256 of file|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |permalink|string|False|Link to report (if found)|
+  |resource|string|False|Resource|
+  |scan_date|string|False|Scan Date|
+  |scan_id|string|False|Scan ID|
+  |found|boolean|False|True if found|
+  |positives|integer|False|Number of positives (if found)|
+  |total|integer|False|Total Scans|
+  |scans|object|False|Scans|
+
+  ### Scan URL Report
+  This action is used fetch a scan URL report from VirusTotal.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |url|string|None|False|The URL scanned|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |scan_id|string|False|None|
+  |resource|string|False|None|
+  |url|string|False|None|
+  |response_code|integer|False|None|
+  |scan_date|string|False|None|
+  |permalink|string|False|None|
+  |found|boolean|False|None|
+  |positives|integer|False|None|
+  |message|string|False|None|
+  |total|integer|False|None|
+  |scans|object|False|None|
+
+  ## Triggers
+  This plugin does not contain any triggers.
+  ## Connection
+  This plugin requires a VirusTotal API key.
+
+  The connection configuration accepts the following parameters:
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |url|string|https\://www.virustotal.com/vtapi/v2/|False|URL of the Virus Total server to connect to|None|
+  |api_key|string|None|False|API key to use to connect|None|
+  ## Troubleshooting
+  This plugin does not contain any troubleshooting information.
+
+  ## Workflows
+  Examples:
+  * Address validation
+
+  ## References
+  * [VirusTotal](https://www.virustotal.com/)
+  * [VirusTotal Public API](https://www.virustotal.com/en/documentation/public-api/)
+
+types:
+  report:
+    found:
+      description: "True if found"
+      type: boolean
+    positives:
+      type: integer
+      description: "Number of positives (if found)"
+    permalink:
+      description: "Link to report (if found)"
+      type: string
+    resource:
+      description: "Resource"
+      type: string  
+    scan_id:
+      description: "Scan ID"
+      type: string
+    scan_date: 
+      type: string
+      description: "Scan Date"
+    scans:
+      type: object 
+      description: "Scans"
+    total:
+      type: integer
+      description: "Total Scans"
+  
+connection:
+  url:
+    title: "URL"
+    description: "URL of the Virus Total server to connect to"
+    type: string
+    default: "https://www.virustotal.com/vtapi/v2/"
+  api_key:
+    description: "API key to use to connect"
+    type: string
+
+actions:
+  scan_file:
+    name: "Scan File"
+    description: "Submit file scan to VirusTotal"
+    input:
+      filename:
+        description: "Filename to scan"
+        type: string
+      content:
+        description: "Base64 content of files"
+        type: bytes
+    output:
+      scan_id:
+        description: "The ID of the report"
+        type: string
+      message:
+        description: "The message returned from the submission"
+        type: string
+      response_code:
+        type: integer
+      permalink:
+        type: string
+      sha256:
+        type: string
+      resource:
+        type: string
+  rescan_file:
+    name: "Resubmit File Scan"
+    description: "Resubmit file scan to VirusTotal"
+    input:
+      hash:
+        description: "MD5/SHA1/SHA256 of file to rescan"
+        type: string
+    output:
+      scan_id:
+        description: "The ID of the report"
+        type: string
+      message:
+        description: "The message returned from the submission"
+        type: string
+      response_code:
+        type: integer
+      permalink:
+        type: string
+      sha256:
+        type: string
+      resource:
+        type: string
+  lookup_hashes:
+    name: "Lookup Hashes (Bulk)"
+    description: "Lookup to see if a file hash exists in VT"
+    input:
+      hashes:
+        description: "Array of MD5/SHA1/SHA256 hashes to lookup"
+        type: "[]string"
+    output:
+      hashes_found:
+        description: "Hashes found, if any"
+        type: "[]string"
+      reports_found:
+        description: "Reports found, if any"
+        type: "[]report"
+  lookup_file:
+    name: "Lookup A File"
+    description: "Lookup to see if a file exists in VT, and return report"
+    input:
+      filename:
+        description: "Filename"
+        type: string
+      content:
+        description: "Base64 content of file"
+        type: bytes
+        required: true
+    output:
+      found:
+        description: "True if found"
+        type: boolean
+      positives:
+        description: "Number of positives (if found)"
+        type: integer
+      permalink:
+        description: "Link to report (if found)"
+        type: string
+      resource:
+        description: "Resource"
+        type: string  
+      scan_id:
+        description: "Scan ID"
+        type: string
+      scan_date: 
+        type: string
+        description: "Scan Date"
+      scans:
+        type: object 
+        description: "Scans"
+      total:
+        type: integer
+        description: "Total Scans"
+  lookup_hash:
+    name: "Lookup A Hash"
+    description: "Lookup to see if a file hash exists in VT, and return report"
+    input:
+      hash:
+        description: "MD5/SHA1/SHA256 hash to lookup"
+        type: string
+    output:
+      found:
+        description: "True if found"
+        type: boolean
+      positives:
+        type: integer
+        description: "Number of positives (if found)"
+      permalink:
+        description: "Link to report (if found)"
+        type: string
+      resource:
+        description: "Resource"
+        type: string  
+      scan_id:
+        description: "Scan ID"
+        type: string
+      scan_date: 
+        description: "Scan Date"
+        type: string
+      scans:
+        description: "Scans"
+        type: object 
+      total:
+        description: "Total Scans"
+        type: integer
+  scan_file_report:
+    name: "Fetch Scan Report"
+    description: "Fetch file scan report from VirusTotal"
+    input:
+      hash:
+        description: "MD5/SHA1/SHA256 of file"
+        type: string
+    output:
+      found:
+        description: "True if found"
+        type: boolean
+      positives:
+        type: integer
+        description: "Number of positives (if found)"
+      permalink:
+        description: "Link to report (if found)"
+        type: string
+      resource:
+        description: "Resource"
+        type: string  
+      scan_id:
+        description: "Scan ID"
+        type: string
+      scan_date: 
+        description: "Scan Date"
+        type: string
+      scans:
+        description: "Scans"
+        type: object 
+      total:
+        description: "Total Scans"
+        type: integer
+  scan_url:
+    name: "Scan URL"
+    description: "Submit URL scan to VirusTotal"
+    input:
+      url:
+        description: "URL to scan"
+        type: string
+    output:
+      scan_id:
+        description: "The ID of the report"
+        type: string
+      message:
+        description: "The message returned from the submission"
+        type: string
+      response_code:
+        type: integer
+      scan_date:
+        type: string
+      url:
+        type: string
+      permalink:
+        type: string
+  scan_url_report:
+    name: "Fetch URL Scan Report"
+    description: "Fetch URL scan report from VirusTotal"
+    input:
+      url:
+        description: "The URL scanned"
+        type: string
+    output:
+      found:
+        type: boolean
+      response_code:
+        type: integer
+      message:
+        type: string
+      resource:
+        type: string
+      url:
+        type: string
+      scan_id:
+        type: string
+      scan_date:
+        type: string
+      permalink:
+        type: string
+      positives:
+        type: integer
+      total: 
+        type: integer
+      scans:
+        type: object

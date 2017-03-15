@@ -1,0 +1,467 @@
+plugin_spec_version: v1
+name: slack
+title: "Slack"
+description: "Slack integrations"
+version: 0.2.0
+vendor: komand
+tags: ["slack", "chat"]
+icon: "data:image/png;base64,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"
+help: |
+  ## About
+  [Slack](https://slack.com/) brings all your communication together in one place. It's real-time messaging, archiving and search for modern teams.
+  This plugin utilizes the [Slack API](https://api.slack.com/).
+
+  ## Actions
+  ### Search
+  This action is used to search the message archive by pattern.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |count|integer|100|False|None|None|
+  |sort|string|score|False|None|None|
+  |highlight|boolean|None|False|None|None|
+  |query|string|None|True|None|None|
+  |page|integer|1|False|None|None|
+  |sort_dir|string|desc|False|None|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |matches|[]object|False|None|
+  |count|int|False|None|
+  |total|int|False|None|
+  |page|int|False|None|
+  |pages|int|False|None|
+
+  ### Enable
+  This action is used to (Slack plus only) enable user with specific email address.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |email|string|None|True|None|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |success|boolean|True|None|
+
+  ### Post Message
+  This action is used to post a message to the Slack channel.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |username|string|None|False|Username to post to. Username, channel, or channel id must be specified|None|
+  |channel_id|string|None|False|Channel ID to post to (will ignore username/channel if specified)|None|
+  |attachments|[]object|None|False|(Advanced) JSON array of attachments - see https\://api.slack.com/docs/message-attachments|None|
+  |icon_emoji|string|None|False|Icon to use when posting|None|
+  |message|string|None|False|Message to send|None|
+  |channel|string|None|False|Channel name to post to (e.g. #dev)|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |timestamp|string|False|Timestamp of sucessful message|
+  |message_id|string|False|MessageID of successful message|
+
+  ### Upload File
+  This action is used to upload a file to Slack.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |content|bytes|None|False|File content (base64 encoded)|None|
+  |channels|string|None|False|Channels which the file should be shared to (comma-separated)|None|
+  |title|string|None|False|Title of Attachment|None|
+  |filename|string|None|False|File name|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |file|file_reference|False|None|
+
+  ### Disable
+  This action is used to (Slack plus only) disable user with specific email address.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |email|string|None|True|None|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |success|boolean|True|None|
+
+  ### Upload Snippet
+  This action is used to upload a snippet to Slack.
+
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |content|string|None|True|Snippet text|None|
+  |channels|string|None|False|Channels which the file should be shared to (comma-separated)|None|
+  |filetype|string|None|False|File type|None|
+  |title|string|None|False|Title of Snippet|None|
+  |filename|string|None|False|File name|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |file|file_reference|False|None|
+
+  ## Triggers
+  ### Message With File
+  This trigger is used to monitor for messages with file attachments.
+
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |match_text|string|None|False|Regexp match on message text|None|
+  |match_filename|string|None|False|Regexp match on a specific filename|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |timestamp|string|False|Timestamp|
+  |message|object|False|Message|
+  |type|string|False|Message type|
+  |file|file|False|File|
+
+  ### Message
+  This trigger is used to monitor for messages of a given pattern.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |match_text|string|None|False|Regex match on message content e.g. hi or .*hi.* matches `john says hi` in the message text.|None|
+  |match_channel|string|None|False|Regex match on channel. Otherwise\: listen on any channel.|None|
+  |type|string|any|True|Trigger on direct messages, group chats, or any|['any', 'direct', 'group']|
+  |match_user|string|None|False|Regex match on username sending the message. Otherwise\: listen for any private message.|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |timestamp|string|False|Timestamp|
+  |message|message|False|Message|
+  |type|string|False|Message Type|
+
+  ### Event
+  This trigger is used to monitor for Slack events.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |subtype|string|None|True|Event subtype to monitor|['bot_message', 'channel_archive', 'channel_join', 'channel_leave', 'channel_name', 'channel_purpose', 'channel_topic', 'channel_unarchive', 'file_comment', 'file_mention', 'file_share', 'group_archive', 'group_join', 'group_leave', 'group_name', 'group_purpose', 'group_topic', 'group_unarchive', 'me_message', 'message_changed', 'message_deleted', 'pinned_item', 'unpinned_item']|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |timestamp|string|False|Timestamp|
+  |event|object|False|Event|
+
+  ## Connection
+  This plugin requires a Slack API token to authenticate.
+
+  The connection configuration accepts the following parameters:
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |token|string|None|False|Authentication token|None|
+  ## Troubleshooting
+  This plugin does not contain any troubleshooting information.
+
+  ## Workflows
+  Examples:
+  * Notification
+
+  ## References
+  * [Slack](https://slack.com/)
+  * [Slack API](https://api.slack.com/)
+  * [Chatops Example: Investigating URLs](https://komand.zendesk.com/hc/en-us/articles/115000954607-Use-Case-Chatops-Example-Investigating-URLs)
+
+connection:
+  token:
+    type: string
+    description: "Authentication token"
+
+types:
+  file_reference:
+    id:
+      type: string
+    name:
+      type: string
+    title:
+      type: string
+    is_external:
+      type: boolean
+    permalink:
+      type: string
+    permalink_public:
+      type: string
+  message:
+    user:
+      type: "string"
+      description: "User name"
+    user_id:
+      type: "string"
+      description: "Slack User ID"
+    channel:
+      type: "string"
+      description: "channel name"
+    channel_id:
+      type: "string"
+      description: "Slack channel ID"
+    text:
+      type: "string"
+      description: "Text"
+    ts:
+      type: "string"
+      description: "Timestamp"
+
+triggers:
+  message:
+    name: "New Message"
+    description: "Trigger on message"
+    input:
+      match_user:
+        type: string
+        description: "Regex match on username sending the message. Otherwise: listen for any private message."
+      match_channel:
+        type: string
+        description: "Regex match on channel. Otherwise: listen on any channel."
+      match_text:
+        type: string
+        description: "Regex match on message content e.g. hi or .*hi.* matches `john says hi` in the message text."
+      type:
+        type: string
+        description: "Trigger on direct messages, group chats, or any"
+        enum:
+          - any
+          - direct
+          - group
+        default: any
+        required: true
+    output:
+      message:
+        type: message
+        description: "Message"
+      type:
+        type: string
+        description: "Message Type"
+      timestamp:
+        type: string
+        description: "Timestamp"
+  event:
+    name: "Slack Event"
+    description: "Trigger on event"
+    input:
+      subtype:
+        type: string
+        description: "Event subtype to monitor"
+        enum:
+          - bot_message
+          - channel_archive
+          - channel_join
+          - channel_leave
+          - channel_name
+          - channel_purpose
+          - channel_topic
+          - channel_unarchive
+          - file_comment
+          - file_mention
+          - file_share
+          - group_archive
+          - group_join
+          - group_leave
+          - group_name
+          - group_purpose
+          - group_topic
+          - group_unarchive
+          - me_message
+          - message_changed
+          - message_deleted
+          - pinned_item
+          - unpinned_item
+        required: true
+    output:
+      event:
+        type:  object
+        description: "Event"
+      timestamp:
+        type: string
+        description: "Timestamp"
+  message_with_file:
+    name: "New Message With File"
+    description: "Trigger on a message with a file attachment"
+    input:
+      match_text:
+        type: string
+        description: "Regexp match on message text"
+      match_filename:
+        type: string
+        description: "Regexp match on a specific filename"
+    output:
+      message:
+        type: object
+        description: "Message"
+      type:
+        type: string
+        description: "Message type"
+      timestamp:
+        description: "Timestamp"
+        type: string
+      file:
+        type: file_reference
+        description: "File"
+
+actions:
+
+  upload_snippet:
+    description: "Upload a snippet to Slack"
+    input:
+      title:
+        type: "string"
+        description: "Title of Snippet"
+      filetype:
+        type: "string"
+        description: "File type"
+      filename:
+        type: "string"
+        description: "File name"
+      content:
+        type: "string"
+        description: "Snippet text"
+        required: true
+      channels:
+        type: "string"
+        description: "Channels which the file should be shared to (comma-separated)"
+    output:
+      file:
+        type: file_reference
+
+  upload_file:
+    description: "Upload a file to Slack"
+    input:
+      title:
+        type: "string"
+        description: "Title of Attachment"
+      filename:
+        type: "string"
+        description: "File name"
+      content:
+        type: "bytes"
+        description: "File content (base64 encoded)"
+      channels:
+        type: "string"
+        description: "Channels which the file should be shared to (comma-separated)"
+    output:
+      file:
+        type: file_reference
+
+  post_message:
+    description: "Post a message to the Slack channel"
+    input:
+      message:
+        type: string
+        description: "Message to send"
+      username:
+        type: string
+        description: "Username to post to. Username, channel, or channel id must be specified"
+        required: false
+      channel:
+        type: string
+        description: "Channel name to post to (e.g. #dev)"
+        required: false
+      channel_id:
+        type: string
+        description: "Channel ID to post to (will ignore username/channel if specified)"
+        required: false
+      icon_emoji:
+        type: string
+        description: "Icon to use when posting"
+        required: false
+      attachments:
+        type: "bytes"
+        description: "(Advanced) JSON array of attachments - see https://api.slack.com/docs/message-attachments"
+    output:
+      message_id:
+        type: string
+        description: "MessageID of successful message"
+      timestamp:
+        type: string
+        description: "Timestamp of sucessful message"
+
+  search:
+    title: "Search messages"
+    description: Search message archive.
+    output:
+      matches:
+        type: "[]object"
+      count:
+        type: int
+      total:
+        type: int
+      page:
+        type: int
+      pages:
+        type: int
+    input:
+      count:
+        default: 100
+        required: false
+        type: integer
+      highlight:
+        required: false
+        type: boolean
+      page:
+        default: 1
+        required: false
+        type: integer
+      query:
+        required: true
+        type: string
+      sort:
+        default: score
+        required: false
+        type: string
+      sort_dir:
+        default: desc
+        required: false
+        type: string
+
+  disable:
+    title: "Disable User"
+    description: "(Slack Plus Only) Disable user with specific email address"
+    input:
+      email:
+        type: string
+        required: true
+    output:
+      success:
+        type: boolean
+        required: true
+  enable:
+    title: "Enable User"
+    description: "(Slack Plus Only) Enable user with specific email address"
+    input:
+      email:
+        type: string
+        required: true
+    output:
+      success:
+        type: boolean
+        required: true

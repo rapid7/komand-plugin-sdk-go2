@@ -1,0 +1,8 @@
+package types
+
+// {{ .Name }} is a custom type generated off of the spec
+type {{ .Name }} struct {
+    {{- range $n, $p := .Fields}}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}

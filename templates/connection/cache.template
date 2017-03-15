@@ -1,0 +1,46 @@
+package connection
+
+import (
+    "fmt"
+    "sync"
+
+    plog "github.com/komand/plugin-sdk-go2/log"
+)
+
+// Cache is a simple wrapper around a map with a mutex, to store connections in
+type Cache struct {
+    sync.Mutex
+    data map[string]*Connection
+}
+
+func NewCache() *Cache {
+	return &Cache{
+		data: make(map[string]*Connection),
+	}
+}
+
+// Get will get or init the conn. It blocks until the conn is ready
+// TODO this will be very inefficient but we need a way to lookup connections
+// in a threadsafe manner, and only initialize them once. sync.Once would be good
+// but we still need a place to cache connections, then look them up by a key
+// this will require putting a Key() method on the connection interface, which
+// will need to return a string that is composed of connection data such that It
+// can uniquely identify the connection we want to look up.
+func (c *Cache) Get(cd *ConnectionData, l *plog.Logger) (*Connection, error) {
+	var s *Connection
+	var ok bool
+	c.Lock()
+	if s, ok = c.data[cd.Key()]; ok {
+		c.Unlock()
+		return s, nil
+	}
+	fmt.Println("New Connection Time")
+	s, err := Connect(cd, l)
+	if err != nil {
+		c.Unlock()
+		return nil, err
+	}
+	c.data[cd.Key()] = s
+	c.Unlock()
+	return s, nil
+}

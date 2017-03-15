@@ -1,0 +1,164 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/komand/plugin-sdk-go2/dispatcher"
+    plog "github.com/komand/plugin-sdk-go2/log"
+	"github.com/komand/plugin-sdk-go2/message"
+
+	{{- if .Actions }}
+	"{{ .PackageRoot }}/actions"
+	{{- end }}
+	"{{ .PackageRoot }}/connection"
+	"{{ .PackageRoot }}/server/http"
+	{{- if .Triggers }}
+	"{{ .PackageRoot }}/triggers"
+	{{- end }}
+)
+
+var (
+	// Name plugin name
+	Name = "{{ .Name }}"
+	// Vendor plugin vendor
+	Vendor = "{{ .Vendor }}"
+	// Version plugin version
+    Version = "{{ .Version }}"
+	// Description plugin description
+    Description = "{{ .Description }}"
+)
+
+func main() {
+	if len(os.Args) == 0 {
+		log.Fatal("You must provide either the -http, -action, or -trigger flag to run a plugin")
+	}
+	switch os.Args[1] {
+	case "-http": // Daemonize as http
+		s, err := http.NewServer(connection.NewCache())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Plugin {{ .Name }} booting HTTP Daemon...")
+		if err := s.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
+	case "-action": // Run a single action as defined by action params over stdin
+		mode, message, err := getArgsFromCLI()
+		if err != nil {
+			log.Fatal(err)
+		}
+		o, l, err := runOneOffAction(mode, message)
+		if err != nil {
+			l.Flush(os.Stderr)
+			log.Fatal(err)
+		}
+		b, err := json.Marshal(o)
+		if err != nil {
+			l.Flush(os.Stderr)
+			log.Fatal(err)
+		}
+		fmt.Print(string(b)) // TODO use a json.Encoder here?
+    case "-trigger": // Daemonize as per the polling trigger params over stdin
+		mode, message, err := getArgsFromCLI()
+		if err != nil {
+			log.Fatal(err)
+		}
+		// This will block until the trigger shuts down
+		if err := runTriggerDaemon(mode, message); err != nil {
+			log.Fatal(err)
+		}
+	}
+}
+
+func getArgsFromCLI() (string, *message.V1, error) {
+	dec := json.NewDecoder(os.Stdin)
+	m := &message.V1{}
+	if err := dec.Decode(m); err != nil {
+		return "", nil, err
+	}
+	return os.Args[2], m, nil
+}
+
+func runOneOffAction(mode string, m *message.V1) (interface{}, *plog.Logger, error) {
+	switch m.Body.Action {
+	{{- range $n, $p := .Actions }}
+	case "{{ $p.RawName }}":
+		// Unmarshal the body into the right struct
+		// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
+		// but in this case, the performance gain is not that great, and it's less generator code to maintain
+		// to do it this way.
+		// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
+		input := &actions.{{ $p.Name }}Input{}
+		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+			return nil, nil, err
+		}
+		cd := &connection.ConnectionData{}
+		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+			return nil, nil, err
+		}
+		l := plog.NewLogger()
+		conn, err := connection.Connect(cd, l)
+		if err != nil {
+			return nil, nil, err
+		}
+		a := &actions.{{ $p.Name }}Action{}
+		if mode == "test" {
+			o, err := a.Test(conn, input, l)
+			return o, l, err
+		}
+		o, err := a.Run(conn, input, l)
+		return o, l, err
+	{{- end }}
+	default:
+		return nil, nil, fmt.Errorf("unknown action %s", m.Body.Action)
+	}
+}
+
+func runTriggerDaemon(mode string, m *message.V1) error {
+	switch m.Body.Action {
+	{{- range $n, $p := .Triggers }}
+	case "{{ $p.RawName }}":
+		input := &triggers.{{ .Name }}TriggerInput{}
+		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+			return err
+		}
+		cd := &connection.ConnectionData{}
+		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+			return err
+		}
+		l := plog.NewLogger()
+		conn, err := connection.Connect(cd, l)
+		if err != nil {
+			return err
+		}
+		// We immediately flush the connection log so it can be emitted to the caller of the application
+		// Trigger don't need / use the internal buffered logger approach, but connections have to work
+		// in both places, so we deal with this in a one-off fashion here
+		l.Flush(os.Stderr)
+		t := triggers.New{{ $p.Name }}Trigger(dispatcherFromRaw(m.Body.Dispatcher))
+		if mode == "test" {
+			return t.Test(conn, input)
+		}
+		// Start the read loop
+		go t.StartReadLoop()
+		// Run will block until it completes / shutsdown
+		return t.Run(conn, input)
+	{{- end }}
+	default:
+		return fmt.Errorf("unknown trigger %s", m.Body.Action)
+	}
+}
+
+// This is pretty hacky, not sure if there is a better way but from the engine, it doesn't look
+// like we send any kind of "type" flag with the dispatcher... it looks like what we do is default
+// to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
+// and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
+func dispatcherFromRaw(data map[string]interface{}) dispatcher.Dispatcher {
+	if url, ok := data["URL"]; ok { // Engine actually sends 2 values, but we only use this one?
+		return dispatcher.NewHTTP(url.(string))
+	}
+	return dispatcher.NewStdout()
+}

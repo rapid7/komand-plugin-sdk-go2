@@ -1,0 +1,24 @@
+package triggers
+
+import (
+    "{{ .PackageRoot }}/connection"
+)
+
+// Run runs the trigger and blocks until the trigger polling is complete or errors
+func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}TriggerInput) error {
+    // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
+    for {
+        // Your code here
+    }
+
+    return nil
+}
+
+// Test runs the trigger, but does not block and only runs the trigger polling one time
+func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput) error {
+    // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
+    
+    // Your code here
+
+    return nil
+}

@@ -1,0 +1,92 @@
+package http
+
+import (
+	"fmt"
+	"encoding/json"
+    "io/ioutil"
+    "net/http"
+
+    "{{ .PackageRoot }}/actions"
+    "{{ .PackageRoot }}/connection"
+    plog "github.com/komand/plugin-sdk-go2/log"
+    "github.com/komand/plugin-sdk-go2/message"
+)
+
+// {{ .Name }}Handler is a handler
+type {{ .Name }}Handler struct {
+	c *connection.Cache
+}
+
+// New{{ .Name }}Handler returns a new {{ .Name }}Handler
+func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
+	return &{{ .Name}}Handler{
+		c: c,
+	}
+}
+
+// ServeHTTP handles the requests
+func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	b, err := ioutil.ReadAll(r.Body)
+	// TODO use a limit reader to prevent resource attacks?
+	// TODO pass logger into handler, log out errors yo
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		return
+	}
+	r.Body.Close()
+	if r.Method != "POST" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		return
+	}
+	m := &message.V1{}
+	if err := json.Unmarshal(b, m); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		return
+	}
+	// Unmarshal the body into the right struct
+	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
+	// but in this case, the performance gain is not that great, and it's less generator code to maintain
+	// to do it this way.
+	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
+	input := &actions.{{ .Name }}Input{}
+	if err := json.Unmarshal(m.Body.Input, input); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+        return
+	}
+	cd := &connection.ConnectionData{}
+	if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+        return
+	}
+	l := plog.NewLogger()
+    conn, err := h.c.Get(cd, l)
+    if err != nil {
+        w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String())))
+        return
+    }
+	// Each request needs a new logger to capture it's output
+	// TODO move this to a sync.Pool and grab one from there each time to save on allocs?
+	// note to anyone reading this: Do not go adding in sync.Pool without understanding how they
+	// work and how to profile to see if adding one will actually make a difference :) It's tricky iirc.
+	// Thats why this is a TODO and not a TODONE
+	action := actions.{{ .Name }}Action{}
+	output, err := action.Run(conn, input, l)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String())))
+		return
+	}
+	output.Log = l.String()
+	if b, err = json.Marshal(output); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, output.Log)))
+		return
+	}
+	w.Write(b)
+}

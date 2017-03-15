@@ -1,0 +1,32 @@
+package actions
+
+import (
+    "{{ .PackageRoot }}/connection"
+    "github.com/komand/plugin-sdk-go2/log"
+)
+
+// Run will run the action with the given input over the given connection
+func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}Input, log *log.Logger) (*{{ .Name }}Output, error) {
+    output := &{{ .Name }}Output{}
+    // Your code here
+
+    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+
+    // return output and no error for success
+    // return nil and error for failure
+
+    return output, nil
+}
+
+// Test will test the action with the given input over the given connection
+func (a *{{ .Name }}Action) Test(conn *connection.Connection, input *{{ .Name }}Input, log *log.Logger) (*{{ .Name }}Output, error) {
+    output := &{{ .Name }}Output{}
+    // Your code here
+
+    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+
+    // return output and no error for success
+    // return nil and error for failure
+
+    return output, nil
+}

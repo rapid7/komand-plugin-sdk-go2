@@ -1,0 +1,27 @@
+package connection
+
+import (
+    plog "github.com/komand/plugin-sdk-go2/log"
+)
+
+// Connect is the custom code for the developer to write to fully initialize and return a
+// ready to use Connection object.
+func Connect(cd *ConnectionData, log *plog.Logger) (*Connection, error) {
+    conn := &Connection{}
+    // Your code here
+    // Take the connection data and turn it into the Connection object
+    // Then, initialize any state, such as the actual api connection to the third party
+    // Finally, pass back the connection, nil for success
+    // Otherwise, nil, error for failure
+
+    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+
+    return conn, nil
+}
+
+// Validate will ensure the Connection was created correctly
+func (c *Connection) Validate() []error {
+    // Your code here
+
+	return nil
+}

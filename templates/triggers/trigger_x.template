@@ -1,0 +1,87 @@
+package triggers
+
+import (
+    "fmt"
+    "log"
+    {{- if .NeedsTime }}
+    "time"
+    {{- end }}
+
+    "github.com/komand/plugin-sdk-go2/dispatcher"
+
+    {{- if .NeedsTypes }}
+    "{{ .PackageRoot }}/types"
+    {{- end}}
+)
+
+// {{ .Name}}TriggerInput defines the input for the {{ .Name }}Trigger
+type {{ .Name }}TriggerInput struct {
+    {{- range $n , $p := .Input}}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}
+
+// {{ .Name}}TriggerOutput defines the output for the {{ .Name}}Trigger
+type {{ .Name }}TriggerOutput struct {
+    {{- range $n , $p := .Output }}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}
+
+// {{ .Name }}Trigger a trigger
+type {{ .Name }}Trigger struct {
+    queue chan *{{ .Name }}TriggerOutput
+    dispatcher dispatcher.Dispatcher
+}
+
+// New{{ .Name }}Trigger returns a new {{.Name }}Trigger properly initialized and ready to run.
+func New{{ .Name }}Trigger(d dispatcher.Dispatcher) *{{ .Name }}Trigger {
+    return &{{ .Name }}Trigger{
+        queue: make(chan *{{ .Name }}TriggerOutput, 1),
+        dispatcher: d,
+    }
+}
+
+// Send will submit a {{ .Name }}TriggerOutput onto the internal queue, which then buffers to the external queue
+func (t *{{ .Name }}Trigger) Send(o interface{}) {
+    t.queue <- o.(*{{ .Name}}TriggerOutput)
+}
+
+// Read will pop an item off the internal queue, to be handed to the external queue
+func (t *{{ .Name }}Trigger) Read() *{{ .Name }}TriggerOutput {
+    return <-t.queue
+}
+
+// Stop will close the internal queue, which will prevent new jobs from entering.
+func (t *{{ .Name }}Trigger) Stop() {
+    close(t.queue)
+}
+
+func (t *{{ .Name }}Trigger) StartReadLoop() error {
+    for {
+	    output := t.Read()
+        if output == nil {
+            // The channel was closed, we got an empty-closed-read, so we bail out with no issues
+            return nil
+        }
+		if err := t.dispatcher.Send(output); err != nil {
+			log.Printf("Receieved error sending trigger message: %s", err)
+			return err
+		}
+	}
+}
+
+// {{ .Name }}InputFromRawInput maps the raw bag of data to the typed one.
+// TODO I abhor this, and think maybe a double json marshal would look cleaner... but at scale
+// I don't wanna pay the reflect gatekeeper twice. We need to think long and hard about the best tradeoff here
+func {{ .Name}}TriggerInputFromRawInput(id map[string]interface{}) (*{{ .Name}}TriggerInput, error) {
+    i := &{{ .Name }}TriggerInput{}
+    {{- range $p := .Input }}
+    if x, ok := id["{{ $p.RawName }}"] ; ok {
+        if i.{{ $p.Name }}, ok = x.({{ $p.Type }}); !ok {
+            return nil, fmt.Errorf("%s cannot be set to value of type %s", "{{ $p.Name }}", "{{ $p.Type }}")
+        }
+    }
+    {{- end }}
+    return i, nil
+}
