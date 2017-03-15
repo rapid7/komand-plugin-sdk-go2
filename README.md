@@ -1,0 +1,1 @@
+It's like the old plugin sdk, but i slapped the number 2 on it, and now it doesn't depend on komand/komand at all, so people can just generate plugins to their hearts content and don't need any binaries from komand itself.
