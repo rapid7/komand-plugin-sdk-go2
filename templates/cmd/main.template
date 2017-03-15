@@ -60,7 +60,7 @@ func main() {
 			l.Flush(os.Stderr)
 			log.Fatal(err)
 		}
-		fmt.Print(string(b)) // TODO use a json.Encoder here?
+		fmt.Print(string(b)) // TODO to make this internally consistent with triggers, actions should continue using dispatchers when present
     case "-trigger": // Daemonize as per the polling trigger params over stdin
 		mode, message, err := getArgsFromCLI()
 		if err != nil {
@@ -138,9 +138,16 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		// Trigger don't need / use the internal buffered logger approach, but connections have to work
 		// in both places, so we deal with this in a one-off fashion here
 		l.Flush(os.Stderr)
-		t := triggers.New{{ $p.Name }}Trigger(dispatcherFromRaw(m.Body.Dispatcher))
+		d := dispatcherFromRaw(m.Body.Dispatcher)
+		t := triggers.New{{ $p.Name }}Trigger(d)
 		if mode == "test" {
-			return t.Test(conn, input)
+			o, err := t.Test(conn, input);
+			if  err != nil {
+				return err
+			}
+			// To avoid needing to boot up the readloop and block until the message is consumed
+			// for testing, we emit to the dispatcher directly.
+			d.Send(o)
 		}
 		// Start the read loop
 		go t.StartReadLoop()

@@ -4,6 +4,34 @@ import (
     "{{ .PackageRoot }}/connection"
 )
 
+// Validate will validate the input is properly setup.
+func (i *{{ .Name }}TriggerInput) Validate() []error {
+    errors := make([]error, 0)
+    
+    // Custom validation code here
+    // Append errors as needed
+
+    // return
+    if len(errors) > 0 {
+        return errors
+    }
+    return nil
+}
+
+// Validate will validate the output is properly setup.
+func (o *{{ .Name }}TriggerOutput) Validate() []error {
+    errors := make([]error, 0)
+    
+    // Custom validation code here
+    // Append errors as needed
+
+    // return
+    if len(errors) > 0 {
+        return errors
+    }
+    return nil
+}
+
 // Run runs the trigger and blocks until the trigger polling is complete or errors
 func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}TriggerInput) error {
     // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
@@ -15,10 +43,10 @@ func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}T
 }
 
 // Test runs the trigger, but does not block and only runs the trigger polling one time
-func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput) error {
+func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput) (*{{ .Name }}TriggerOutput, error) {
     // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
-    
+    output := &{{ .Name }}TriggerOutput{}
     // Your code here
 
-    return nil
+    return output, nil
 }

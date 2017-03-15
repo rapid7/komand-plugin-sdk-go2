@@ -26,19 +26,5 @@ type {{ .Name }}Output struct {
     Log string `json:"plugin_log"`
 }
 
-// Validate will validate the input is properly setup.
-func (i *{{ .Name }}Input) Validate() []error {
-    errors := make([]error, 0)
-    
-    // Custom validation code here
-    // Append errors as needed
-
-    // return
-    if len(errors) > 0 {
-        return errors
-    }
-    return nil
-}
-
 // {{ .Name }}Action is an action
 type {{ .Name }}Action struct {}
