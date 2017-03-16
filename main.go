@@ -253,10 +253,6 @@ func generatePlugin(s *PluginSpec) error {
 			log.Fatal("Error when creating plugin package path: " + err.Error())
 		}
 	}
-	// Now we have the directory prepped, time to fill in the stuff!
-	// We'll always assume the files are on disk in GOPATH in the plugin sdk repo
-	// lol assumptions
-	// We should probably just bindata it but fuck that for right now though
 	if err := generateActions(s); err != nil {
 		return err
 	}
@@ -306,7 +302,12 @@ func runTemplate(templatePath string, outputPath string, data interface{}, skipI
 	if err := os.MkdirAll(filepath.Dir(outputPath), 0700); err != nil {
 		return err
 	}
-	t, err := template.ParseFiles(templatePath)
+	b, err := Asset(templatePath)
+	if err != nil {
+		return err
+	}
+	tmp := template.New(templatePath)
+	t, err := tmp.Parse(string(b))
 	if err != nil {
 		return err
 	}
@@ -326,8 +327,8 @@ func runTemplate(templatePath string, outputPath string, data interface{}, skipI
 
 func generateActions(s *PluginSpec) error {
 	// Now, do one for each action using the action_x template
-	pathToActionTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/actions/action_x.template")
-	pathToRunTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/actions/action_x_run.template")
+	pathToActionTemplate := "templates/actions/action_x.template"
+	pathToRunTemplate := "templates/actions/action_x_run.template"
 	for name, action := range s.Actions {
 		// Make the new action.go
 		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/actions/", name+".go")
@@ -345,23 +346,23 @@ func generateActions(s *PluginSpec) error {
 }
 
 func generateConnections(s *PluginSpec) error {
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/connection/connection.template")
+	pathToTemplate := "templates/connection/connection.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/", "connection.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
 	}
 	// Connect and validate are broken out, so that re-generating will skip them if they exist, making it easier for the dev
-	pathToTemplate = path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/connection/connect.template")
+	pathToTemplate = "templates/connection/connect.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/connect.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, true); err != nil {
 		return err
 	}
-	pathToTemplate = path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/connection/cache.template")
+	pathToTemplate = "templates/connection/cache.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/cache.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
 	}
-	pathToTemplate = path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/connection/connection_key.template")
+	pathToTemplate = "templates/connection/connection_key.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/connection_key.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, true); err != nil {
 		return err
@@ -371,8 +372,8 @@ func generateConnections(s *PluginSpec) error {
 
 func generateTriggers(s *PluginSpec) error {
 	// Now, do one for each action using the action_x template
-	pathToTriggerTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/triggers/trigger_x.template")
-	pathToRunTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/triggers/trigger_x_run.template")
+	pathToTriggerTemplate := "templates/triggers/trigger_x.template"
+	pathToRunTemplate := "templates/triggers/trigger_x_run.template"
 
 	for name, trigger := range s.Triggers {
 		// Make the new action.go
@@ -390,7 +391,7 @@ func generateTriggers(s *PluginSpec) error {
 }
 
 func generateCmd(s *PluginSpec) error {
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/cmd/main.template")
+	pathToTemplate := "templates/cmd/main.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/cmd/", "main.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
@@ -399,7 +400,7 @@ func generateCmd(s *PluginSpec) error {
 }
 
 func generateHTTPServer(s *PluginSpec) error {
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/server/http/server.template")
+	pathToTemplate := "templates/server/http/server.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/server/http/", "server.go")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
@@ -409,7 +410,7 @@ func generateHTTPServer(s *PluginSpec) error {
 
 func generateHTTPHandlers(s *PluginSpec) error {
 	// Now, do one for each action using the action_x template
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/server/http/handler_x.template")
+	pathToTemplate := "templates/server/http/handler_x.template"
 	for name, action := range s.Actions {
 		// Make the new action.go
 		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/server/http/", name+".go")
@@ -426,13 +427,13 @@ func generateTests(s *PluginSpec) error {
 
 func generateTypes(s *PluginSpec) error {
 	// First, in case there are no triggers, make a placeholder
-	pathToPlaceholderTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/types/types.template")
+	pathToPlaceholderTemplate := "templates/types/types.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/types.go")
 	if err := runTemplate(pathToPlaceholderTemplate, newFilePath, s, false); err != nil {
 		return err
 	}
 	// Now, do one for each action using the action_x template
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/types/type_x.template")
+	pathToTemplate := "templates/types/type_x.template"
 	for name, t := range s.Types {
 		// Make the new action.go
 		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/", name+".go")
@@ -445,14 +446,14 @@ func generateTypes(s *PluginSpec) error {
 
 func generateBuildSupport(s *PluginSpec) error {
 	// Docker
-	pathToTemplate := path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/Dockerfile.template")
+	pathToTemplate := "templates/Dockerfile.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "Dockerfile")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
 	}
 
 	// Make
-	pathToTemplate = path.Join(os.Getenv("GOPATH"), "/src/github.com/komand/plugin-sdk-go2/templates/Makefile.template")
+	pathToTemplate = "templates/Makefile.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "Makefile")
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
