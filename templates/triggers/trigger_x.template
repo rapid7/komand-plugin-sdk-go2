@@ -1,7 +1,6 @@
 package triggers
 
 import (
-    "fmt"
     "log"
     {{- if .NeedsTime }}
     "time"
@@ -69,19 +68,4 @@ func (t *{{ .Name }}Trigger) StartReadLoop() error {
 			return err
 		}
 	}
-}
-
-// {{ .Name }}InputFromRawInput maps the raw bag of data to the typed one.
-// TODO I abhor this, and think maybe a double json marshal would look cleaner... but at scale
-// I don't wanna pay the reflect gatekeeper twice. We need to think long and hard about the best tradeoff here
-func {{ .Name}}TriggerInputFromRawInput(id map[string]interface{}) (*{{ .Name}}TriggerInput, error) {
-    i := &{{ .Name }}TriggerInput{}
-    {{- range $p := .Input }}
-    if x, ok := id["{{ $p.RawName }}"] ; ok {
-        if i.{{ $p.Name }}, ok = x.({{ $p.Type }}); !ok {
-            return nil, fmt.Errorf("%s cannot be set to value of type %s", "{{ $p.Name }}", "{{ $p.Type }}")
-        }
-    }
-    {{- end }}
-    return i, nil
 }

@@ -42,6 +42,7 @@ func main() {
 			log.Fatal(err)
 		}
 		fmt.Println("Plugin {{ .Name }} booting HTTP Daemon...")
+		// This will block until the server shuts down
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
@@ -50,17 +51,10 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		o, l, err := runOneOffAction(mode, message)
-		if err != nil {
-			l.Flush(os.Stderr)
+		// This is one and done, it won't daemonize / block
+		if err := runOneOffAction(mode, message); err != nil {
 			log.Fatal(err)
 		}
-		b, err := json.Marshal(o)
-		if err != nil {
-			l.Flush(os.Stderr)
-			log.Fatal(err)
-		}
-		fmt.Print(string(b)) // TODO to make this internally consistent with triggers, actions should continue using dispatchers when present
     case "-trigger": // Daemonize as per the polling trigger params over stdin
 		mode, message, err := getArgsFromCLI()
 		if err != nil {
@@ -82,7 +76,13 @@ func getArgsFromCLI() (string, *message.V1, error) {
 	return os.Args[2], m, nil
 }
 
-func runOneOffAction(mode string, m *message.V1) (interface{}, *plog.Logger, error) {
+func runOneOffAction(mode string, m *message.V1) error {
+	{{- if .Actions }}
+	cd := &connection.ConnectionData{}
+	l := plog.NewLogger()
+	d := dispatcherFromRaw(m.Body.Dispatcher)
+	defer l.Flush(os.Stderr)
+	
 	switch m.Body.Action {
 	{{- range $n, $p := .Actions }}
 	case "{{ $p.RawName }}":
@@ -93,31 +93,40 @@ func runOneOffAction(mode string, m *message.V1) (interface{}, *plog.Logger, err
 		// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
 		input := &actions.{{ $p.Name }}Input{}
 		if err := json.Unmarshal(m.Body.Input, input); err != nil {
-			return nil, nil, err
+			return err
 		}
-		cd := &connection.ConnectionData{}
 		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
-			return nil, nil, err
+			return err
 		}
-		l := plog.NewLogger()
 		conn, err := connection.Connect(cd, l)
 		if err != nil {
-			return nil, nil, err
+			return err
 		}
 		a := &actions.{{ $p.Name }}Action{}
+		runMethod := a.Run
 		if mode == "test" {
-			o, err := a.Test(conn, input, l)
-			return o, l, err
+			runMethod = a.Test
 		}
-		o, err := a.Run(conn, input, l)
-		return o, l, err
+		o, err := runMethod(conn, input, l)
+		if err != nil {
+			return err
+		}
+		// dispatch the result
+		d.Send(o)
 	{{- end }}
 	default:
-		return nil, nil, fmt.Errorf("unknown action %s", m.Body.Action)
+		return fmt.Errorf("unknown action %s", m.Body.Action)
 	}
+	{{- end}}
+	return nil
 }
 
 func runTriggerDaemon(mode string, m *message.V1) error {
+	{{- if .Triggers }}
+	cd := &connection.ConnectionData{}
+	l := plog.NewLogger()
+	d := dispatcherFromRaw(m.Body.Dispatcher)
+
 	switch m.Body.Action {
 	{{- range $n, $p := .Triggers }}
 	case "{{ $p.RawName }}":
@@ -125,20 +134,17 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		if err := json.Unmarshal(m.Body.Input, input); err != nil {
 			return err
 		}
-		cd := &connection.ConnectionData{}
 		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
-			return err
-		}
-		l := plog.NewLogger()
-		conn, err := connection.Connect(cd, l)
-		if err != nil {
 			return err
 		}
 		// We immediately flush the connection log so it can be emitted to the caller of the application
 		// Trigger don't need / use the internal buffered logger approach, but connections have to work
 		// in both places, so we deal with this in a one-off fashion here
+		conn, err := connection.Connect(cd, l)
 		l.Flush(os.Stderr)
-		d := dispatcherFromRaw(m.Body.Dispatcher)
+		if err != nil {
+			return err
+		}
 		t := triggers.New{{ $p.Name }}Trigger(d)
 		if mode == "test" {
 			o, err := t.Test(conn, input);
@@ -148,6 +154,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 			// To avoid needing to boot up the readloop and block until the message is consumed
 			// for testing, we emit to the dispatcher directly.
 			d.Send(o)
+			return nil
 		}
 		// Start the read loop
 		go t.StartReadLoop()
@@ -157,6 +164,8 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 	default:
 		return fmt.Errorf("unknown trigger %s", m.Body.Action)
 	}
+	{{- end}}
+	return nil
 }
 
 // This is pretty hacky, not sure if there is a better way but from the engine, it doesn't look
