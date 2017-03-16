@@ -37,9 +37,10 @@ type PluginSpec struct {
 	HTTP        HTTP   `yaml:"http"`
 
 	// Things that are for background help
-	TypeMapper   *TypeMapper           `yaml:"-"`
-	Enums        map[string][]EnumData `yaml:"-"`
-	SpecLocation string                `yaml:"-"`
+	TypeMapper        *TypeMapper           `yaml:"-"`
+	Enums             map[string][]EnumData `yaml:"-"`
+	SpecLocation      string                `yaml:"-"`
+	ConnectionDataKey string                `yaml:"-"`
 }
 
 // ParamData are the details that make up each input/output/trigger param
@@ -53,6 +54,7 @@ type ParamData struct {
 	Description string        `yaml:"description"`
 	Enum        []interface{} `yaml:"enum"`
 	Default     interface{}   `yaml:"default"`
+	Embed       bool          `yaml:"embed"`
 }
 
 // PluginHandlerData defines the actions or triggers
@@ -164,6 +166,12 @@ func postProcessSpec(s *PluginSpec) {
 		param.Name = UpperCamelCase(name)
 		param.Type = t.SpecTypeToGoType(param.Type)
 		s.Connection[name] = param
+		if param.Type == "string" {
+			if s.ConnectionDataKey != "" {
+				s.ConnectionDataKey += " + "
+			}
+			s.ConnectionDataKey += "c." + param.Name
+		}
 	}
 	// fill in the trigger names
 	for name, action := range s.Actions {
@@ -175,24 +183,12 @@ func postProcessSpec(s *PluginSpec) {
 			param.RawName = name
 			param.Name = UpperCamelCase(name)
 			param.Type = t.SpecTypeToGoType(param.Type)
-			if strings.Index(param.Type, "types.") > -1 {
-				action.NeedsTypes = true
-			}
-			if strings.Index(param.Type, "time.Time") > -1 {
-				action.NeedsTime = true
-			}
 			action.Input[name] = param // Godbless go for this feature
 		}
 		for name, param := range action.Output {
 			param.RawName = name
 			param.Name = UpperCamelCase(name)
 			param.Type = t.SpecTypeToGoType(param.Type)
-			if strings.Index(param.Type, "types.") > -1 {
-				action.NeedsTypes = true
-			}
-			if strings.Index(param.Type, "time.Time") > -1 {
-				action.NeedsTime = true
-			}
 			action.Output[name] = param // Godbless go for this feature
 		}
 		s.Actions[name] = action
@@ -207,24 +203,12 @@ func postProcessSpec(s *PluginSpec) {
 			param.RawName = name
 			param.Name = UpperCamelCase(name)
 			param.Type = t.SpecTypeToGoType(param.Type)
-			if strings.Index(param.Type, "types.") > -1 {
-				trigger.NeedsTypes = true
-			}
-			if strings.Index(param.Type, "time.Time") > -1 {
-				trigger.NeedsTime = true
-			}
 			trigger.Input[name] = param // Godbless go for this feature
 		}
 		for name, param := range trigger.Output {
 			param.RawName = name
 			param.Name = UpperCamelCase(name)
 			param.Type = t.SpecTypeToGoType(param.Type)
-			if strings.Index(param.Type, "types.") > -1 {
-				trigger.NeedsTypes = true
-			}
-			if strings.Index(param.Type, "time.Time") > -1 {
-				trigger.NeedsTime = true
-			}
 			trigger.Output[name] = param // Godbless go for this feature
 		}
 		s.Triggers[name] = trigger
@@ -362,11 +346,6 @@ func generateConnections(s *PluginSpec) error {
 	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
 		return err
 	}
-	pathToTemplate = "templates/connection/connection_key.template"
-	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/connection_key.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, true); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -482,15 +461,25 @@ func copySpec(s *PluginSpec) error {
 func runGoFMT(s *PluginSpec) error {
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
-	vendorablePackages := []string{"actions", "cmd", "connection", "server/http", "triggers", "types"}
-	for _, p := range vendorablePackages {
-		// Some plugins won't have actions or triggers, so stat the path first
-		if doesFileExist(path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, p)) {
-			cmd := exec.Command("go", "fmt", s.PackageRoot+"/"+p)
-			if b, err := cmd.CombinedOutput(); err != nil {
-				fmt.Println(string(b))
-				return err
-			}
+
+	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+
+	fileList := []string{}
+	err := filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
+		if !strings.Contains(path, "/vendor/") && strings.HasSuffix(path, ".go") {
+			fileList = append(fileList, path)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	for _, p := range fileList {
+		cmd := exec.Command("goimports", "-w", p)
+		if _, err := cmd.CombinedOutput(); err != nil {
+			return err
 		}
 	}
 	return nil

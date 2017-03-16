@@ -9,11 +9,10 @@ package connection
 // be touched by the generation of the plugin. However, you must still add any properties, such 
 // as the actual client connection, to this struct.
 type Connection struct {
+    CustomConnectionProperties
     {{- range $n, $p := .Connection }}
         {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
-
-    // Put custom properties below
 }
 
 // ConnectionData is the struct that holds the raw connection params from the incoming message

@@ -1,5 +1,7 @@
 package main
 
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
 import (
 	"encoding/json"
 	"fmt"

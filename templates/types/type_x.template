@@ -1,8 +1,14 @@
 package types
 
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
 // {{ .Name }} is a custom type generated off of the spec
 type {{ .Name }} struct {
     {{- range $n, $p := .Fields}}
+    {{- if $p.Embed }}
+    {{ $p.Type }}
+    {{ else }}
     {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
     {{- end }}
 }

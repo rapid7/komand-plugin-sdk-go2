@@ -1,5 +1,7 @@
 package connection
 
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
 import (
     "fmt"
     "sync"
@@ -13,6 +15,7 @@ type Cache struct {
     data map[string]*Connection
 }
 
+// NewCache returns a new connection cache
 func NewCache() *Cache {
 	return &Cache{
 		data: make(map[string]*Connection),

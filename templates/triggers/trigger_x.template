@@ -1,16 +1,11 @@
 package triggers
 
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
 import (
     "log"
-    {{- if .NeedsTime }}
-    "time"
-    {{- end }}
 
     "github.com/komand/plugin-sdk-go2/dispatcher"
-
-    {{- if .NeedsTypes }}
-    "{{ .PackageRoot }}/types"
-    {{- end}}
 )
 
 // {{ .Name}}TriggerInput defines the input for the {{ .Name }}Trigger

@@ -1,9 +1,0 @@
-package connection
-
-// Key comprises any fields needed to make up a unique value for each isntance of a connection
-// For example, 2 messages with the same conn params should share 1 connection, and will
-// but the next message with different params would use a different connection.
-func (c *ConnectionData) Key() string {
-    // TODO auto-comprise off string fields
-	return ""
-}

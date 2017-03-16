@@ -1,14 +1,6 @@
 package actions
 
-import (
-    {{- if .NeedsTime }}
-    "time"
-    {{- end }}
-
-    {{- if .NeedsTypes }}
-    "{{ .PackageRoot }}/types"
-    {{- end }}
-)
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
 
 // {{ .Name }}Input is the input for {{ .Name }}
 type {{ .Name }}Input struct {

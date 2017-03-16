@@ -199,38 +199,24 @@ connection:
     description: "Authentication token"
 
 types:
-  file_reference:
-    id:
+  file:
+    file_name:
       type: string
-    name:
-      type: string
-    title:
-      type: string
-    is_external:
-      type: boolean
-    permalink:
-      type: string
-    permalink_public:
-      type: string
+      description: "File name"
+    contents:
+      type: bytes
+      description: "File contents"
   message:
-    user:
-      type: "string"
-      description: "User name"
+    message_event:
+      type: "*slack.MessageEvent"
+      description: "The raw slack MessageEvent"
+      embed: true
     user_id:
       type: "string"
       description: "Slack User ID"
-    channel:
-      type: "string"
-      description: "channel name"
     channel_id:
       type: "string"
       description: "Slack channel ID"
-    text:
-      type: "string"
-      description: "Text"
-    ts:
-      type: "string"
-      description: "Timestamp"
 
 triggers:
   message:
@@ -299,7 +285,7 @@ triggers:
         required: true
     output:
       event:
-        type:  object
+        type: message
         description: "Event"
       timestamp:
         type: string
@@ -316,7 +302,7 @@ triggers:
         description: "Regexp match on a specific filename"
     output:
       message:
-        type: object
+        type: message
         description: "Message"
       type:
         type: string
@@ -325,7 +311,7 @@ triggers:
         description: "Timestamp"
         type: string
       file:
-        type: file_reference
+        type: file
         description: "File"
 
 actions:
@@ -351,7 +337,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: file_reference
+        type: "*slack.File"
 
   upload_file:
     description: "Upload a file to Slack"
@@ -370,7 +356,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: file_reference
+        type: "*slack.File"
 
   post_message:
     description: "Post a message to the Slack channel"
@@ -410,7 +396,7 @@ actions:
     description: Search message archive.
     output:
       matches:
-        type: "[]object"
+        type: "[]slack.SearchMessage"
       count:
         type: int
       total:

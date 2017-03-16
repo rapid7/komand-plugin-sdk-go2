@@ -4,6 +4,13 @@ import (
     plog "github.com/komand/plugin-sdk-go2/log"
 )
 
+// CustomConnectionParams is where you the developer will fill in any custom properties, which you would need
+// to use or work with in Connect. One example might be any client libraries or supporting properties for working
+// with the client libraries you need, but don't want to lose if you regenerate the plugin
+type CustomConnectionParams struct {
+    // Your custom properties below
+}
+
 // Connect is the custom code for the developer to write to fully initialize and return a
 // ready to use Connection object.
 func Connect(cd *ConnectionData, log *plog.Logger) (*Connection, error) {
@@ -25,3 +32,13 @@ func (c *Connection) Validate() []error {
 
 	return nil
 }
+
+// Key comprises any fields needed to make up a unique value for each isntance of a connection
+// For example, 2 messages with the same conn params should share 1 connection, and will
+// but the next message with different params would use a different connection.
+func (c *ConnectionData) Key() string {
+    // TODO auto-comprise off string fields
+	return {{ .ConnectionDataKey }}
+}
+
+// Place Custom Connection Functions and Methods Below
