@@ -101,13 +101,13 @@ type EnumData struct {
 // some datas.
 func main() {
 	specLoc := flag.String("spec", "", "The path to the spec file")
-	packageRoot := flag.String("package", "", "The go package root for this plugin. Ex: github.com/you/pluginname")
+	packageRoot := flag.String("package", "", "The go package root for this plugin. Ex: github.com/<company_name>/plugins/<plugin_name>")
 	flag.Parse()
 	if *specLoc == "" {
 		log.Fatal("Error, must provide path to spec including name")
 	}
 	if *packageRoot == "" {
-		log.Fatal("Error, must provide a package root for the resulting go package. Ex: github.com/you/pluginname")
+		log.Fatal("Error, must provide a package root for the resulting go package. Ex: github.com/<company_name>/plugins/<plugin_name>")
 	}
 	data, err := ioutil.ReadFile(*specLoc)
 	if err != nil {
@@ -331,10 +331,7 @@ func generateConnections(s *PluginSpec) error {
 	}
 	pathToTemplate = "templates/connection/cache.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/cache.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
-		return err
-	}
-	return nil
+	return runTemplate(pathToTemplate, newFilePath, s, false)
 }
 
 func generateTriggers(s *PluginSpec) error {
@@ -360,19 +357,13 @@ func generateTriggers(s *PluginSpec) error {
 func generateCmd(s *PluginSpec) error {
 	pathToTemplate := "templates/cmd/main.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/cmd/", "main.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
-		return err
-	}
-	return nil
+	return runTemplate(pathToTemplate, newFilePath, s, false)
 }
 
 func generateHTTPServer(s *PluginSpec) error {
 	pathToTemplate := "templates/server/http/server.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/server/http/", "server.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
-		return err
-	}
-	return nil
+	return runTemplate(pathToTemplate, newFilePath, s, false)
 }
 
 func generateHTTPHandlers(s *PluginSpec) error {
