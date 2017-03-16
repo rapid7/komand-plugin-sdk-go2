@@ -22,8 +22,6 @@ type {{ .Name }}Output struct {
     {{- range $n , $p := .Output}}
     {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
-    Error string `json:"plugin_error"`
-    Log string `json:"plugin_log"`
 }
 
 // {{ .Name }}Action is an action

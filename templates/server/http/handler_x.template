@@ -82,11 +82,10 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String())))
 		return
 	}
-	output.Log = l.String()
 	if b, err = json.Marshal(output); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, output.Log)))
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String)))
 		return
 	}
-	w.Write(b)
+	w.Write([]byte(fmt.Sprintf(`{"plugin_error":"", "plugin_log":"%s", "output":%s}`, l.String(), string(b))))
 }
