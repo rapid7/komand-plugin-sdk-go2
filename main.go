@@ -134,6 +134,17 @@ func main() {
 	}
 }
 
+// This is a light weight helper to handle some post-processing boilerplate after parsing a spec
+// We need to convert the spec param names into go friendly names, and lookup the proper type
+func updateParams(data map[string]ParamData, t *TypeMapper) {
+	for name, param := range data {
+		param.RawName = name
+		param.Name = UpperCamelCase(name)
+		param.Type = t.SpecTypeToGoType(param.Type)
+		data[name] = param // Godbless go for this feature
+	}
+}
+
 // postProcessSpec does some minor post-processing on the spec object to fill a few things in that make
 // template generation easier
 func postProcessSpec(s *PluginSpec) {
@@ -149,18 +160,15 @@ func postProcessSpec(s *PluginSpec) {
 		td.RawName = name
 		td.Name = UpperCamelCase(name)
 
-		for pname, params := range data {
-			params.RawName = pname
-			params.Name = UpperCamelCase(pname)
-			params.Type = t.SpecTypeToGoType(params.Type)
-			data[pname] = params
-		}
+		updateParams(data, t)
+
 		td.Fields = data
 		s.RawTypes[name] = data
 		s.Types[name] = td
 	}
 
 	// fill in the connection names
+	// Do this one out long form since we need the special case of building the data key
 	for name, param := range s.Connection {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
@@ -179,18 +187,8 @@ func postProcessSpec(s *PluginSpec) {
 		action.Name = UpperCamelCase(name)
 		action.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		for name, param := range action.Input {
-			param.RawName = name
-			param.Name = UpperCamelCase(name)
-			param.Type = t.SpecTypeToGoType(param.Type)
-			action.Input[name] = param // Godbless go for this feature
-		}
-		for name, param := range action.Output {
-			param.RawName = name
-			param.Name = UpperCamelCase(name)
-			param.Type = t.SpecTypeToGoType(param.Type)
-			action.Output[name] = param // Godbless go for this feature
-		}
+		updateParams(action.Input, t)
+		updateParams(action.Output, t)
 		s.Actions[name] = action
 	}
 
@@ -199,18 +197,8 @@ func postProcessSpec(s *PluginSpec) {
 		trigger.Name = UpperCamelCase(name)
 		trigger.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		for name, param := range trigger.Input {
-			param.RawName = name
-			param.Name = UpperCamelCase(name)
-			param.Type = t.SpecTypeToGoType(param.Type)
-			trigger.Input[name] = param // Godbless go for this feature
-		}
-		for name, param := range trigger.Output {
-			param.RawName = name
-			param.Name = UpperCamelCase(name)
-			param.Type = t.SpecTypeToGoType(param.Type)
-			trigger.Output[name] = param // Godbless go for this feature
-		}
+		updateParams(trigger.Input, t)
+		updateParams(trigger.Output, t)
 		s.Triggers[name] = trigger
 	}
 
