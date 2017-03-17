@@ -4,7 +4,7 @@ GOWORKDIR=$(GOPATH)/src
 VERSION=$(shell git describe --abbrev=0 --tags)
 MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
 
-build: deps
+build:
 	go-bindata templates/...
 	go build
 
@@ -12,7 +12,7 @@ clean:
 	rm -f ./plugin-sdk-go2
 
 run: clean build
-	./plugin-sdk-go2 -spec="./plugin.spec.slack.yaml" -package="github.com/komand/testplugins/slack/"
+	./plugin-sdk-go2 -spec="./plugin.spec.virustotal.yaml" -package="github.com/komand/testplugins/virustotal/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...

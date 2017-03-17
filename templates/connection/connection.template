@@ -1,15 +1,13 @@
 package connection
 
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
 // Connection is the connection object that the developer will add to when integrating a third party
 // API. Add any kind of long lived or custom 3rd party connection objects into this struct.
 // Each instance of this struct WILL be shared globally, so be sure to add mutexes or atomic
-// operations where needed. Due to how plugin generation works, any changes to this file will
-// presently be lost when doing a re-generate. If you need to make additional functions, it's 
-// recommended you place them in a custom file inside of the connect package, as those will not
-// be touched by the generation of the plugin. However, you must still add any properties, such 
-// as the actual client connection, to this struct.
+// operations where needed.
 type Connection struct {
-    CustomConnectionProperties
+    CustomConnectionParams
     {{- range $n, $p := .Connection }}
         {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}

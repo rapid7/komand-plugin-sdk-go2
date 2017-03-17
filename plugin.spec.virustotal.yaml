@@ -198,31 +198,45 @@ help: |
 
 types:
   report:
-    found:
-      description: "True if found"
-      type: boolean
-    positives:
-      type: integer
-      description: "Number of positives (if found)"
-    permalink:
-      description: "Link to report (if found)"
-      type: string
-    resource:
-      description: "Resource"
-      type: string  
-    scan_id:
-      description: "Scan ID"
-      type: string
-    scan_date: 
-      type: string
-      description: "Scan Date"
-    scans:
-      type: object 
-      description: "Scans"
-    total:
-      type: integer
-      description: "Total Scans"
-  
+      message:
+        description: "The message"
+        type: string
+      response_code:
+        description: "The response code"
+        type: integer
+      md5:
+        description: "MD5 hash"
+        type: string
+      sha256:
+        description: "SHA256 hash"
+        type: string
+      sha1:
+        description: "SHA1 hash"
+        type: string
+      found:
+        description: "True if found"
+        type: boolean
+      positives:
+        type: integer
+        description: "Number of positives (if found)"
+      permalink:
+        description: "Link to report (if found)"
+        type: string
+      resource:
+        description: "Resource"
+        type: string  
+      scan_id:
+        description: "Scan ID"
+        type: string
+      scan_date: 
+        description: "Scan Date"
+        type: string
+      scans:
+        description: "Scans"
+        type: object 
+      total:
+        description: "Total Scans"
+        type: integer
 connection:
   url:
     title: "URL"
@@ -256,6 +270,10 @@ actions:
       permalink:
         type: string
       sha256:
+        type: string
+      sha1:
+        type: string
+      md5:
         type: string
       resource:
         type: string
@@ -307,12 +325,27 @@ actions:
         type: bytes
         required: true
     output:
+      message:
+        description: "The message"
+        type: string
+      response_code:
+        description: "The response code"
+        type: integer
+      md5:
+        description: "MD5 hash"
+        type: string
+      sha256:
+        description: "SHA256 hash"
+        type: string
+      sha1:
+        description: "SHA1 hash"
+        type: string
       found:
         description: "True if found"
         type: boolean
       positives:
-        description: "Number of positives (if found)"
         type: integer
+        description: "Number of positives (if found)"
       permalink:
         description: "Link to report (if found)"
         type: string
@@ -323,14 +356,14 @@ actions:
         description: "Scan ID"
         type: string
       scan_date: 
-        type: string
         description: "Scan Date"
+        type: string
       scans:
-        type: object 
         description: "Scans"
+        type: object 
       total:
-        type: integer
         description: "Total Scans"
+        type: integer
   lookup_hash:
     name: "Lookup A Hash"
     description: "Lookup to see if a file hash exists in VT, and return report"
@@ -339,6 +372,21 @@ actions:
         description: "MD5/SHA1/SHA256 hash to lookup"
         type: string
     output:
+      message:
+        description: "The message"
+        type: string
+      response_code:
+        description: "The response code"
+        type: integer
+      md5:
+        description: "MD5 hash"
+        type: string
+      sha256:
+        description: "SHA256 hash"
+        type: string
+      sha1:
+        description: "SHA1 hash"
+        type: string
       found:
         description: "True if found"
         type: boolean
@@ -371,6 +419,21 @@ actions:
         description: "MD5/SHA1/SHA256 of file"
         type: string
     output:
+      message:
+        description: "The message"
+        type: string
+      response_code:
+        description: "The response code"
+        type: integer
+      md5:
+        description: "MD5 hash"
+        type: string
+      sha256:
+        description: "SHA256 hash"
+        type: string
+      sha1:
+        description: "SHA1 hash"
+        type: string
       found:
         description: "True if found"
         type: boolean
@@ -424,6 +487,12 @@ actions:
       url:
         description: "The URL scanned"
         type: string
+      wait:
+        description: "Do we wait"
+        type: boolean
+      timeout_seconds:
+        description: "Timeout seconds to wait"
+        type: integer
     output:
       found:
         type: boolean

@@ -7,28 +7,28 @@ import (
 
 // Validate will validate the input is properly setup.
 func (i *{{ .Name }}Input) Validate() []error {
-    errors := make([]error, 0)
+    errs := make([]error, 0)
     
     // Custom validation code here
     // Append errors as needed
 
     // return
-    if len(errors) > 0 {
-        return errors
+    if len(errs) > 0 {
+        return errs
     }
     return nil
 }
 
 // Validate will validate the output is properly setup.
 func (o *{{ .Name }}Output) Validate() []error {
-    errors := make([]error, 0)
+    errs := make([]error, 0)
     
     // Custom validation code here
     // Append errors as needed
 
     // return
-    if len(errors) > 0 {
-        return errors
+    if len(errs) > 0 {
+        return errs
     }
     return nil
 }

@@ -51,6 +51,7 @@ func (t *{{ .Name }}Trigger) Stop() {
     close(t.queue)
 }
 
+// StartReadLoop will block, reading until a nil message is received, meaning the internal queue was closed
 func (t *{{ .Name }}Trigger) StartReadLoop() error {
     for {
 	    output := t.Read()
