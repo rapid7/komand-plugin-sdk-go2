@@ -57,6 +57,16 @@ type ParamData struct {
 	Embed       bool          `yaml:"embed"`
 }
 
+// TypesInternalType is a special hack for the types package. Because in all other places we need to reference X via types.X
+// we prefix it ahead of time. But types that use or refer to other types in the types package don't need it.
+// This method, used only from the code generators for types, is to make sure types don't use the pacakge name internally in the package
+func (p ParamData) TypesInternalType() string {
+	if i := strings.Index(p.Type, "types."); i > -1 {
+		return strings.Replace(p.Type, "types.", "", -1)
+	}
+	return p.Type
+}
+
 // PluginHandlerData defines the actions or triggers
 type PluginHandlerData struct {
 	RawName     string `yaml:"name"`
@@ -180,6 +190,13 @@ func postProcessSpec(s *PluginSpec) {
 			}
 			s.ConnectionDataKey += "c." + param.Name
 		}
+	}
+	if s.ConnectionDataKey == "" {
+		// Default it to the literal value of an empty string for now
+		// This could be because there were no string params - an issue to solve
+		// Or because it doesn't use a connection, which is totally fine
+		// TODO if there is no connection to generate, skip the whole connection pkg?
+		s.ConnectionDataKey = `""`
 	}
 	// fill in the trigger names
 	for name, action := range s.Actions {

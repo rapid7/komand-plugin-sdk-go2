@@ -1,0 +1,213 @@
+plugin_spec_version: v1
+name: nfs
+title: "NFS"
+description: "Access files via NFS"
+version: 0.1.1
+vendor: komand
+tags: [ "NFS", "Network File System", "nfs" ]
+icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA4hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTMyIDc5LjE1OTI4NCwgMjAxNi8wNC8xOS0xMzoxMzo0MCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNWZiOGExZS04MWVhLTRmOTItYWMyOS01M2JiMWViM2E5NjciIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6MEM2NTU5QUUwMDFEMTFFN0FFNUZDNkY0QUVBNTNFN0EiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6MEM2NTU5QUQwMDFEMTFFN0FFNUZDNkY0QUVBNTNFN0EiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUuNSAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjZkYjU0ZTQ2LTM0ZjMtNGU2NC04MTg5LTM2NzlhOTQ0ODU4OCIgc3RSZWY6ZG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjVhMzZlZDFlLWI1OTgtMTE3OS04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"
+help: |
+  ## About
+  The NFS plugin allows access to files on an [NFS](https://en.wikipedia.org/wiki/Network_File_System) 3 server.
+  Specifically, it offers read and write actions and a File Changed trigger.
+
+  This plugin utilizes the [Go NFS library]().
+
+  UNIX experts can think of this plugin as an NFS 3 client that packages up requests to portmap, mountd, and nfsd in one convenient place.
+
+  ## Actions
+  ### Read
+  This action is used to read the named file via nfs.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |file_pathname|string|None|True|File pathname starting with NFS mount point (path separator is /)|None|
+  |lines_to_read|integer|None|False|Number of lines to read (unsupplied or -1 means read all lines)|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |lines_read|[]string|False|Lines read from the NFS-mounted file|
+
+  ### Write
+  This action is used to write to the named file via nfs.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |file_pathname|string|None|True|File pathname starting with NFS mount point (path separator is /)|None|
+  |lines_to_write|[]string|None|True|Lines to write to the named file|None|
+  |create_if_missing|boolean|True|False|Create the named file before beginning write|None|
+  |remove_if_present|boolean|None|False|Remove then re-create an empty file of the same name before beginning write|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |write_successful|boolean|False|The NFS write operation succeeded|
+
+  ## Triggers
+  ### File Changed
+  This trigger is used to reports any file changes within the given interval.
+  #### Input
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |file_pathname|string|None|True|File pathname starting with NFS mount point (path separator is /)|None|
+  |interval|integer|60|False|How often to detect file changes (in seconds)|None|
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |changed_attributes|object|False|None|
+
+  ## Connection
+  The NFS mount point need not have been established to use this plugin. It automatically performs a mount operation before reading,
+  writing, or scanning for file changes.  (Caveat: The NFS server's /etc/exports file must be configured to allow access by the client
+  process - i.e. it must contain an entry matching the "Export file hostname" parameter of this plugin.)
+
+  The connection configuration accepts the following parameters:
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |client_external_ip|string|None|True|External IP that the client machine uses to contact the NFS server|None|
+  |exports_file_hostname|string|None|True|Hostname of the client machine in the NFS server's /etc/exports file|None|
+  |client_machine_name|string|None|True|Network name of client machine (not the external DNS name)|None|
+  |timeout|integer|None|False|Assume the NFS server is down after this many seconds (0 means no timeout)|None|
+  |mount_pathname|string|None|True|Full pathname of the mount point on the NFS server (path separator is /)|None|
+
+  More details on the parameters used to establish the initial NFS mount point.
+
+  - Mount pathname:
+    Full pathname of the mount point on the NFS server. (The path separator is / regardless of operating system.)
+
+  - Client machine name:
+    This is the name on the local network of the machine on which the NFS client runs, as known to the NFS server. It is NOT the public name of the
+    client machine as provided by DNS. It is used in the authentication data sent with the NFS request.
+
+  - Export file hostname:
+    This is same as the hostname specifying the NFS client in the relevant entry in the /etc/exports file on the NFS server (see the man page "exports").
+
+  - Client external IP:
+    This is the external IP address (e.g. of the router used by the client machine). The NFS server uses the client's external IP to
+    help verify that incoming NFS request is coming from a reserved port (i.e. one that only superuser can access).
+
+  The above parameters can be determined by using a network sniffer (e.g. Wireshark) to eavesdrop on a pre-existing successful NFS file
+  operation from the command line (e.g. cat'ing a file whose directory was mount_nfs'd).
+
+  ## Troubleshooting
+  This plugin does not currently support the NFS 4 protocol. Furthermore, it uses TCP transport exclusively to communicate
+  with the NFS server (i.e. it does not currently support UDF).
+
+  This plugin assumes the NFS server is down after the connection Timeout interval (in seconds). It defaults to 10.
+  Note that the mount timeout is separate from read and or write.  In other words, each read and write operation resets
+  the timeout clock to zero.
+
+  The line separator that this plugin uses in read and write operations is the UTF-8 newline code point. Hence this plugin expects to read
+  and write files that are in UTF-8 format, or that can be interpreted as being in UTF-8 (such as pure ASCII files).
+
+  The following details are specific to the write action. The create_if_missing flag defaults to true. The remove_if_present flas
+  defaults to false. If the file exists and remove_if_present is false or unsupplied, this plugin will append to the end of the file.
+  If the file exists and remove_if_present is true, this plugin will replace it with an empty file, regardless of the value of create_if_missing.
+  As an edge case, if the file does not exist and create_if_missing is false, this plugin will fail.
+
+  ## References
+  * [NFS](https://en.wikipedia.org/wiki/Network_File_System)
+
+connection:
+  mount_pathname:
+    title: "Mount pathname"
+    description: "Full pathname of the mount point on the NFS server (path separator is /)"
+    type: string
+    required: true
+  client_machine_name:
+    title: "Client machine name"
+    description: "Network name of client machine (not the external DNS name)"
+    type: string
+    required: true
+  exports_file_hostname:
+    title: "Exports file Hostname"
+    description: "Hostname of the client machine in the NFS server's /etc/exports file"
+    type: string
+    required: true
+  client_external_ip:
+    title: "Client external IP"
+    description: "External IP that the client machine uses to contact the NFS server"
+    type: string
+    required: true
+  timeout:
+    title: "Timeout"
+    description: "Assume the NFS server is down after this many seconds (0 means no timeout)"
+    type: integer
+    required: false
+
+actions:
+  read:
+    name: "Read"
+    description: "Read the named file via NFS"
+    input:
+      file_pathname:
+        title: "File pathname"
+        description: "File pathname starting with NFS mount point (path separator is /)"
+        type: string
+        required: true
+      lines_to_read:
+        title: "Lines to read"
+        description: "Number of lines to read (unsupplied or -1 means read all lines)"
+        type: integer
+        required: false
+    output:
+      lines_read:
+        title: "Lines read"
+        description: "Lines read from the NFS-mounted file"
+        type: "[]string"
+  write:
+    name: "Write"
+    description: "Write to the named file via NFS"
+    input:
+      file_pathname:
+        title: "File pathname"
+        description: "File pathname starting with NFS mount point (path separator is /)"
+        type: string
+        required: true
+      create_if_missing:
+        title: "Create if missing"
+        description: "Create the named file before beginning write"
+        type: boolean
+        required: false
+        default: true
+      remove_if_present:
+        title: "Remove if present"
+        description: "Remove then re-create an empty file of the same name before beginning write"
+        type: boolean
+        required: false
+      lines_to_write:
+        title: "Lines to write"
+        description: "Lines to write to the named file"
+        type: "[]string"
+        required: true
+    output:
+      write_successful:
+        title: "Write successful"
+        description: "The NFS write operation succeeded"
+        type: boolean
+
+triggers:
+  file_changed:
+    description: "Reports any file changes within the given interval"
+    input:
+      file_pathname:
+        title: "File pathname"
+        description: "File pathname starting with NFS mount point (path separator is /)"
+        type: string
+        required: true
+      interval:
+        type: integer
+        description: "How often to detect file changes (in seconds)"
+        default: 60
+    output:
+      changed_attributes:
+        type: object

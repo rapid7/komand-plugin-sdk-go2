@@ -12,7 +12,7 @@ clean:
 	rm -f ./plugin-sdk-go2
 
 run: clean build
-	./plugin-sdk-go2 -spec="./plugin.spec.virustotal.yaml" -package="github.com/komand/testplugins/virustotal/"
+	./plugin-sdk-go2 -spec="./plugin.spec.fullcontact.yaml" -package="github.com/komand/testplugins/fullcontact/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...
