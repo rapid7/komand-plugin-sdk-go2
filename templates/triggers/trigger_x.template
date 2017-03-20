@@ -8,6 +8,26 @@ import (
     "github.com/komand/plugin-sdk-go2/dispatcher"
 )
 
+{{ $name := .Name }}
+{{- range $n, $p := .Input }}
+{{- if $p.EnumLiteral }}
+// Input Enums
+{{- range $i, $e := $p.EnumLiteral }}
+// {{ $name }}TriggerInput{{ $e.Name }} is an enumerated value
+const {{ $name}}TriggerInput{{ $e.Name }} = {{ $e.LiteralValue }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $n, $p := .Output }}
+{{- if $p.EnumLiteral }}
+// Output Enums
+{{- range $i, $e := $p.EnumLiteral }}
+// {{ $name}}TriggerOutput{{ $e.Name }} is an enumerated value
+const {{ $name }}TriggerOutput{{ $e.Name }} = {{ $e.LiteralValue }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 // {{ .Name}}TriggerInput defines the input for the {{ .Name }}Trigger
 type {{ .Name }}TriggerInput struct {
     {{- range $n , $p := .Input}}

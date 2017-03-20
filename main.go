@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -37,10 +38,9 @@ type PluginSpec struct {
 	HTTP        HTTP   `yaml:"http"`
 
 	// Things that are for background help
-	TypeMapper        *TypeMapper           `yaml:"-"`
-	Enums             map[string][]EnumData `yaml:"-"`
-	SpecLocation      string                `yaml:"-"`
-	ConnectionDataKey string                `yaml:"-"`
+	TypeMapper        *TypeMapper `yaml:"-"`
+	SpecLocation      string      `yaml:"-"`
+	ConnectionDataKey string      `yaml:"-"`
 }
 
 // ParamData are the details that make up each input/output/trigger param
@@ -55,6 +55,15 @@ type ParamData struct {
 	Enum        []interface{} `yaml:"enum"`
 	Default     interface{}   `yaml:"default"`
 	Embed       bool          `yaml:"embed"`
+
+	// Things that are used for background help
+	EnumLiteral []EnumData `yaml:"-"`
+}
+
+// EnumData is used to parse and write out enums
+type EnumData struct {
+	Name         string `yaml:"-"`
+	LiteralValue string `yaml:"-"`
 }
 
 // TypesInternalType is a special hack for the types package. Because in all other places we need to reference X via types.X
@@ -78,9 +87,6 @@ type PluginHandlerData struct {
 
 	// Things that are only used to make parsing templates simpler
 	PackageRoot string `yaml:"-"`
-	// TODO switch to a list of bonus import statements or see later TODO about using goimports
-	NeedsTypes bool `yaml:"-"`
-	NeedsTime  bool `yaml:"-"`
 }
 
 // TypeData defines the custom types. Much of the data is pulled via a parent-key, so we don't parse much from yaml at all.
@@ -96,12 +102,6 @@ type HTTP struct {
 	Port         int `yaml:"port"`
 	ReadTimeout  int `yaml:"read_timeout"`
 	WriteTimeout int `yaml:"write_timeout"`
-}
-
-// EnumData defines enumerated values
-type EnumData struct {
-	Name  string      `yaml:"-"`
-	Value interface{} `yaml:"-"`
 }
 
 // WHERE I AM - i can load specs
@@ -146,18 +146,33 @@ func main() {
 
 // This is a light weight helper to handle some post-processing boilerplate after parsing a spec
 // We need to convert the spec param names into go friendly names, and lookup the proper type
-func updateParams(data map[string]ParamData, t *TypeMapper) {
+func updateParams(data map[string]ParamData, t *TypeMapper) error {
 	for name, param := range data {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
 		param.Type = t.SpecTypeToGoType(param.Type)
+		param.EnumLiteral = make([]EnumData, len(param.Enum))
+		for i, e := range param.Enum {
+			// So, here's how we're gonna do this: marshal the interface to json
+			// this will give us a string representation of the value to write out as a literal
+			// then we'll do const X = {{ Literal Value }}
+			b, err := json.Marshal(e)
+			if err != nil {
+				return err
+			}
+			param.EnumLiteral[i] = EnumData{
+				Name:         param.Name + UpperCamelCase(string(b)),
+				LiteralValue: string(b),
+			}
+		}
 		data[name] = param // Godbless go for this feature
 	}
+	return nil
 }
 
 // postProcessSpec does some minor post-processing on the spec object to fill a few things in that make
 // template generation easier
-func postProcessSpec(s *PluginSpec) {
+func postProcessSpec(s *PluginSpec) error {
 	// I don't like this dual-dependency shit on typemapper and spec but idgaf right now to bother with it
 	t := NewTypeMapper(s)
 	s.TypeMapper = t
@@ -170,7 +185,9 @@ func postProcessSpec(s *PluginSpec) {
 		td.RawName = name
 		td.Name = UpperCamelCase(name)
 
-		updateParams(data, t)
+		if err := updateParams(data, t); err != nil {
+			return err
+		}
 
 		td.Fields = data
 		s.RawTypes[name] = data
@@ -204,8 +221,12 @@ func postProcessSpec(s *PluginSpec) {
 		action.Name = UpperCamelCase(name)
 		action.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		updateParams(action.Input, t)
-		updateParams(action.Output, t)
+		if err := updateParams(action.Input, t); err != nil {
+			return err
+		}
+		if err := updateParams(action.Output, t); err != nil {
+			return err
+		}
 		s.Actions[name] = action
 	}
 
@@ -214,8 +235,12 @@ func postProcessSpec(s *PluginSpec) {
 		trigger.Name = UpperCamelCase(name)
 		trigger.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		updateParams(trigger.Input, t)
-		updateParams(trigger.Output, t)
+		if err := updateParams(trigger.Input, t); err != nil {
+			return err
+		}
+		if err := updateParams(trigger.Output, t); err != nil {
+			return err
+		}
 		s.Triggers[name] = trigger
 	}
 
@@ -230,6 +255,7 @@ func postProcessSpec(s *PluginSpec) {
 	if s.HTTP.WriteTimeout == 0 {
 		s.HTTP.WriteTimeout = 2
 	}
+	return nil
 }
 
 func generatePlugin(s *PluginSpec) error {
@@ -401,17 +427,11 @@ func generateTests(s *PluginSpec) error {
 }
 
 func generateTypes(s *PluginSpec) error {
-	// First, in case there are no triggers, make a placeholder
-	pathToPlaceholderTemplate := "templates/types/types.template"
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/types.go")
-	if err := runTemplate(pathToPlaceholderTemplate, newFilePath, s, false); err != nil {
-		return err
-	}
-	// Now, do one for each action using the action_x template
+	// Now, do one for each action using the type_x template
 	pathToTemplate := "templates/types/type_x.template"
 	for name, t := range s.Types {
 		// Make the new action.go
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/", name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, t, false); err != nil {
 			return err
 		}
