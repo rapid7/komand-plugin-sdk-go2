@@ -13,7 +13,7 @@ type V1 struct {
 type BodyV1 struct {
 	Meta       map[string]interface{} `json:"meta"`
 	Action     string                 `json:"action"`
-	Connection json.RawMessage        `json:"connection"` // ConnectionData is defined per plugin, so it will be serialized individually
+	Connection json.RawMessage        `json:"connection"` // connection.Data is defined per plugin, so it will be serialized individually
 	Dispatcher map[string]interface{} `json:"dispatcher"` // Dispatcher is one of a few options, but we need to pull metadata from it to know what, so we use m[s]i{}
 	Input      json.RawMessage        `json:"input"`      // Inputs are defined per action, so they will be serialized individually
 }

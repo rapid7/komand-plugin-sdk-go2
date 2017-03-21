@@ -59,7 +59,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
         return
 	}
-	cd := &connection.ConnectionData{}
+	cd := &connection.Data{}
 	if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))

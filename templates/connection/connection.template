@@ -7,16 +7,16 @@ package connection
 // Each instance of this struct WILL be shared globally, so be sure to add mutexes or atomic
 // operations where needed.
 type Connection struct {
-    CustomConnectionParams
+    CustomParams
     {{- range $n, $p := .Connection }}
         {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
 }
 
-// ConnectionData is the struct that holds the raw connection params from the incoming message
+// Data is the struct that holds the raw connection params from the incoming message
 // This will be turned into a real connection by the SDK runtime. You should never directly
 // need to use this object, only the regular connection. As such, avoid adding any properties to it.
-type ConnectionData struct {
+type Data struct {
     {{- range $p := .Connection}}
         {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}

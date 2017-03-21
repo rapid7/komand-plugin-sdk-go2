@@ -298,8 +298,11 @@ func generatePlugin(s *PluginSpec) error {
 	if err := copySpec(s); err != nil {
 		return err
 	}
-	// run go FMT before any vendoring
-	if err := runGoFMT(s); err != nil {
+	// run goimports before any vendoring
+	if err := runGoImports(s); err != nil {
+		return err
+	}
+	if err := vendorPluginDeps(s); err != nil {
 		return err
 	}
 	return nil
@@ -474,7 +477,7 @@ func copySpec(s *PluginSpec) error {
 	return ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "plugin.spec.yaml"), data, 0644)
 }
 
-func runGoFMT(s *PluginSpec) error {
+func runGoImports(s *PluginSpec) error {
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
 	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
@@ -496,6 +499,15 @@ func runGoFMT(s *PluginSpec) error {
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
 		}
+	}
+	return nil
+}
+
+func vendorPluginDeps(s *PluginSpec) error {
+	cmd := exec.Command("dep init")
+	cmd.Dir = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+	if b, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("Error while running go dep on %s: %s", cmd.Dir, string(b))
 	}
 	return nil
 }
