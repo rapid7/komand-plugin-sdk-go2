@@ -43,13 +43,45 @@ var (
 	reset = ansi.ColorCode("reset")
 )
 
-func main() {
-	if len(os.Args) == 0 {
-		log.Fatal("You must provide either the -http, -action, or -trigger flag to run a plugin")
+type CLIArgs struct{
+	Command string
+	SubCommands []string
+	Message *message.V1
+}
+
+func getArgsFromCLI() (*CLIArgs, error) {
+	if len(os.Args) <= 1 {
+		return nil, errors.New("you must specify command to invoke a plugin")
 	}
-	switch os.Args[1] {
+	args := &CLIArgs{
+		Command: os.Args[1],
+		SubCommands: os.Args[2:],
+		Message: &message.V1{},
+	}
+	stat, _ := os.Stdin.Stat() // Explicitly ignored error
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+    	// This means there is data to pipe in over stdin, so let's do it
+		dec := json.NewDecoder(os.Stdin)
+		if err := dec.Decode(args.Message); err != nil {
+			return nil, err
+		}
+	}
+	return args, nil
+}
+
+func main() {
+	args, err := getArgsFromCLI()
+	if err != nil {
+		log.Fatal(err)
+	}
+	switch args.Command {
 	case "info":
 		PrintDescription()
+	case "sample":
+		if len(args.SubCommands) == 0 {
+			log.Fatal("You must provide an action or trigger to generate sample input\nEx: sample my_action")
+		}
+		PrintSampleInput(args.SubCommands[0])
 	case "-http": // Daemonize as http
 		s, err := http.NewServer(connection.NewCache())
 		if err != nil {
@@ -61,33 +93,16 @@ func main() {
 			log.Fatal(err)
 		}
 	case "-action": // Run a single action as defined by action params over stdin
-		mode, message, err := getArgsFromCLI()
-		if err != nil {
-			log.Fatal(err)
-		}
 		// This is one and done, it won't daemonize / block
-		if err := runOneOffAction(mode, message); err != nil {
+		if err := runOneOffAction(args.SubCommands[0], args.Message); err != nil {
 			log.Fatal(err)
 		}
     case "-trigger": // Daemonize as per the polling trigger params over stdin
-		mode, message, err := getArgsFromCLI()
-		if err != nil {
-			log.Fatal(err)
-		}
 		// This will block until the trigger shuts down
-		if err := runTriggerDaemon(mode, message); err != nil {
+		if err := runTriggerDaemon(args.SubCommands[0], args.Message); err != nil {
 			log.Fatal(err)
 		}
 	}
-}
-
-func getArgsFromCLI() (string, *message.V1, error) {
-	dec := json.NewDecoder(os.Stdin)
-	m := &message.V1{}
-	if err := dec.Decode(m); err != nil {
-		return "", nil, err
-	}
-	return os.Args[2], m, nil
 }
 
 func runOneOffAction(mode string, m *message.V1) error {
@@ -222,4 +237,49 @@ func PrintDescription() {
 	{{- end }}
 
 	fmt.Print(result)
+}
+
+func PrintSampleInput(action string) error {
+	connBytes, err := json.Marshal(connection.ConnectionData{})
+	if err != nil {
+		return err
+	}
+	m := message.V1{
+		Version: "v1",
+		Body: message.BodyV1{
+			Action: action,
+			Connection: connBytes,
+			Meta: make(map[string]interface{}),
+			Dispatcher: make(map[string]interface{}),
+		},
+	}
+	switch action {
+	{{- range $i, $a := .Actions }}
+	case "{{ $a.RawName }}":
+		m.Type = "action"
+		actionBytes, err := json.Marshal(actions.{{ $a.Name }}Input{})
+		if err != nil {
+			return err
+		}
+		m.Body.Input = actionBytes
+	{{- end}}
+	{{- range $i, $t := .Triggers }}
+	case "{{ $t.RawName }}":
+		m.Type = "trigger"
+		triggerBytes, err := json.Marshal(triggers.{{ $t.Name }}TriggerInput{})
+		if err != nil {
+			return err
+		}
+		m.Body.Input = triggerBytes
+	{{- end}}
+	default:
+		log.Fatalf("Unknown action or trigger %s", action)
+	}
+
+	result, err := json.MarshalIndent(&m, " ", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(result))
+	return nil
 }
