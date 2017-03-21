@@ -8,6 +8,8 @@ import (
 	"log"
 	"os"
 
+	ansi "github.com/mgutz/ansi"
+
 	"github.com/komand/plugin-sdk-go2/dispatcher"
     plog "github.com/komand/plugin-sdk-go2/log"
 	"github.com/komand/plugin-sdk-go2/message"
@@ -33,11 +35,21 @@ var (
     Description = "{{ .Description }}"
 )
 
+// These define various color constants 
+var (
+	lime  = ansi.ColorCode("green+h:black")
+	red   = ansi.ColorCode("red")
+	green = ansi.ColorCode("green")
+	reset = ansi.ColorCode("reset")
+)
+
 func main() {
 	if len(os.Args) == 0 {
 		log.Fatal("You must provide either the -http, -action, or -trigger flag to run a plugin")
 	}
 	switch os.Args[1] {
+	case "info":
+		PrintDescription()
 	case "-http": // Daemonize as http
 		s, err := http.NewServer(connection.NewCache())
 		if err != nil {
@@ -179,4 +191,35 @@ func dispatcherFromRaw(data map[string]interface{}) dispatcher.Dispatcher {
 		return dispatcher.NewHTTP(url.(string))
 	}
 	return dispatcher.NewStdout()
+}
+
+func PrintDescription() {
+	// General Info / Header
+	result := "\n"
+	result += fmt.Sprintf("Name:        %s%s%s✨\n", green, Name, reset)
+	result += fmt.Sprintf("Vendor:      %s%s%s✨\n", green, Vendor, reset)
+	result += fmt.Sprintf("Version:     %s%s%s✨\n", green, Version, reset)
+	result += fmt.Sprintf("Description: %s%s%s✨\n", green, Description, reset)
+
+	{{- if .Triggers }}
+	{{ $trigcount := (len .Triggers) }}
+	// Trigger Info
+	result += fmt.Sprintf("\n")
+	result += fmt.Sprintf("Triggers (%s%d%s): \n", green, {{- $trigcount }}, reset)
+	{{- range $i, $t := .Triggers }}
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $t.Name }}", reset, "{{- $t.Description }}", reset)
+	{{- end }}
+	{{- end }}
+
+	{{- if .Actions }}
+	{{ $actioncount := (len .Actions) }}
+	// Action Info
+	result += fmt.Sprintf("\n")
+	result += fmt.Sprintf("Actions (%s%d%s): \n", green, {{ $actioncount }}, reset)
+	{{- range $i, $a := .Actions }}
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $a.Name }}", reset, "{{- $a.Description }}", reset)
+	{{- end }}
+	{{- end }}
+
+	fmt.Print(result)
 }

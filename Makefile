@@ -12,7 +12,7 @@ clean:
 	rm -f ./plugin-sdk-go2
 
 run: clean build
-	./plugin-sdk-go2 -spec="./plugin.spec.example_types.yaml" -package="github.com/komand/testplugins/example_types/"
+	./plugin-sdk-go2 -spec="./plugin.spec.slack.yaml" -package="github.com/komand/testplugins/slack/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...

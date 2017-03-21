@@ -477,7 +477,6 @@ func copySpec(s *PluginSpec) error {
 func runGoFMT(s *PluginSpec) error {
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
-
 	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
 
 	fileList := []string{}
@@ -494,8 +493,8 @@ func runGoFMT(s *PluginSpec) error {
 
 	for _, p := range fileList {
 		cmd := exec.Command("goimports", "-w", p)
-		if _, err := cmd.CombinedOutput(); err != nil {
-			return err
+		if b, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
 		}
 	}
 	return nil
