@@ -55,12 +55,12 @@ runner: $(NAME)-run
 runner-http: $(NAME)-run-http
 
 $(NAME)-run:
-	@printf "#!/bin/sh\ndocker run --rm -i $(VENDOR)/$(NAME):$(VERSION) \$$@" > ./$(NAME)-run
+	@printf "#!/bin/sh\ndocker run --rm --net=host -i $(VENDOR)/$(NAME):$(VERSION) \$$@" > ./$(NAME)-run
 	@chmod 755 ./$(NAME)-run
 	@echo "[-] Use ./$(NAME)-run --help to run the plugin."
 
 $(NAME)-run-http:
-	@printf "#!/bin/sh\ndocker run --rm -p 10001-20001:10001 -i $(VENDOR)/$(NAME):$(VERSION) http" > ./$(NAME)-run-http
+	@printf "#!/bin/sh\ndocker run --rm --net=host -p 10001-20001:10001 -i $(VENDOR)/$(NAME):$(VERSION) http" > ./$(NAME)-run-http
 	@chmod 755 ./$(NAME)-run-http
 	@echo "[-] Use ./$(NAME)-run-http --help to run the plugin."
 
