@@ -94,6 +94,7 @@ func main() {
 			log.Fatal(err)
 		}
 	case "run":
+		fallthrough
 	default:
 		// We're running either an action, or a trigger
 		if args.Message == nil {
