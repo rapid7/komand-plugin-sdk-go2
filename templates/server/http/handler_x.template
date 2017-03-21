@@ -39,7 +39,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"method %s is unsupported for plugin actions."}`, r.Method)))
 		return
 	}
 	m := &message.V1{}

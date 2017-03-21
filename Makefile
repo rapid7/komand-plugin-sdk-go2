@@ -20,6 +20,7 @@ deps:
 	go get -u honnef.co/go/tools/cmd/gosimple
 	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u honnef.co/go/tools/cmd/unused
+	go get -u github.com/golang/dep/...
 
 test: clean build
 	go list ./... | grep -v /vendor/ | xargs -P4 -L1 go test -v

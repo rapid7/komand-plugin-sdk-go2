@@ -74,7 +74,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Print("%+v\n", args)
 	switch args.Command {
+	case "help":
 	case "info":
 		PrintDescription()
 	case "sample":
@@ -82,7 +84,7 @@ func main() {
 			log.Fatal("You must provide an action or trigger to generate sample input\nEx: sample my_action")
 		}
 		PrintSampleInput(args.SubCommands[0])
-	case "-http": // Daemonize as http
+	case "http": // Daemonize as http
 		s, err := http.NewServer(connection.NewCache())
 		if err != nil {
 			log.Fatal(err)
@@ -92,15 +94,23 @@ func main() {
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
-	case "-action": // Run a single action as defined by action params over stdin
-		// This is one and done, it won't daemonize / block
-		if err := runOneOffAction(args.SubCommands[0], args.Message); err != nil {
-			log.Fatal(err)
+	default:
+		// We're running either an action, or a trigger
+		if args.Message == nil {
+			log.Fatal("you must provide a message body via STDIN to run an action or trigger")
 		}
-    case "-trigger": // Daemonize as per the polling trigger params over stdin
-		// This will block until the trigger shuts down
-		if err := runTriggerDaemon(args.SubCommands[0], args.Message); err != nil {
-			log.Fatal(err)
+		switch args.Message.Type {
+		case "action":
+			if err := runOneOffAction(args.SubCommands[0], args.Message); err != nil {
+				log.Fatal(err)
+			}
+		case "trigger":
+			// This will block until the trigger shuts down
+			if err := runTriggerDaemon(args.SubCommands[0], args.Message); err != nil {
+				log.Fatal(err)
+			}
+		default:
+			log.Fatalf("unknown message type %s", args.Message.Type)
 		}
 	}
 }
