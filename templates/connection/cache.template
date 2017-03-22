@@ -37,7 +37,7 @@ func (c *Cache) Get(cd *Data, l *plog.Logger) (*Connection, error) {
 		c.Unlock()
 		return s, nil
 	}
-	fmt.Println("New Connection Time")
+	l.Info("Creating a New Connection")
 	s, err := Connect(cd, l)
 	if err != nil {
 		c.Unlock()

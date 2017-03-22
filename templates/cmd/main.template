@@ -122,7 +122,7 @@ func runOneOffAction(mode string, m *message.V1) error {
 	l := plog.NewLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
 	defer l.Flush(os.Stderr)
-	response := message.Response{
+	response := &message.Response{
 		Status: "ok",
 	}
 	// Unmarshal the body into the right struct
@@ -191,12 +191,17 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		t := triggers.New{{ $p.Name }}Trigger(d)
 		if mode == "test" {
 			o, err := t.Test(conn, input);
+			response := &message.Response{
+				Output: o,
+				Status: "ok",
+			}
 			if  err != nil {
-				return err
+				response.Error = err.Error()
+				response.Status = "error"
 			}
 			// To avoid needing to boot up the readloop and block until the message is consumed
 			// for testing, we emit to the dispatcher directly.
-			d.Send(o)
+			d.Send(response)
 			return nil
 		}
 		// Start the read loop

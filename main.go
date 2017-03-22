@@ -511,10 +511,14 @@ func runGoImports(s *PluginSpec) error {
 }
 
 func vendorPluginDeps(s *PluginSpec) error {
-	cmd := exec.Command("dep init")
+	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+	cmd := exec.Command("dep", "init")
+	if doesFileExist(path.Join(rootPath, "manifest.json")) {
+		cmd = exec.Command("dep", "ensure")
+	}
 	cmd.Dir = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
 	if b, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("Error while running go dep on %s: %s", cmd.Dir, string(b))
+		return fmt.Errorf("Error while running go dep on %s: %s - %s", cmd.Dir, string(b), err.Error())
 	}
 	return nil
 }

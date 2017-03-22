@@ -28,7 +28,7 @@ func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
 
 // ServeHTTP handles the requests
 func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	response := message.Output{
+	response := message.Response{
 		Status: "ok",
 	}
 	b, err := ioutil.ReadAll(r.Body)
@@ -82,25 +82,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Thats why this is a TODO and not a TODONE
 	action := actions.{{ .Name }}Action{}
 	output, err := action.Run(conn, input, l)
-	response.Log = l.String()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		replyWithError(response, w, err)
 		return
 	}
-	if b, err = json.Marshal(output); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
-		return
-	}
+	response.Log = l.String()
 	response.Output = output
-	b, _ := json.Marshal(response) // There is nothing we can do if this errs?
-	w.Write(b)
-}
-
-func replyWithError(response message.Response, w http.ResponseWriter, err error) {
-	response.Error = err.Error()
-	response.Status = "error"
-	b, _ := json.Marshal(response) // There is nothing we can do if this fails?
+	b, _ = json.Marshal(response) // There is nothing we can do if this errs?
 	w.Write(b)
 }

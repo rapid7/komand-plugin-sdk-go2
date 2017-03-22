@@ -79,7 +79,11 @@ func (t *{{ .Name }}Trigger) StartReadLoop() error {
             // The channel was closed, we got an empty-closed-read, so we bail out with no issues
             return nil
         }
-		if err := t.dispatcher.Send(output); err != nil {
+        response := &message.Response{
+            Status: "ok",
+            Output: output,
+        }
+		if err := t.dispatcher.Send(response); err != nil {
 			log.Printf("Receieved error sending trigger message: %s", err)
 			return err
 		}
