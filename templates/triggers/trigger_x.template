@@ -1,0 +1,87 @@
+package triggers
+
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
+import (
+    "log"
+
+    "github.com/komand/plugin-sdk-go2/dispatcher"
+)
+
+{{ $name := .Name }}
+{{- range $n, $p := .Input }}
+{{- if $p.EnumLiteral }}
+// Input Enums
+{{- range $i, $e := $p.EnumLiteral }}
+// {{ $name }}TriggerInput{{ $e.Name }} is an enumerated value
+const {{ $name}}TriggerInput{{ $e.Name }} = {{ $e.LiteralValue }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $n, $p := .Output }}
+{{- if $p.EnumLiteral }}
+// Output Enums
+{{- range $i, $e := $p.EnumLiteral }}
+// {{ $name}}TriggerOutput{{ $e.Name }} is an enumerated value
+const {{ $name }}TriggerOutput{{ $e.Name }} = {{ $e.LiteralValue }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+// {{ .Name}}TriggerInput defines the input for the {{ .Name }}Trigger
+type {{ .Name }}TriggerInput struct {
+    {{- range $n , $p := .Input}}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}
+
+// {{ .Name}}TriggerOutput defines the output for the {{ .Name}}Trigger
+type {{ .Name }}TriggerOutput struct {
+    {{- range $n , $p := .Output }}
+    {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+}
+
+// {{ .Name }}Trigger a trigger
+type {{ .Name }}Trigger struct {
+    queue chan *{{ .Name }}TriggerOutput
+    dispatcher dispatcher.Dispatcher
+}
+
+// New{{ .Name }}Trigger returns a new {{.Name }}Trigger properly initialized and ready to run.
+func New{{ .Name }}Trigger(d dispatcher.Dispatcher) *{{ .Name }}Trigger {
+    return &{{ .Name }}Trigger{
+        queue: make(chan *{{ .Name }}TriggerOutput, 1),
+        dispatcher: d,
+    }
+}
+
+// Send will submit a {{ .Name }}TriggerOutput onto the internal queue, which then buffers to the external queue
+func (t *{{ .Name }}Trigger) Send(o interface{}) {
+    t.queue <- o.(*{{ .Name}}TriggerOutput)
+}
+
+// Read will pop an item off the internal queue, to be handed to the external queue
+func (t *{{ .Name }}Trigger) Read() *{{ .Name }}TriggerOutput {
+    return <-t.queue
+}
+
+// Stop will close the internal queue, which will prevent new jobs from entering.
+func (t *{{ .Name }}Trigger) Stop() {
+    close(t.queue)
+}
+
+// StartReadLoop will block, reading until a nil message is received, meaning the internal queue was closed
+func (t *{{ .Name }}Trigger) StartReadLoop() error {
+    for {
+	    output := t.Read()
+        if output == nil {
+            // The channel was closed, we got an empty-closed-read, so we bail out with no issues
+            return nil
+        }
+		if err := t.dispatcher.Send(output); err != nil {
+			log.Printf("Receieved error sending trigger message: %s", err)
+			return err
+		}
+	}
+}

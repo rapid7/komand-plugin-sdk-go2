@@ -1,0 +1,118 @@
+plugin_spec_version: v1
+name: json
+title: "JSON"
+description: "Transform JSON data per template"
+version: 0.1.1
+vendor: komand
+tags: [ "JSON", "template", "transform", "XSLt for JSON" ]
+icon: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAfQAAAH0CAYAAADL1t+KAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA4hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTMyIDc5LjE1OTI4NCwgMjAxNi8wNC8xOS0xMzoxMzo0MCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDowNWZiOGExZS04MWVhLTRmOTItYWMyOS01M2JiMWViM2E5NjciIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6Nzg0Mjg4MjNCRERDMTFFNkI0NEE4RDA5MEU1RDFENTMiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6Nzg0Mjg4MjJCRERDMTFFNkI0NEE4RDA5MEU1RDFENTMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTUuNSAoTWFjaW50b3NoKSI+IDx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOjlkZjMwZDJmLTk3OTYtNDY0MC1hY2FiLWY0YmQ3NmE0OWY2MiIgc3RSZWY6ZG9jdW1lbnRJRD0iYWRvYmU6ZG9jaWQ6cGhvdG9zaG9wOjVhMzZlZDFlLWI1OTgtMTE3OS04NDE0LTlhODE0ZGZlZmU3ZSIvPiA8L3JkZjpEZXNjcmlwdGlvbj4gPC9yZGY6UkRGPiA8L3g6eG1wbWV0YT4gPD94cGFja2V0IGVuZD0iciI/Pll1NNsAABvISURBVHja7N3xddQ4Hgdwse/+31wFDBUQKmCogFABkwpIKiCpAKiAoYLNVsBQwWYr2NkKLlsBhw55mc0lkIxlW5Y+n/fmZe+9SxjLtr76ybb84PPnzwEAmLefNAEACHQAQKADAAIdABDoACDQAQCBDgAIdABAoAOAQAcABDoAINABAIEOAAIdABDoAIBABwAEOgAIdABAoAMAAh0AEOgAINABAIEOAAh0AECgA4BABwAEOgAg0AEAgQ4AAh0AEOgAgEAHAAQ6AAh0AECgAwACHQAQ6AAg0AEAgQ4ACHQAQKADgEAHAAQ6ACDQAQCBDgAIdAAQ6ACAQAcABDoAINABQKADAAIdABDoAIBABwCBDgAIdABAoAMAAh0ABDoAINABAIEOAAh0ABDoAIBABwAEOgAg0AFAoAMAAh0AEOgAgEAHAIEOAAh0AECgAwACHQAEOgAg0AEAgQ4ACHQAEOgAgEAHAAQ6ACDQAUCgAwACHQAQ6ACAQAcAga4JAECgAwACHQAQ6ACAQAcAgQ4ACHQAQKADAAIdAAQ6ACDQAQCBDgAIdAAQ6ACAQAcABDoAINABQKADAAIdABDoAIBABwCBDgAIdABAoAMAAh0ABDoAINABAIEOAAh0ABDoAIBABwAEOgAg0AFAoAMAAh0AEOgAgEAHAIEOAAh0AECgAwACHQAEOgAg0AEAgQ4ACHQAQKADgEAHAAQ6ACDQAQCBDgACHQAQ6ACAQAcABDoACHQAQKADAAIdABDoACDQAQCBDgAIdABAoAOAQAcABDoAINABAIEOAAIdABDoAIBABwAEOgAIdABAoAMAAh0AEOgAINABAIEOAAh0AECgA4BABwAEOgAg0AEAgQ4AAh0AEOgAgEAHAAQ6AAh0TQAAAh0AEOgAgEAHAAQ6AAh0AECgAwACHQAQ6AAg0AEAgQ4ACHQAQKADgEAHAAQ6ACDQAQCBDgACHQAQ6ACAQAcABDoA1O5fmoBKLL98Dr98fk4/D758FunzI5v08/LL58/0c6NJJ9ftx6fpf991f16lfRh9uva/oVoPPn/+rBWYm9jJH6WO/jB9hnCZPjEULlIw3Ef8ji/TYOPgloFE/Pvvvny2je/TRWqnx2l/Lgfan7HNf08/t04lBDpM0+F3AXk40Xe4TMH+6x0qvtdfPmd3/LtxoPCiwVmBw50Bz+FE+zO2+QcVPAK9XMvwbZqOr7qq5Gpm33u10+mXZJvC/aYwiNX4f/b4e48aOA4P0j59Fe42fT7m/nyX9uncKvfD1JaPB+w7Lgtul2U6rh4X8n3+DBPNANUW6LGCe1NYR1Gat18+pzr9QcMgfvf3e/ydF+lv1FqNv0ptU7p12p8lV+2L1J5HI54jm9R3lNAuy53tL/k4Oh2ziKop0PftRFsUD7Tjgvfjm3DzNec5uNgZXNY42NoneN6H8mZY7hpgxwVWpkepTac6R6YeeM6pr4+DnycC/f4V3R8zDoEpHKdgL8UynaSLhvdJDJBnlWzLQRqYrSrYltErre+IMx2/TfwdrtJxejnRcTW3vv7sy+d8jH+olufQj4T5vT0vrOP/GFwqOaxkO05Sp7uqZHtWaXtOCvgurws5Z6eaIZhjXz/aeVBLoD8O7HNilFJtnNgdf3eUc7ZIA7M3ob4BdikDz1KuGXf3RIzt6UzPi1HOh1oCvZbKpiUnKcwXmqKaAWLcn8vKt3OZtnOKYC3tXDmb4DvNtb8YJaMs/coU3qdqhzo6rLgvfwntXPY6SNv7xrHhRuSSCHTG7gjjlOVKU1QR6N3+bPWSyUna/rEGMtsC22AZ6p+VEegj29qVs+n8nfz2Z02WI4Z67OdKXBhqzCp9riv6jfK9a3k5yydV371tJuj8x7rXoXsZx11eyrG89pMfi/vxl+D+h932iMf38Qgd90WBfV08DuLd92M8mhWXXZ7bjNBoAzHPobdrzOfQh67ktqmj+xT6LVHZvegl3kk71eMx8XnntzMIrzHbptun3dvwtj8Il4fp55Av7rltIDn089lxu34rsK+L2/5opOCa28zQ2UiDHSvFNWodxlsp7v1AFcVV2o4hX6wRO42XI4f7aCf/ngPnMZ5M6AZosRrbZNqPz8M4y6TG7/5k4GCbYlBVUr8y9oxf38HoaCvF1XRT3DqNjmtdCztXZ3M6YpivBgjzbfr+/w7Dryu9Sf/WoxS0Vw0fO10nOlQgdgO0J6m9T0O+y0Kb9Pcepb+/HnBfLkYI28udNirpmvJqpMr5Ku3Hs1Du/VNX6fs9GfMfrfn1qcvwbfqtO9EWI3+Hw54n9ibT735KB/6YB/8i5J0ajCfI24mr17gt8VrhkNfwSq3QfxuoIur267uRB0xxX75K+3KI8B21Mgs3v3Hspv7nMAw72NiE8Zcv7i6tPEzbdrjH7x/suY+vrv33X6kNJhloeR/6sPpe63nQ8LZfP3FeFDQaH/KmsCk6xB8Z6rLJOky/RvqQa87H7Tuu+Ly8TWnviRiqTZ6FcW8u/iHPoTOEVcZOY50qnW1B29dVX5tG9mXusOtuHjsO01/GuErf49kAx9gqtPmM/uvgBmWBThW6aekcxrzev28orSvel4ch/42mcRD0qMDB0CYN0nLfg/MmtLc09SJMs867QNcEZPYq5JmKLv3xrc5x5hAopbLpljfNaZ0GQaXeXBi/14sBjruWlsXtnAXrFAh0Zm+VqeN/O6NtjqG+zVgVl+B15g655NmWob/rIrT57gLvaxDozDzM+4bA5Yw6/uuVXS2WIe+137nMtlwfVB5nPjeOGusPjoIVGAU6s/U8U7U7R5czDK3b5Lxuvp5xu+T+7jW+J37MYwmBzkgOMlQg6zDfly9EuZ4fX0y4DTmn2i9mPEDrnIZ8Nz7Gdm3tZrG4za2+jU+gM1s5phPPZ94GV5k6/6kCPWfnu60gzHdDPddA8yzM82axbc9BosfYBDoz8jRDNbetoB3ezfi75+x4X4R6lsq9yjw4mePNYuc99mfOR1kR6Iyg793Zv1bSDpdhnpcNYtW4yliFXlZ2fF+mSj2HOd4sFgfbfe4nOAntPY8v0Gk20DcVtcWHmVbnuTr+80qP8bcZBypzrFjfhX6zaB5jE+jMQN9qYxvqmG7vzO2Nfzmr8+PKj/XTjOfM3Kr0q57bH7e3tUf3BDrN2Va4PesZfd9cd15vQv3r228y7tuXMx2s9tnHLT66J9CZlb7T7ZcVtkmfaecxQ/EgY3V+3sjxnms7Y7svZrj9far0RbDOu0CnaD/3/P2rCtskVulne/ze2JX9UaaKqYXqfHfftlyl911E6SRY512gwwwrufuE3NUEVe6rjNva2r7NVaXPdfs9xibQoSnxeey73CTXvY51O+J3i1VSjkeJtg1V57m3Oe6DOd4o1nfwGQcyS92DQKc+i4q3rXtxS7z7+/KWYDgLX98RPva9BLmq83eNHre5Hk98PtPtfxs8xibQoaFA76y/fJ58+fw7VeLx8yAFeZ/pyz5yVUgXjR6360z7bc6PcvV5TPEwzPeSg0CnWn8VEixzqdg3Yfop6kXIM91+Gep77HDswUyOFxtNZdOzDTzGJtApTI6pYgtOjCtXe39ovB1zLVn8fMZt0OcxthjmHmMT6FTmuSYY1dNMf+ei8XaM259j2n054zbYhv0e0ezE3104JQU6Zdhk+BsrJ/XsKvRtaHu6Pefxv5j58f+u58DmvcNIoFPWKL0vd72OI1c1eKEp/+dTYftlCjnWeV86lAQ69VQpR8Fdr2PI9RrLT5oy27EfPZ15O6x7toUqXaBTWZXyPnhv8tByBcelpvy7HVq/jt7ps9jMIlhBTqBTVZUSfVSpF1+hxwDbasqsg5sYaAcV9APrHr9/EjzGJtCZ3DZjxXaQKnWj9WEsVOfFDmhrmJ06Df3WeXcvjUCnALmXAD378vktuFkmp1xtudGU//C7QP9bDPM+b2NbBZfdBDqTy/VM7vUO7mP6CPYyqvPoL035fyGWw8NK2iNeS9/2+H1VukBn5iPzH1WWH1PF7n3K0weGKfd/2qjQ/0/fx9hWDiuBzrT6LjBxlw4vjt7/SOH+WuU+SYW+1ZSDVOk13RB20XOg8zq4QU6gM3mndjrSvxXD/SxV7p/TzzfBu5YF+jQuMx3TNTnueaxa5/0e/qUJGMD6y+flBKG6vOXf3Fz7+ena/25JjornyiHOPQZ+8TLcyZ6/HwfsHwwgBTrTehG+TouXMGW2vPaz5cDP9cpUbj6OlpmO15qOvXiD3KpHX/Am9ScIdCYSq7hn4es0eOnXwb4X+Ffh2zu/f0//vbF74V59wXnY/871owoHOQKd2YnhF6+h/TLjbTi4Jei7YP+UfpqGhtvFafd4GW7fGaI4GHiiGb/PTXEMLd7p+qLCwIsd00karPwn/VyFsmcjct1wZcr9Zn9m+juLStvnNMP5hkCngFB/VnkVG6cF3++E+1GB3zHXYMNsxM22mf7Ow0rbZxP6vXLXY2wCnULEqu5RaOM62FEK9T+CxTHgepXeZ51373cQ6BSiu1Guz0k9J4tUtQt2+Gob+q0mGafdrfMu0ClIPKHjDS4XjWxvF+xeNANfV5Pc9vh967wLdAocqb9IFfumkW3uXjQTOyTXAmlV9xjbvuKg+EgzCnTKs0mhHj/rRrb5JAW7qUNate45kFelC3QKD/b4zHq8ce4s1L/U46FQp3F9HmNbBDfICXSKF4P8PAV7vM7+tuJwj9Pu8br6ym6nQZeh36yc1ygLdGZ2wp/uhPtpqPN6e7xhzjVBWq3SPcYm0Gkw3GO1Hq+1P0g/z8LXO+VreAQuhvrQ0+/bTH/HZYKbPc30dz411GZ9b5BbBU+O/M1a7szV5lq1fpCCJnaqi/SZ04kev39cjObJgAOUbcbvCrnEgfqrsP/0uXXeBToVjvSvh/xu0Mefj3fC/rDAYFqkSt2rImlNvCH2456/e5gq9bVAH99u1XQZrAvNOEEfXdzSGRyEb9Oly51BwBSO0udiwPboO5BRod8+IMth22DbdYPxZY8qvZbLb3sb6xr6Mo2+Pqef3Se+yCIui+nGBqbSvQb1PH3itfk4fRev0z9K1fJZGPdmvPcDhmaON6W5hi7Qh6rS+wwyX7V+AI4R6EcpvJffOQlih/mbkT+F2aZRfxf0D1LArwf+d3VO86T/6n++nfX4/bPQ+GNsYwT6XVf0iaP+XxzTFO4iVRL/Th3IUFN8JwMFRK6ZhqVD4cY+rJT9M1fvep5T7wX6sAf4fUZMSx0FM9E9bvOoZ1XxvWpviGfT/1KNFl2dXzmveq0g13SGDB3o+zTsc30DMwz2eN39MvPfHmLaPdd3fGzXZ6/OwwDH0Byte7ZDs1X60IH+84QnBowpdkC5XzBz3xmuu9gWFmAC/Z9+15T/03ed9xOBXsZBvnAsM+Nq/ThzqOeedt+GPNO6ztN/epxx//D1XoI+51F8cqq5y0JDB/o+DaqjYO6OQ76p06cDfD+PrpVboZty/+Y89FvnvblXrFrLHYbxIlMlvByo+gmFfreWA32jGf9hG74uC7uvVWsDT4EOw3VG5xn+Tqw0Fpm/W67rtE/t5qwDG9X5zVX6tsfvN1WlC3Ry6R6zen3t0/JrQXO9yz13oKvQ8/KWtWH1fYxt1UpDeTnL8CHXwjbGx6u+txBK92zpusFjIG7zWYbA2GT8TlepGuw7HblM+7z1Z6dzDVo3gZtchH7rvL8OjazzrkIfVgvXbz6mwDr4Qei/D20+H/qh0O+lSs83oM1xnntR1XBV+iI0spSyQKeP1/fszFahvedDt6H/tdEhBoa/Zvo7rS8Elas6vwj8aMDT5wa5k9DAE1QCvVxzGK2v9vidN6G9RxP7BvpQa7rnOMaOGj9Pcw1ofg38iMfYZhroNXT4y4lDYGh9VjFr7XW520K/V46q8CA0dNPRDf3UUabjwx3udyty+jw5chQqv0Qk0JliH60a28elLudp2r2flwUNrFrR98mRqqt0U+7DVrA167vUZUvv+y718slFptmDo0YH4atMf+ed7vJejnv2y9Xex1NqoNewYMXDnr9f+xRc69deS7HO9Hdau4yyyjSIuQzWb7+vTeg3q1HtOu+lBnoNjd23Qq/9EZZFsB54CcdCrsfqjkJbL8PINYBRne+nz2NsB7UOQEsN9Bo6+r7b8GcDJ+Wykc6nbyU35GzNNlOVXm0nOWB1fhXaXGwp13F71uP3q3yMTaAP9/0PMhywtWvlZqqHhX+/XFV6E8/6Zhy4vA308a5nP1ndQlclT7nPOdRzVJ4tBPoytDFN2/d4GPou+U3It3Jc7c/65hq0XAXT7Tna8LzneVnVvTwl3+W+nHG75ripr/RAz/UiiRZujjucwbFwnnF/1rpPF5mrc0u99rfuORitagBacqC/nHG79h2MbBo6IV9Wvn05bhYb44mH3FV6jTMv7zNtl+q8nMHoIlR0L0/Jgd5nJbIprWbSgZc0+FlUvH19ByxjDu5yVemLUN/1yZOMHb/qPP9gdK0Zyl9YZo53zeaoOFt7L3Ktb2FbhP7Tz2MGes6O8SjUs4BHLC5yTc1uVeeDODVIKj/QVzOr3haZRvFzqNC3mav0Gq+75giBsV/akbNjfBPmP50ZZ9s+Cp7ixTZt/qmBOSz9OqcqPcd3ncvKUbm/4/tQ19R7jpvDthMM7vreOXzdL2G+T6x0YZ7rfoBNsG77kM5D46vuzSHQVzMZ5R+GPGs7bxo9Fg9S51/DzVSLkOcywnqi7/8243HYheLhDI/HnN87DpSOA0Nruo3n8nKWOXT0ua4Df2j4eMx5rbKGgcmUx8JxyDc1PLdQH+L7ngZrto9h03BRNJtAzz31ldvrTCd/POFbfy/yKsz3JrmcQbCeOAC2od962be1Ten3SsR991vmML8I7sJWpQv0/zvRSgz1GEBnGU/8uY2Gh2rT38K8pt8Xmau68wK2aZ05iLrZi1Lvi1mlfbjIPDAy1T7+YLTJG+Tm9j700kI9dzXpcZZ/7us/wjzun1hmruqmrs53xSo996zR2QBVcI6BRq6FYzrxksWL4K72KZy32O4/zfA7HxbSGeQO84vgGttNHW0cwJW68thB+m45B5m57zLP8X2eDdA5dufx1Pv2JA0ch7gUMMRgiLsft6etbfSDz58/D/n3Pw5cYZ1N0PkdpCDP3QHETnMzs+Nn6P17/QR9m2YxShh5rwYKo9NQ5nThkLNj3b79MNKg9iCdv3HqfzHgzMZU+3GZtuvhLcftPtu87rlvPqXBzdjn7pDFX3F99tCB/iYMv1rUNoX6eoRO4FXantydWqzOX8xwQPg+5HlUr+TOf8wg2KROolTLkHeRldvOhQ9hmPtJ4r57HvKsr/+j8Bv7uvlhOi5Lv+lwkwblFxUcs80F+uuQ74axuwT7u3Qy5RwFLlKQrwbsBB6FeU63j7l/b+v8f00n1ZDtN0YQXKXjoPTrfqsw3lMIF6mq27e6W6agexrGe1XvVGFe8lNAU7fTLwMNdJoL9O462RSjwE3qCO7b4IudTuAoDL962Vko65rpnAJ91+VO57/tcaIt0qcLgeVIsw7Pwnyut44Z6tfb6fKG/97db12/M0W4TRHm0R9hnqssHodxHudbhGGemmku0Es52LY7FdzuSP8gfLu+svvfY4bQkzBfJQX69wZ34YZ9fz0Eptj/nRdhfo8sThXqKs4yiqZc/fKjGfdVxQX6v0bqrKY+4HY77mUhbd890sKwlrf8d0lVyhzX916nAdLcpnqHEIPivIDje266fnk7wr/1LszvZV/3NsZja5dhmMde5u5ZmP9jap/sxl4DurGmHIc+t1t+NOs4THvJ7OeZt99ixPOt+sfYxnoOfRO+Ti1v9ON/dwKeT207zJ+FOpYD7UK9tbeIbVOftnY4z8ZF7Rn008gnwLMUZttGD6huml0n0K7uvonLCo/rVhbyuKhwH7ai6mN0ipXiYpg9ajDYt41WMnzzNgXBtvLtqzXousskJS3n+nsFA9yx/71qC6opl35tKdhrHdFvZPS9BnMtVLDdDMRZqOu+ma6/WjsHsx4rUxwjp6HSe7p+KuhEeVFhQGzTdtX8goa+23VW8cDgKm3fowYHP+ehjmvMm/DtUuFVocfYXNv43YRtdl7jSTfGc+j3tQjDr8w2xgFT0rrjQ+q7nvuDivZ7i/v/ruf06zD+MsF9g/x8JgOx7iVGhzNq33WY/rWyffuu4lb4LDHQd4219nLOinyI5WdLFte2f7Pn7962sM5qZ78L8rqCvfRB20Xaf5uZte3BzqDpoODzo1urf1PI8bjvCnLbMN6iONUE+vVwH2s51vvu2E3qBFq86zXuiz/2/N0Yfqc/+Ntxf78svPro1pRfy+w7K2nQdhm+vRBmW0HbLsPtb1sb0+87A9uprpff5TjcZ8XDIld3nFOgX+/o40H7OHX0y5FHmTHAu3XiPbqy/1vX7jNl1e3z52G8F2386Bj4NZ3UqvF+lWU3WF+ONFjfPYdrCXH6DYBehttXE919b8AmTPOmx6oD/SaHaYc8Dv9cl3vfsN9cG1l2L/1w8t/cKd/3Gt6PqvO77O9uUDd0EHQvfvndIG60wfrDnf3aZ99e7ey/P+0/alZToN9nNBa+MwJj/1D/5Y4DqL5h/r19e3DDoK4bABz8YL/v/u9Pjovign432J/e8P/55JxGoEPeUH25U2ldr5I+6GgBBDoAcIOfNAEACHQAQKADAAIdABDoACDQAQCBDgAIdABAoAOAQAcABDoAINABAIEOAAIdABDoAIBABwAEOgAIdABAoAMAAh0AEOgAINABAIEOAAh0AECgA4BABwAEOgAg0AEAgQ4AAh0AEOgAgEAHAAQ6AAh0AECgAwACHQAQ6AAg0AEAgQ4ACHQAQKADgEAHAAQ6ACDQAQCBDgAIdAAQ6ACAQAcABDoAINABQKADAAIdABDoAIBABwCBDgAIdABAoAMAAh0ABDoAINABAIEOAAh0ABDoAIBABwAEOgAg0AFAoAMAAh0AEOgAgEAHAIEOAAh0AECgAwACHQAEOgAg0AEAgQ4ACHQAEOgAgEAHAAQ6ACDQAUCgAwACHQAQ6ACAQAcAga4JAECgAwACHQAQ6ACAQAcAgQ4ACHQAQKADAAIdAAQ6ACDQAQCBDgAIdAAQ6ACAQAcABDoAINABQKADAAIdABDoAIBABwCBDgAIdABAoAMAAh0ABDoAINABAIEOAAh0ABDoAIBABwAEOgAg0AFAoAMAAh0AEOgAgEAHAIEOAAh0AECgAwACHQAEOgAg0AEAgQ4ACHQAQKADgEAHAAQ6ACDQAQCBDgACHQAQ6ACAQAcABDoACHQAQKADAAIdABDoACDQAQCBDgAIdABAoAOAQAcABDoAINABAIEOAAIdABDoAIBABwAEOgAIdABAoAMAAh0AEOgAINABAIEOAAh0AECgA4BABwAEOgAg0AEAgQ4AAh0AEOgAgEAHAAQ6AAh0TQAAAh0AEOgAgEAHAAQ6AAh0AECgAwACHQAQ6ABQl/8KMAAA6CEbUB1XIQAAAABJRU5ErkJggg=="
+help: |
+  ## About
+  The JSON plugin provides a way to parse or transform [JSON](http://www.json.org/) data.
+
+  ## Actions
+  ### Transform
+  This action is used to transform json data per template.
+  #### Input
+
+  This action is used to parse JSON data. It accepts the following parameters:
+  * Source JSON data
+  * Extraction template, in JSON format
+  * Target template, in JSON format
+
+  |Name|Type|Default|Required|Description|Enum|
+  |----|----|-------|--------|-----------|----|
+  |source_data|object|None|True|Input data in JSON layout|None|
+  |target_template|object|None|True|Desired output layout containing the same $ placeholder strings|None|
+  |extraction_template|object|None|True|Input layout containing placeholders (strings beginning with $)|None|
+
+  The extraction template has the same structure as the source JSON,
+  except that it can contain a placeholder instead of the data.  A
+  placeholder is simply a string beginning with a dollar sign.  It
+  allows us to reuse parts of the source JSON in the output JSON.
+
+  For instance, suppose we have the following source JSON:
+
+  ```
+  {"Age":{"eons":8}, "Name":"SnowCrash", "Characters":["Hiro Protagonist","Y.T."]}
+  ```
+
+  Here is an extraction template that indicates we want to reuse the
+  Name, Age, and the main Character in a new JSON layout.  The
+  placeholders are "$0", "$1", and "$3":
+
+  ```
+  {"name":"$0", "characters":["$1"], "age":{"eons":"$2"}} 
+  ```
+
+  Here is a target template that indicates how we want the placeholder
+  data to appear in the output JSON:
+
+  ```
+  {"bug":"$0", "owner":"$1", "age (eons)":"$2"}
+  ```
+
+  Given the above example input, the plugin will produce:
+
+  ```
+  {"bug":"SnowCrash", "owner":"Hiro Protagonist", "age (eons)":8}
+  ```
+
+  This plugin also filters arrays of strings.  For example, the
+  following source, extraction template, and target template:
+
+  ```
+  {"Reviews": ["So-so", "Banal", "Special!", "Puzzling", "Quite good"]}
+  {"Reviews": "$1:.*special.*|.*good.*|.*great.*"}
+  {"Critics Raved!": "$1"}
+  ```
+
+  will produce: `{"Critics Raved!": ["Special!", "Quite good"]}`
+
+  The matcher accepts standard [Perl regular expressions](https://github.com/google/re2/wiki/Syntax).
+
+  #### Output
+
+  |Name|Type|Required|Description|
+  |----|----|--------|-----------|
+  |target_data|object|False|Desired JSON layout, populated by placeholder data extracted from input|
+
+  ## Triggers
+  This plugin does not contain any triggers.
+  ## Connection
+  This plugin does not contain a connection.
+  ## Troubleshooting
+  The matching is case-insensitive.
+
+  ## Workflows
+  Examples:
+  * Data format and extraction
+
+  ## References
+  * [Perl regular expressions](https://github.com/google/re2/wiki/Syntax)
+
+actions:
+  transform:
+    name: "Transform"
+    description: "Transform JSON data per template"
+    input:
+      source_data:
+        title: "JSON source data"
+        description: "Input data in JSON layout"
+        type: object
+        required: true
+      extraction_template:
+        title: "JSON extraction template"
+        description: "Input layout containing placeholders (strings beginning with $)"
+        type: object
+        required: true
+      target_template:
+        title: "JSON target template"
+        description: "Desired output layout containing the same $ placeholder strings"
+        type: object
+        required: true
+    output:
+      target_data:
+        title: "Transformed JSON"
+        description: "Desired JSON layout, populated by placeholder data extracted from input"
+        type: object

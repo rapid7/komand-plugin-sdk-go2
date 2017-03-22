@@ -1,0 +1,75 @@
+VERSION?=$(shell grep '^version: ' plugin.spec.yaml | sed 's/version: //')
+NAME?=$(shell grep '^name: ' plugin.spec.yaml | sed 's/name: //')
+ENCODING:=$(shell base64 icon.png 2>/dev/null | sed 's|/|\\/|g' | tr -d '\n')
+VENDOR?=$(shell grep '^vendor: ' plugin.spec.yaml | sed 's/vendor: //')
+CWD?=$(shell basename $(PWD))
+_NAME?=$(shell echo $(NAME) | awk '{ print toupper(substr($$0,1,1)) tolower(substr($$0,2)) }')
+
+PKG=$(VENDOR)-$(NAME)-$(VERSION).tar.gz
+
+DST?=/komand/plugins/bin
+
+REPO={{ .PackageRoot }}
+ifndef REPO
+	REPO=$(NAME)
+endif
+
+all: icon image package runner
+
+plugin: install
+
+build:
+	@echo "Using repo $(REPO)"
+	test -d $(GOPATH)/src/$(REPO) || ln -s $(PWD) $(GOPATH)/src/$(REPO) 
+	mkdir -p bin
+	go build -o bin/$(NAME) $(GOPATH)/src/$(REPO)/cmd/main.go
+
+install: build
+	cp -r bin/$(NAME) $(DST)
+
+icon:
+	@test -f icon.png && \
+	sed -i.bu "/^icon/s/\(icon: \).*/\1\"data:image\/png;base64,$(ENCODING)\"/" plugin.spec.yaml || true
+	@rm -f *.bu || true
+
+package:
+	rm -rf $(PKG)
+	tar -cvzf $(PKG) --exclude=$(PKG) *
+
+image:
+	docker build --pull -t $(VENDOR)/$(NAME):$(VERSION) .
+	docker tag $(VENDOR)/$(NAME):$(VERSION) $(VENDOR)/$(NAME):latest
+
+regenerate:
+	@echo Generating new plugin skeleton
+	@test -d ../$(NAME) || mv -f ../$(CWD) ../$(NAME)
+	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path komandtmp || true
+	@echo Overlaying plugin skeleton to the current directory
+	@test -d komandtmp && diff -uNr ../$(NAME) komandtmp/ > $(NAME).diff || true
+	@test -f $(NAME).diff && patch -s -p1 < $(NAME).diff || true
+	@rm -f *.orig *.diff *.gz || true
+	@test -d komandtmp && rm -rf komandtmp || true
+
+runner: $(NAME)-run
+
+runner-http: $(NAME)-run-http
+
+$(NAME)-run:
+	@printf "#!/bin/sh\ndocker run --rm --net=host -i $(VENDOR)/$(NAME):$(VERSION) \$$@" > ./$(NAME)-run
+	@chmod 755 ./$(NAME)-run
+	@echo "[-] Use ./$(NAME)-run --help to run the plugin."
+
+$(NAME)-run-http:
+	@printf "#!/bin/sh\ndocker run --rm --net=host -p 10001-20001:10001 -i $(VENDOR)/$(NAME):$(VERSION) http" > ./$(NAME)-run-http
+	@chmod 755 ./$(NAME)-run-http
+	@echo "[-] Use ./$(NAME)-run-http --help to run the plugin."
+
+help:
+	@test -f ../tools/help.py || echo "Check spec tool not included in customer installs!"
+	@test -f ../tools/help.py && python2 ../tools/help.py ./plugin.spec.yaml
+
+validate:
+	@test -f ../tools/check_spec.py || echo "Check spec tool not included in customer installs!"
+	@test -f ../tools/check_spec.py && python2 ../tools/check_spec.py ./plugin.spec.yaml
+
+.PHONY: all build package image plugin regenerate

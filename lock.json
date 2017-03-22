@@ -1,0 +1,13 @@
+{
+    "memo": "9c7cc60e05e809181005549d41aa70a0de0d439d35e3491d7e7d89e5a5eb1c62",
+    "projects": [
+        {
+            "name": "github.com/go-yaml/yaml",
+            "branch": "v2",
+            "revision": "a5b47d31c556af34a302ce5d659e6fea44d90de0",
+            "packages": [
+                "."
+            ]
+        }
+    ]
+}

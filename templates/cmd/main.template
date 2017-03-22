@@ -1,0 +1,299 @@
+package main
+
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
+import (
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+
+	ansi "github.com/mgutz/ansi"
+
+	"github.com/komand/plugin-sdk-go2/dispatcher"
+    plog "github.com/komand/plugin-sdk-go2/log"
+	"github.com/komand/plugin-sdk-go2/message"
+
+	{{- if .Actions }}
+	"{{ .PackageRoot }}/actions"
+	{{- end }}
+	"{{ .PackageRoot }}/connection"
+	"{{ .PackageRoot }}/server/http"
+	{{- if .Triggers }}
+	"{{ .PackageRoot }}/triggers"
+	{{- end }}
+)
+
+var (
+	// Name plugin name
+	Name = "{{ .Name }}"
+	// Vendor plugin vendor
+	Vendor = "{{ .Vendor }}"
+	// Version plugin version
+    Version = "{{ .Version }}"
+	// Description plugin description
+    Description = "{{ .Description }}"
+)
+
+// These define various color constants 
+var (
+	lime  = ansi.ColorCode("green+h:black")
+	red   = ansi.ColorCode("red")
+	green = ansi.ColorCode("green")
+	reset = ansi.ColorCode("reset")
+)
+
+type cliArgs struct{
+	Command string
+	SubCommands []string
+	Message *message.V1
+}
+
+func getArgsFromCLI() (*cliArgs, error) {
+	if len(os.Args) <= 1 {
+		return nil, errors.New("you must specify command to invoke a plugin")
+	}
+	args := &cliArgs{
+		Command: os.Args[1],
+		SubCommands: os.Args[2:],
+		Message: &message.V1{},
+	}
+	stat, _ := os.Stdin.Stat() // Explicitly ignored error
+	if (stat.Mode() & os.ModeCharDevice) == 0 {
+    	// This means there is data to pipe in over stdin, so let's do it
+		dec := json.NewDecoder(os.Stdin)
+		if err := dec.Decode(args.Message); err != nil {
+			return nil, err
+		}
+	}
+	return args, nil
+}
+
+func main() {
+	args, err := getArgsFromCLI()
+	if err != nil {
+		log.Fatal(err)
+	}
+	switch args.Command {
+	case "help":
+	case "info":
+		printDescription()
+	case "sample":
+		if len(args.SubCommands) == 0 {
+			log.Fatal("You must provide an action or trigger to generate sample input\nEx: sample my_action")
+		}
+		printSampleInput(args.SubCommands[0])
+	case "http": // Daemonize as http
+		s, err := http.NewServer(connection.NewCache())
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println("Plugin {{ .Name }} booting HTTP Daemon...")
+		// This will block until the server shuts down
+		if err := s.ListenAndServe(); err != nil {
+			log.Fatal(err)
+		}
+	case "run":
+		fallthrough
+	default:
+		// We're running either an action, or a trigger
+		if args.Message == nil {
+			log.Fatal("you must provide a message body via STDIN to run an action or trigger")
+		}
+		switch args.Message.Type {
+		case "action":
+			if err := runOneOffAction(args.SubCommands[0], args.Message); err != nil {
+				log.Fatal(err)
+			}
+		case "trigger":
+			// This will block until the trigger shuts down
+			if err := runTriggerDaemon(args.SubCommands[0], args.Message); err != nil {
+				log.Fatal(err)
+			}
+		default:
+			log.Fatalf("unknown message type %s", args.Message.Type)
+		}
+	}
+}
+
+func runOneOffAction(mode string, m *message.V1) error {
+	{{- if .Actions }}
+	cd := &connection.Data{}
+	l := plog.NewLogger()
+	d := dispatcherFromRaw(m.Body.Dispatcher)
+	defer l.Flush(os.Stderr)
+	response := message.Response{
+		Status: "ok",
+	}
+	// Unmarshal the body into the right struct
+	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
+	// but in this case, the performance gain is not that great, and it's less generator code to maintain
+	// to do it this way.
+	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
+	switch m.Body.Action {
+	{{- range $n, $p := .Actions }}
+	case "{{ $p.RawName }}":
+		input := &actions.{{ $p.Name }}Input{}
+		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+			return err
+		}
+		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+			return err
+		}
+		conn, err := connection.Connect(cd, l)
+		if err != nil {
+			return err
+		}
+		a := &actions.{{ $p.Name }}Action{}
+		runMethod := a.Run
+		if mode == "test" {
+			runMethod = a.Test
+		}
+		response.Output, err = runMethod(conn, input, l)
+		if err != nil {
+			response.Status = "error"
+			response.Error = err.Error()
+		}
+		// dispatch the result
+		d.Send(response)
+	{{- end }}
+	default:
+		return fmt.Errorf("unknown action %s", m.Body.Action)
+	}
+	{{- end}}
+	return nil
+}
+
+func runTriggerDaemon(mode string, m *message.V1) error {
+	{{- if .Triggers }}
+	cd := &connection.Data{}
+	l := plog.NewLogger()
+	d := dispatcherFromRaw(m.Body.Dispatcher)
+
+	switch m.Body.Action {
+	{{- range $n, $p := .Triggers }}
+	case "{{ $p.RawName }}":
+		input := &triggers.{{ .Name }}TriggerInput{}
+		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+			return err
+		}
+		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+			return err
+		}
+		// We immediately flush the connection log so it can be emitted to the caller of the application
+		// Trigger don't need / use the internal buffered logger approach, but connections have to work
+		// in both places, so we deal with this in a one-off fashion here
+		conn, err := connection.Connect(cd, l)
+		l.Flush(os.Stderr)
+		if err != nil {
+			return err
+		}
+		t := triggers.New{{ $p.Name }}Trigger(d)
+		if mode == "test" {
+			o, err := t.Test(conn, input);
+			if  err != nil {
+				return err
+			}
+			// To avoid needing to boot up the readloop and block until the message is consumed
+			// for testing, we emit to the dispatcher directly.
+			d.Send(o)
+			return nil
+		}
+		// Start the read loop
+		go t.StartReadLoop()
+		// Run will block until it completes / shutsdown
+		return t.Run(conn, input)
+	{{- end }}
+	default:
+		return fmt.Errorf("unknown trigger %s", m.Body.Action)
+	}
+	{{- end}}
+	return nil
+}
+
+// This is pretty hacky, not sure if there is a better way but from the engine, it doesn't look
+// like we send any kind of "type" flag with the dispatcher... it looks like what we do is default
+// to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
+// and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
+func dispatcherFromRaw(data map[string]interface{}) dispatcher.Dispatcher {
+	if url, ok := data["URL"]; ok { // Engine actually sends 2 values, but we only use this one?
+		return dispatcher.NewHTTP(url.(string))
+	}
+	return dispatcher.NewStdout()
+}
+
+func printDescription() {
+	// General Info / Header
+	result := "\n"
+	result += fmt.Sprintf("Name:        %s%s%s✨\n", green, Name, reset)
+	result += fmt.Sprintf("Vendor:      %s%s%s✨\n", green, Vendor, reset)
+	result += fmt.Sprintf("Version:     %s%s%s✨\n", green, Version, reset)
+	result += fmt.Sprintf("Description: %s%s%s✨\n", green, Description, reset)
+
+	{{- if .Triggers }}
+	{{ $trigcount := (len .Triggers) }}
+	// Trigger Info
+	result += fmt.Sprintf("\n")
+	result += fmt.Sprintf("Triggers (%s%d%s): \n", green, {{- $trigcount }}, reset)
+	{{- range $i, $t := .Triggers }}
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $t.Name }}", reset, "{{- $t.Description }}", reset)
+	{{- end }}
+	{{- end }}
+
+	{{- if .Actions }}
+	{{ $actioncount := (len .Actions) }}
+	// Action Info
+	result += fmt.Sprintf("\n")
+	result += fmt.Sprintf("Actions (%s%d%s): \n", green, {{ $actioncount }}, reset)
+	{{- range $i, $a := .Actions }}
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $a.Name }}", reset, "{{- $a.Description }}", reset)
+	{{- end }}
+	{{- end }}
+
+	fmt.Print(result)
+}
+
+func printSampleInput(action string) error {
+	connBytes, err := json.Marshal(connection.Data{})
+	if err != nil {
+		return err
+	}
+	m := message.V1{
+		Version: "v1",
+		Body: message.BodyV1{
+			Action: action,
+			Connection: connBytes,
+			Meta: make(map[string]interface{}),
+			Dispatcher: make(map[string]interface{}),
+		},
+	}
+	switch action {
+	{{- range $i, $a := .Actions }}
+	case "{{ $a.RawName }}":
+		m.Type = "action"
+		actionBytes, err := json.Marshal(actions.{{ $a.Name }}Input{})
+		if err != nil {
+			return err
+		}
+		m.Body.Input = actionBytes
+	{{- end}}
+	{{- range $i, $t := .Triggers }}
+	case "{{ $t.RawName }}":
+		m.Type = "trigger"
+		triggerBytes, err := json.Marshal(triggers.{{ $t.Name }}TriggerInput{})
+		if err != nil {
+			return err
+		}
+		m.Body.Input = triggerBytes
+	{{- end}}
+	default:
+		log.Fatalf("Unknown action or trigger %s", action)
+	}
+
+	result, err := json.MarshalIndent(&m, " ", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(result))
+	return nil
+}

@@ -1,0 +1,22 @@
+package types
+
+// DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
+
+{{ $Name := .Name }}
+{{- range $n, $p := .Fields }}
+{{- range $i, $e := $p.EnumLiteral }}
+// {{ $Name }}{{ $e.Name }} is an enumerated value
+const {{ $Name }}{{ $e.Name }} = {{ $e.LiteralValue }}
+{{- end}}
+{{- end }}
+
+// {{ .Name }} is a custom type generated off of the spec
+type {{ .Name }} struct {
+    {{- range $n, $p := .SortedFields }}
+    {{- if $p.Embed }}
+    {{ if $p.Nullable }}*{{ end }}{{ $p.TypesInternalType }}
+    {{ else }}
+    {{ $p.Name }} {{ if $p.Nullable }}*{{ end }}{{ $p.TypesInternalType }} `json:"{{ $p.RawName }}"`
+    {{- end }}
+    {{- end }}
+}
