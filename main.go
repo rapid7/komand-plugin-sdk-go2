@@ -48,13 +48,14 @@ type PluginSpec struct {
 // I'm willing to accept it for this since everything else is greatly simplified
 type ParamData struct {
 	RawName     string        `yaml:"name"`
-	Name        string        `yaml:"-"`    // This is the joined and camelled name for the param
-	Type        string        `yaml:"type"` // This needs some work - we have to convert some types to go types, like object/[]object...
+	Name        string        `yaml:"-"` // This is the joined and camelled name for the param
+	Type        string        `yaml:"type"`
 	Required    bool          `yaml:"required"`
 	Description string        `yaml:"description"`
 	Enum        []interface{} `yaml:"enum"`
 	Default     interface{}   `yaml:"default"`
 	Embed       bool          `yaml:"embed"`
+	Nullable    bool          `yaml:"nullable"`
 
 	// Things that are used for background help
 	EnumLiteral []EnumData `yaml:"-"`
@@ -92,9 +93,10 @@ type PluginHandlerData struct {
 // TypeData defines the custom types. Much of the data is pulled via a parent-key, so we don't parse much from yaml at all.
 // Instead, we post-process populate it for the benefit of the template
 type TypeData struct {
-	RawName string               `yaml:"-"`
-	Name    string               `yaml:"-"`
-	Fields  map[string]ParamData `yaml:"-"`
+	RawName      string               `yaml:"-"`
+	Name         string               `yaml:"-"`
+	Fields       map[string]ParamData `yaml:"-"`
+	SortedFields []ParamData          `yaml:"-"`
 }
 
 // HTTP Defines the settings for the plugins http server
@@ -190,6 +192,8 @@ func postProcessSpec(s *PluginSpec) error {
 		}
 
 		td.Fields = data
+		// Sort them  - currently this is by their embedded status, as embeds must appear uptop in go structs
+		td.SortedFields = sortParamData(td.Fields)
 		s.RawTypes[name] = data
 		s.Types[name] = td
 	}
@@ -495,9 +499,12 @@ func runGoImports(s *PluginSpec) error {
 	}
 
 	for _, p := range fileList {
-		cmd := exec.Command("goimports", "-w", p)
+		cmd := exec.Command("goimports", "-w", "-srcdir", s.PackageRoot, p)
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
+		}
+		if err := fixGoImportsNotKnowingHowToLookInLocalVendorFirst(s, p); err != nil {
+			return err
 		}
 	}
 	return nil
@@ -510,4 +517,14 @@ func vendorPluginDeps(s *PluginSpec) error {
 		return fmt.Errorf("Error while running go dep on %s: %s", cmd.Dir, string(b))
 	}
 	return nil
+}
+
+func fixGoImportsNotKnowingHowToLookInLocalVendorFirst(s *PluginSpec, path string) error {
+	old := "github.com/komand/komand/plugins/v1/types"
+	new := s.PackageRoot + "/types"
+	b, err := ioutil.ReadFile(path)
+	if err != nil {
+		return nil
+	}
+	return ioutil.WriteFile(path, []byte(strings.Replace(string(b), old, new, -1)), 0)
 }

@@ -28,24 +28,26 @@ func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
 
 // ServeHTTP handles the requests
 func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	response := message.Output{
+		Status: "ok",
+	}
 	b, err := ioutil.ReadAll(r.Body)
 	// TODO use a limit reader to prevent resource attacks?
-	// TODO pass logger into handler, log out errors yo
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		replyWithError(response, w, err)
 		return
 	}
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"method %s is unsupported for plugin actions."}`, r.Method)))
+		replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
 		return
 	}
 	m := &message.V1{}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		replyWithError(response, w, err)
 		return
 	}
 	// Unmarshal the body into the right struct
@@ -56,20 +58,21 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	input := &actions.{{ .Name }}Input{}
 	if err := json.Unmarshal(m.Body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		replyWithError(response, w, err)
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s"}`, err)))
+		replyWithError(response, w, err)
         return
 	}
 	l := plog.NewLogger()
     conn, err := h.c.Get(cd, l)
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String())))
+		response.Log = l.String()
+		replyWithError(response, w, err)
         return
     }
 	// Each request needs a new logger to capture it's output
@@ -79,15 +82,25 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Thats why this is a TODO and not a TODONE
 	action := actions.{{ .Name }}Action{}
 	output, err := action.Run(conn, input, l)
+	response.Log = l.String()
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String())))
+		replyWithError(response, w, err)
 		return
 	}
 	if b, err = json.Marshal(output); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(fmt.Sprintf(`{"plugin_error":"%s", "plugin_log":"%s"}`, err, l.String)))
+		replyWithError(response, w, err)
 		return
 	}
-	w.Write([]byte(fmt.Sprintf(`{"plugin_error":"", "plugin_log":"%s", "output":%s}`, l.String(), string(b))))
+	response.Output = output
+	b, _ := json.Marshal(response) // There is nothing we can do if this errs?
+	w.Write(b)
+}
+
+func replyWithError(response message.Response, w http.ResponseWriter, err error) {
+	response.Error = err.Error()
+	response.Status = "error"
+	b, _ := json.Marshal(response) // There is nothing we can do if this fails?
+	w.Write(b)
 }

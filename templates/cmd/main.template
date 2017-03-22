@@ -122,15 +122,17 @@ func runOneOffAction(mode string, m *message.V1) error {
 	l := plog.NewLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
 	defer l.Flush(os.Stderr)
-	
+	response := message.Response{
+		Status: "ok",
+	}
+	// Unmarshal the body into the right struct
+	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
+	// but in this case, the performance gain is not that great, and it's less generator code to maintain
+	// to do it this way.
+	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
 	switch m.Body.Action {
 	{{- range $n, $p := .Actions }}
 	case "{{ $p.RawName }}":
-		// Unmarshal the body into the right struct
-		// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
-		// but in this case, the performance gain is not that great, and it's less generator code to maintain
-		// to do it this way.
-		// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
 		input := &actions.{{ $p.Name }}Input{}
 		if err := json.Unmarshal(m.Body.Input, input); err != nil {
 			return err
@@ -147,12 +149,13 @@ func runOneOffAction(mode string, m *message.V1) error {
 		if mode == "test" {
 			runMethod = a.Test
 		}
-		o, err := runMethod(conn, input, l)
+		response.Output, err = runMethod(conn, input, l)
 		if err != nil {
-			return err
+			response.Status = "error"
+			response.Error = err.Error()
 		}
 		// dispatch the result
-		d.Send(o)
+		d.Send(response)
 	{{- end }}
 	default:
 		return fmt.Errorf("unknown action %s", m.Body.Action)

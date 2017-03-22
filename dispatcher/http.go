@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/komand/plugin-sdk-go2/message"
 )
 
 // HTTP will dispatch via HTTP
@@ -22,7 +24,7 @@ func NewHTTP(url string) *HTTP {
 }
 
 // Send dispatches a trigger event
-func (d *HTTP) Send(e interface{}) error {
+func (d *HTTP) Send(e *message.Response) error {
 	messageBytes, err := json.Marshal(e)
 	if err != nil {
 		return err

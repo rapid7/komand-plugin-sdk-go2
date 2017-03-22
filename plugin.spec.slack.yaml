@@ -199,6 +199,68 @@ connection:
     description: "Authentication token"
 
 types:
+  attachment:
+    color:
+      type: string
+    fallback:
+      type: string
+    author_name:
+      type: string
+    author_subname:
+      type: string
+    author_icon:
+      type: string
+    title:
+      type: string
+    title_link:
+      type: string
+    pretext:
+      type: string
+    text:
+      type: string
+    image_url:  
+      type: string
+    thumb_url:
+      type: string
+    fields:
+      type: "[]attachment_field"
+    markdown_in:
+      type: "[]string"
+  attachment_field:
+    title:
+      type: string
+    value:
+      type: string
+    short:
+      type: boolean
+  item_reaction:
+    name:
+      type: string
+    count:
+      type: integer
+    users:
+      type: "[]string"
+  comment:
+    id:
+      type: string
+    created:
+      type: integer
+    timestamp:
+      type: integer
+    user:
+      type: string
+    comment:
+      type: string
+  icon:
+    iconurl:
+      type: string
+    iconemoji:
+      type: string
+  edited:
+    user:
+      type: string
+    timestamp:
+      type: string
   file:
     file_name:
       type: string
@@ -206,9 +268,73 @@ types:
     contents:
       type: bytes
       description: "File contents"
+  raw_slack_message:
+    type:
+      type: string
+    channel:
+      type: string
+    user:
+      type: string
+    text:
+      type: string
+    timestamp:
+      type: string
+    is_starred:
+      type: boolean
+    pinned_to:
+      type: "[]string"
+    attachments:
+      type: "[]attachment"
+    edited:
+      type: edited
+      required: false
+    sub_type:
+      type: string
+    hidden:
+      type: bool
+    deleted_timestamp:
+      type: string
+    event_timestamp:
+      type: string
+    bot_id:
+      type: string
+    username:
+      type: string
+    inviter:
+      type: string
+    purpose:
+      type: string
+    name: 
+      type: string
+    old_name:
+      type: string
+    members:
+      type: "[]string"
+    file:
+      type: file
+    upload:
+      type: boolean
+    comment:
+      type: comment
+      nullable: true
+    item_type:
+      type: string
+    reply_to:
+      type: int
+    team:
+      type: string
+    reactions:
+      type: "[]item_reaction"
+  slack_message:
+    msg:
+      type: raw_slack_message
+      embed: true
+    sub_message:
+      type: raw_slack_message
+      nullable: true
   message:
     message_event:
-      type: "*slack.MessageEvent"
+      type: slack_message
       description: "The raw slack MessageEvent"
       embed: true
     user_id:
@@ -337,7 +463,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: "*slack.File"
+        type: file
 
   upload_file:
     description: "Upload a file to Slack"
@@ -356,7 +482,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: "*slack.File"
+        type: file
 
   post_message:
     description: "Post a message to the Slack channel"

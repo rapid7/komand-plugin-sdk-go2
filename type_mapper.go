@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // TypeMapper handles renaming types from the spec when they don't line up with go types by name
 type TypeMapper struct {
@@ -24,7 +27,16 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper { // TO FIGURE OUT object and byte
 
 	for name := range s.RawTypes {
 		goName := UpperCamelCase(name)
-		t.CustomTypes[name] = "types." + goName
+		tName := "types." + goName
+		/*var isArr bool
+		// If it's an array tpye we nee
+		if strings.HasPrefix(nsme, "[]") {
+			name = name[2:]
+			isArr = true
+			tName =
+		}*/
+
+		t.CustomTypes[name] = tName
 	}
 	return t
 }
@@ -43,6 +55,7 @@ func (t *TypeMapper) SpecTypeToGoType(specType string) string {
 		return specType
 	}
 	if isArr {
+		fmt.Println(foundType)
 		foundType = "[]" + foundType
 	}
 	return foundType
