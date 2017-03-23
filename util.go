@@ -19,14 +19,15 @@ func CamelCase(src string, startWithUpper bool) string {
 	chunks := camelingRegex.FindAll(byteSrc, -1)
 	for idx, val := range chunks {
 		if idx > 0 || startWithUpper {
+			if ok := commonInitialisms[strings.ToUpper(string(val))]; ok {
+				// Instead of Titling it, make it uppercased all the way
+				chunks[idx] = bytes.ToUpper(val)
+				continue
+			}
 			chunks[idx] = bytes.Title(val)
 		}
 	}
-	s := string(bytes.Join(chunks, nil))
-	if ok := commonInitialisms[strings.ToUpper(s)]; ok {
-		return strings.ToUpper(s)
-	}
-	return s
+	return string(bytes.Join(chunks, nil))
 }
 
 // Actually taken from: https://github.com/serenize/snaker/blob/master/snaker.go
