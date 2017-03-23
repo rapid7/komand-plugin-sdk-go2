@@ -167,7 +167,7 @@ func runOneOffAction(mode string, m *message.V1) error {
 func runTriggerDaemon(mode string, m *message.V1) error {
 	{{- if .Triggers }}
 	cd := &connection.Data{}
-	l := plog.NewLogger()
+	l := plog.NewNormalLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
 
 	switch m.Body.Action {
@@ -180,17 +180,13 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
 			return err
 		}
-		// We immediately flush the connection log so it can be emitted to the caller of the application
-		// Trigger don't need / use the internal buffered logger approach, but connections have to work
-		// in both places, so we deal with this in a one-off fashion here
 		conn, err := connection.Connect(cd, l)
-		l.Flush(os.Stderr)
 		if err != nil {
 			return err
 		}
 		t := triggers.New{{ $p.Name }}Trigger(d)
 		if mode == "test" {
-			o, err := t.Test(conn, input);
+			o, err := t.Test(conn, input, l);
 			response := &message.Response{
 				Output: o,
 				Status: "ok",
@@ -207,7 +203,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		// Start the read loop
 		go t.StartReadLoop()
 		// Run will block until it completes / shutsdown
-		return t.Run(conn, input)
+		return t.Run(conn, input, l)
 	{{- end }}
 	default:
 		return fmt.Errorf("unknown trigger %s", m.Body.Action)

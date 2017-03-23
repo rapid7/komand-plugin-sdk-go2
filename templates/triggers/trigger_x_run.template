@@ -1,6 +1,7 @@
 package triggers
 
 import (
+    plog "github.com/komand/plugin-sdk-go2/log"
     "{{ .PackageRoot }}/connection"
 )
 
@@ -33,18 +34,19 @@ func (o *{{ .Name }}TriggerOutput) Validate() []error {
 }
 
 // Run runs the trigger and blocks until the trigger polling is complete or errors
-func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}TriggerInput) error {
-    // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
+func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) error {
+    // Make sure to ONLY use log.Println and log.Printf to log any custom messages, and do not use the normal go logger
     for {
         // Your code here
-    }
 
+        time.Sleep(input.Interval) // Do not remove or alter this line
+    }
     return nil
 }
 
 // Test runs the trigger, but does not block and only runs the trigger polling one time
-func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput) (*{{ .Name }}TriggerOutput, error) {
-    // Triggers do not have the same logging concern as Actions - you may log using standard fmt and log packages
+func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
+    // Make sure to ONLY use log.Println and log.Printf to log any custom messages, and do not use the normal go logger
     output := &{{ .Name }}TriggerOutput{}
     // Your code here
 

@@ -67,7 +67,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		replyWithError(response, w, err)
         return
 	}
-	l := plog.NewLogger()
+	l := plog.NewBufferedLogger()
     conn, err := h.c.Get(cd, l)
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)

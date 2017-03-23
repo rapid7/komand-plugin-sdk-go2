@@ -13,7 +13,7 @@ type CustomParams struct {
 
 // Connect is the custom code for the developer to write to fully initialize and return a
 // ready to use Connection object.
-func Connect(cd *Data, log *plog.Logger) (*Connection, error) {
+func Connect(cd *Data, log plog.Logger) (*Connection, error) {
     conn := &Connection{}
     // Your code here
     // Take the connection data and turn it into the Connection object
@@ -21,7 +21,7 @@ func Connect(cd *Data, log *plog.Logger) (*Connection, error) {
     // Finally, pass back the connection, nil for success
     // Otherwise, nil, error for failure
 
-    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+    // Make sure to ONLY use log.Println and log.Printf to log any custom messages, and do not use the normal go logger
 
     return conn, nil
 }

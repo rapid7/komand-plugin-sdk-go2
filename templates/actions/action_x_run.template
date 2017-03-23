@@ -2,7 +2,7 @@ package actions
 
 import (
     "{{ .PackageRoot }}/connection"
-    "github.com/komand/plugin-sdk-go2/log"
+    plog "github.com/komand/plugin-sdk-go2/log"
 )
 
 // Validate will validate the input is properly setup.
@@ -34,11 +34,11 @@ func (o *{{ .Name }}Output) Validate() []error {
 }
 
 // Run will run the action with the given input over the given connection
-func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}Input, log *log.Logger) (*{{ .Name }}Output, error) {
+func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}Input, log plog.Logger) (*{{ .Name }}Output, error) {
     output := &{{ .Name }}Output{}
     // Your code here
 
-    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+    // Make sure to ONLY use log.Println and log.Printf to log any custom messages, and do not use the normal go logger
 
     // return output and no error for success
     // return nil and error for failure
@@ -47,11 +47,11 @@ func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}I
 }
 
 // Test will test the action with the given input over the given connection
-func (a *{{ .Name }}Action) Test(conn *connection.Connection, input *{{ .Name }}Input, log *log.Logger) (*{{ .Name }}Output, error) {
+func (a *{{ .Name }}Action) Test(conn *connection.Connection, input *{{ .Name }}Input, log plog.Logger) (*{{ .Name }}Output, error) {
     output := &{{ .Name }}Output{}
     // Your code here
 
-    // Make sure to ONLY use log.Info and log.Infof to log any custom code
+    // Make sure to ONLY use log.Println and log.Printf to log any custom messages, and do not use the normal go logger
 
     // return output and no error for success
     // return nil and error for failure

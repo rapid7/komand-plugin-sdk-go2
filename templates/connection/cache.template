@@ -29,7 +29,7 @@ func NewCache() *Cache {
 // this will require putting a Key() method on the connection interface, which
 // will need to return a string that is composed of connection data such that It
 // can uniquely identify the connection we want to look up.
-func (c *Cache) Get(cd *Data, l *plog.Logger) (*Connection, error) {
+func (c *Cache) Get(cd *Data, l plog.Logger) (*Connection, error) {
 	var s *Connection
 	var ok bool
 	c.Lock()
@@ -37,7 +37,7 @@ func (c *Cache) Get(cd *Data, l *plog.Logger) (*Connection, error) {
 		c.Unlock()
 		return s, nil
 	}
-	l.Info("Creating a New Connection")
+	l.Println("Creating a New Connection")
 	s, err := Connect(cd, l)
 	if err != nil {
 		c.Unlock()

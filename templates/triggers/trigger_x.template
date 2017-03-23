@@ -3,8 +3,7 @@ package triggers
 // DO NOT MAKE CHANGES TO THIS FILE, THEY WILL BE LOST IF YOU REGENERATE THE PLUGIN
 
 import (
-    "log"
-
+    plog "github.com/komand/plugin-sdk-go2/log"
     "github.com/komand/plugin-sdk-go2/dispatcher"
 )
 
@@ -72,7 +71,7 @@ func (t *{{ .Name }}Trigger) Stop() {
 }
 
 // StartReadLoop will block, reading until a nil message is received, meaning the internal queue was closed
-func (t *{{ .Name }}Trigger) StartReadLoop() error {
+func (t *{{ .Name }}Trigger) StartReadLoop(l plog.Logger) error {
     for {
 	    output := t.Read()
         if output == nil {
