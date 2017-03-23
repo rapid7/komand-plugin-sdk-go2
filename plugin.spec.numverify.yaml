@@ -1,4 +1,4 @@
-plugin_spec_version: v1
+plugin_spec_version: v2
 name: numverify
 title: "NumVerify"
 description: "Look up phone number with NumVerify "

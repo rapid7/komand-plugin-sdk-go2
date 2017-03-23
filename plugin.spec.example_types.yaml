@@ -1,4 +1,4 @@
-plugin_spec_version: v1 
+plugin_spec_version: v2
 name: example_types
 title: "Example Types"
 description: "Example plugin that demonstrates multiple input and output types"

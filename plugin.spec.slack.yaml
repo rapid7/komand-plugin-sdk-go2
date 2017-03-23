@@ -1,4 +1,4 @@
-plugin_spec_version: v1
+plugin_spec_version: v2
 name: slack
 title: "Slack"
 description: "Slack integrations"
@@ -441,7 +441,6 @@ triggers:
         description: "File"
 
 actions:
-
   upload_snippet:
     description: "Upload a snippet to Slack"
     input:

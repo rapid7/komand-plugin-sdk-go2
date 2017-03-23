@@ -39,7 +39,7 @@ func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}T
     for {
         // Your code here
 
-        time.Sleep(input.Interval) // Do not remove or alter this line
+        // time.Sleep(input.Interval) // If your trigger makes use of a sleep interval, uncomment this line
     }
     return nil
 }

@@ -1,4 +1,4 @@
-plugin_spec_version: v1
+plugin_spec_version: v2
 name: virustotal
 title: "VirusTotal"
 description: "VirusTotal API"
