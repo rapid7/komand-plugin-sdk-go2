@@ -125,7 +125,7 @@ func runOneOffAction(mode string, m *message.V1) error {
 	l := plog.NewBufferedLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
 	defer l.Flush(os.Stderr)
-	response := &message.Response{
+	response := message.Response{
 		Status: "ok",
 	}
 	// Unmarshal the body into the right struct
@@ -195,7 +195,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		t := triggers.New{{ $p.Name }}Trigger(d)
 		if mode == "test" {
 			o, err := t.Test(conn, input, l);
-			response := &message.Response{
+			response := message.Response{
 				Output: o,
 				Status: "ok",
 			}
