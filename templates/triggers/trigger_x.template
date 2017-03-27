@@ -87,7 +87,7 @@ func (t *{{ .Name }}Trigger) StartReadLoop(l plog.Logger) error {
             Type: "trigger_start",
             Version: "v2",
         }
-		if err := t.dispatcher.Send(response); err != nil {
+		if err := t.dispatcher.Send(wrapper); err != nil {
 			log.Printf("Receieved error sending trigger message: %s", err)
 			return err
 		}
