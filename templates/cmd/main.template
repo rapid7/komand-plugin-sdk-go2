@@ -74,7 +74,10 @@ func main() {
 		log.Fatal(err)
 	}
 	switch args.Command {
+	case "version":
+		printVersion()
 	case "help":
+		printHelp()
 	case "info":
 		printDescription()
 	case "sample":
@@ -297,4 +300,19 @@ func printSampleInput(action string) error {
 	}
 	fmt.Println(string(result))
 	return nil
+}
+
+func printVersion() {
+	fmt.Println(Version)
+}
+
+func printHelp() {
+	fmt.Print("{{ .Name}} Help:\n\n")
+	fmt.Print("Commands:\n\n")
+	fmt.Print("help:\n\tShows this menu\n\n")
+	fmt.Print("version:\n\tDisplay version info\n\n")
+	fmt.Print("info:\n\tDisplay information about the available actions and triggers, as well as general plugin metadata\n\n")
+	fmt.Print("sample <trigger or action name>:\n\tDisplay a sample input message for the defined trigger or action\n\n")
+	fmt.Print("test:\n\tRun the test method associated with the provided trigger or action specified via an input message over stdin\n\n")
+	fmt.Print("run:\n\tRun the run method associated with the provided trigger or action specified via an input message over stdin\n\n")
 }
