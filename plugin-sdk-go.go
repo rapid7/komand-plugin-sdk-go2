@@ -1,8 +1,6 @@
-package main
+package sdk
 
 import (
-	"encoding/json"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,7 +14,40 @@ import (
 	"github.com/go-yaml/yaml"
 )
 
-// PluginSpec is
+// Generator is a wrapper around building a plugin based on a spec
+type Generator struct {
+	spec          *PluginSpec
+	forceOverwise bool
+}
+
+// NewGenerator takes a path to a spec, and the root of the go package, and spins up a new plugin with all the fixins'
+// specLoc is the location of the soec file on disk, packageroot name of the package, relative to a proper GOPATH
+// and force will force the plugin to overwrite any existing files, including ones that don't normally get overwritten in a
+// generation, such as the user-editable files
+func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) {
+	data, err := ioutil.ReadFile(specPath)
+	if err != nil {
+		return nil, fmt.Errorf("error loading spec: %s", err.Error())
+	}
+	if strings.HasSuffix(packageRoot, "/") {
+		packageRoot = packageRoot[0 : len(packageRoot)-1]
+	}
+	s := &PluginSpec{
+		PackageRoot:  packageRoot,
+		SpecLocation: specPath,
+	}
+	if err := yaml.Unmarshal(data, s); err != nil {
+		return nil, err
+	}
+	// Fill in some basic stuff that isn't readily available from the parse, but helps the generation
+	postProcessSpec(s)
+	return &Generator{
+		spec:          s,
+		forceOverwise: force,
+	}, nil
+}
+
+// PluginSpec is a spec for plugins
 type PluginSpec struct {
 	PluginSpecVersion string                          `yaml:"plugin_spec_version"`
 	Name              string                          `yaml:"name"`
@@ -104,72 +135,6 @@ type HTTP struct {
 	Port         int `yaml:"port"`
 	ReadTimeout  int `yaml:"read_timeout"`
 	WriteTimeout int `yaml:"write_timeout"`
-}
-
-// WHERE I AM - i can load specs
-// now, need to generate a hard cope of everything in /templates
-// need to shape the plugin spec to the template, or vice versa.
-// latter probably faster that this point unless i need to massage
-// some datas.
-func main() {
-	specLoc := flag.String("spec", "", "The path to the spec file")
-	packageRoot := flag.String("package", "", "The go package root for this plugin. Ex: github.com/<company_name>/plugins/<plugin_name>")
-	flag.Parse()
-	if *specLoc == "" {
-		log.Fatal("Error, must provide path to spec including name")
-	}
-	if *packageRoot == "" {
-		log.Fatal("Error, must provide a package root for the resulting go package. Ex: github.com/<company_name>/plugins/<plugin_name>")
-	}
-	data, err := ioutil.ReadFile(*specLoc)
-	if err != nil {
-		log.Fatalf("error loading spec: %s", err)
-	}
-	// Chop off the trailing slash, we add it back in as we need it.
-	pRoot := *packageRoot
-	fmt.Println(pRoot)
-	if strings.HasSuffix(*packageRoot, "/") {
-		pRoot = pRoot[0 : len(pRoot)-1]
-	}
-	s := &PluginSpec{
-		PackageRoot:  pRoot,
-		SpecLocation: *specLoc,
-	}
-	if err := yaml.Unmarshal(data, s); err != nil {
-		log.Fatal(err)
-	}
-	// Fill in some basic stuff that isn't readily available from the parse, but helps the generation
-	postProcessSpec(s)
-	// Now, MAKE IT HAPPEN
-	if err := generatePlugin(s); err != nil {
-		log.Fatal(err)
-	}
-}
-
-// This is a light weight helper to handle some post-processing boilerplate after parsing a spec
-// We need to convert the spec param names into go friendly names, and lookup the proper type
-func updateParams(data map[string]ParamData, t *TypeMapper) error {
-	for name, param := range data {
-		param.RawName = name
-		param.Name = UpperCamelCase(name)
-		param.Type = t.SpecTypeToGoType(param.Type)
-		param.EnumLiteral = make([]EnumData, len(param.Enum))
-		for i, e := range param.Enum {
-			// So, here's how we're gonna do this: marshal the interface to json
-			// this will give us a string representation of the value to write out as a literal
-			// then we'll do const X = {{ Literal Value }}
-			b, err := json.Marshal(e)
-			if err != nil {
-				return err
-			}
-			param.EnumLiteral[i] = EnumData{
-				Name:         param.Name + UpperCamelCase(string(b)),
-				LiteralValue: string(b),
-			}
-		}
-		data[name] = param // Godbless go for this feature
-	}
-	return nil
 }
 
 // postProcessSpec does some minor post-processing on the spec object to fill a few things in that make
@@ -262,9 +227,10 @@ func postProcessSpec(s *PluginSpec) error {
 	return nil
 }
 
-func generatePlugin(s *PluginSpec) error {
+// GeneratePlugin emits the new plugin based on the spec to disk
+func (g *Generator) GeneratePlugin() error {
 	// Get GOPATH and then add the plugin root
-	p := path.Join(os.Getenv("GOPATH"), "src", s.PackageRoot)
+	p := path.Join(os.Getenv("GOPATH"), "src", g.spec.PackageRoot)
 	// if it exists, fail
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		// if it doesn't, mkdir-p it
@@ -272,41 +238,41 @@ func generatePlugin(s *PluginSpec) error {
 			log.Fatal("Error when creating plugin package path: " + err.Error())
 		}
 	}
-	if err := generateActions(s); err != nil {
+	if err := g.generateActions(); err != nil {
 		return err
 	}
-	if err := generateConnections(s); err != nil {
+	if err := g.generateConnections(); err != nil {
 		return err
 	}
-	if err := generateTriggers(s); err != nil {
+	if err := g.generateTriggers(); err != nil {
 		return err
 	}
-	if err := generateCmd(s); err != nil {
+	if err := g.generateCmd(); err != nil {
 		return err
 	}
-	if err := generateHTTPServer(s); err != nil {
+	if err := g.generateHTTPServer(); err != nil {
 		return err
 	}
-	if err := generateHTTPHandlers(s); err != nil {
+	if err := g.generateHTTPHandlers(); err != nil {
 		return err
 	}
-	if err := generateTests(s); err != nil {
+	if err := g.generateTests(); err != nil {
 		return err
 	}
-	if err := generateTypes(s); err != nil {
+	if err := g.generateTypes(); err != nil {
 		return err
 	}
-	if err := generateBuildSupport(s); err != nil {
+	if err := g.generateBuildSupport(); err != nil {
 		return err
 	}
-	if err := copySpec(s); err != nil {
+	if err := g.copySpec(); err != nil {
 		return err
 	}
 	// run goimports before any vendoring
-	if err := runGoImports(s); err != nil {
+	if err := g.runGoImports(); err != nil {
 		return err
 	}
-	if err := vendorPluginDeps(s); err != nil {
+	if err := g.vendorPluginDeps(); err != nil {
 		return err
 	}
 	return nil
@@ -347,19 +313,19 @@ func runTemplate(templatePath string, outputPath string, data interface{}, skipI
 	return nil
 }
 
-func generateActions(s *PluginSpec) error {
+func (g *Generator) generateActions() error {
 	// Now, do one for each action using the action_x template
 	pathToActionTemplate := "templates/actions/action_x.template"
 	pathToRunTemplate := "templates/actions/action_x_run.template"
-	for name, action := range s.Actions {
+	for name, action := range g.spec.Actions {
 		// Make the new action.go
-		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/actions/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/actions/", name+".go")
 		if err := runTemplate(pathToActionTemplate, newFilePath, action, false); err != nil {
 			return err
 		}
 		// Make the new action_run.go
 		// action_run is broken out, so that re-generating will skip them if they exist, making it easier for the dev
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/actions/", name+"_run.go")
+		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/actions/", name+"_run.go")
 		if err := runTemplate(pathToRunTemplate, newFilePath, action, true); err != nil {
 			return err
 		}
@@ -367,36 +333,36 @@ func generateActions(s *PluginSpec) error {
 	return nil
 }
 
-func generateConnections(s *PluginSpec) error {
+func (g *Generator) generateConnections() error {
 	pathToTemplate := "templates/connection/connection.template"
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/", "connection.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
+	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/", "connection.go")
+	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
 		return err
 	}
 	// Connect and validate are broken out, so that re-generating will skip them if they exist, making it easier for the dev
 	pathToTemplate = "templates/connection/connect.template"
-	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/connect.go")
-	if err := runTemplate(pathToTemplate, newFilePath, s, true); err != nil {
+	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/connect.go")
+	if err := runTemplate(pathToTemplate, newFilePath, g.spec, true); err != nil {
 		return err
 	}
 	pathToTemplate = "templates/connection/cache.template"
-	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/connection/cache.go")
-	return runTemplate(pathToTemplate, newFilePath, s, false)
+	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/cache.go")
+	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
-func generateTriggers(s *PluginSpec) error {
+func (g *Generator) generateTriggers() error {
 	// Now, do one for each action using the action_x template
 	pathToTriggerTemplate := "templates/triggers/trigger_x.template"
 	pathToRunTemplate := "templates/triggers/trigger_x_run.template"
 
-	for name, trigger := range s.Triggers {
+	for name, trigger := range g.spec.Triggers {
 		// Make the new action.go
-		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/triggers/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/triggers/", name+".go")
 		if err := runTemplate(pathToTriggerTemplate, newFilePath, trigger, false); err != nil {
 			return err
 		}
 		// trigger_run is broken out, so that re-generating will skip them if they exist, making it easier for the dev
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/triggers/", name+"_run.go")
+		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/triggers/", name+"_run.go")
 		if err := runTemplate(pathToRunTemplate, newFilePath, trigger, true); err != nil {
 			return err
 		}
@@ -404,24 +370,24 @@ func generateTriggers(s *PluginSpec) error {
 	return nil
 }
 
-func generateCmd(s *PluginSpec) error {
+func (g *Generator) generateCmd() error {
 	pathToTemplate := "templates/cmd/main.template"
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/cmd/", "main.go")
-	return runTemplate(pathToTemplate, newFilePath, s, false)
+	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/cmd/", "main.go")
+	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
-func generateHTTPServer(s *PluginSpec) error {
+func (g *Generator) generateHTTPServer() error {
 	pathToTemplate := "templates/server/http/server.template"
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/server/http/", "server.go")
-	return runTemplate(pathToTemplate, newFilePath, s, false)
+	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", "server.go")
+	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
-func generateHTTPHandlers(s *PluginSpec) error {
+func (g *Generator) generateHTTPHandlers() error {
 	// Now, do one for each action using the action_x template
 	pathToTemplate := "templates/server/http/handler_x.template"
-	for name, action := range s.Actions {
+	for name, action := range g.spec.Actions {
 		// Make the new action.go
-		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/server/http/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, action, false); err != nil {
 			return err
 		}
@@ -429,16 +395,16 @@ func generateHTTPHandlers(s *PluginSpec) error {
 	return nil
 }
 
-func generateTests(s *PluginSpec) error {
+func (g *Generator) generateTests() error {
 	return nil
 }
 
-func generateTypes(s *PluginSpec) error {
+func (g *Generator) generateTypes() error {
 	// Now, do one for each action using the type_x template
 	pathToTemplate := "templates/types/type_x.template"
-	for name, t := range s.Types {
+	for name, t := range g.spec.Types {
 		// Make the new action.go
-		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/types/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/", name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, t, false); err != nil {
 			return err
 		}
@@ -446,45 +412,45 @@ func generateTypes(s *PluginSpec) error {
 	return nil
 }
 
-func generateBuildSupport(s *PluginSpec) error {
+func (g *Generator) generateBuildSupport() error {
 	// Docker
 	pathToTemplate := "templates/Dockerfile.template"
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "Dockerfile")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
+	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "Dockerfile")
+	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
 		return err
 	}
 
 	// Make
 	pathToTemplate = "templates/Makefile.template"
-	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "Makefile")
-	if err := runTemplate(pathToTemplate, newFilePath, s, false); err != nil {
+	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "Makefile")
+	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
 		return err
 	}
 
 	// Make the vendor directory for them, add a .gitkeep just incase
-	if err := os.MkdirAll(path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/vendor/"), 0700); err != nil {
+	if err := os.MkdirAll(path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/vendor/"), 0700); err != nil {
 		return err
 	}
-	if err := ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "/vendor/.gitkeep"), make([]byte, 0), 0644); err != nil {
+	if err := ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/vendor/.gitkeep"), make([]byte, 0), 0644); err != nil {
 		return err
 	}
 	return nil
 }
 
-func copySpec(s *PluginSpec) error {
+func (g *Generator) copySpec() error {
 	// Read all content of src to data
-	data, err := ioutil.ReadFile(s.SpecLocation)
+	data, err := ioutil.ReadFile(g.spec.SpecLocation)
 	if err != nil {
 		return err
 	}
 	// Write data to dst
-	return ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot, "plugin.spec.yaml"), data, 0644)
+	return ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "plugin.spec.yaml"), data, 0644)
 }
 
-func runGoImports(s *PluginSpec) error {
+func (g *Generator) runGoImports() error {
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
-	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 
 	fileList := []string{}
 	err := filepath.Walk(searchDir, func(path string, f os.FileInfo, err error) error {
@@ -499,33 +465,33 @@ func runGoImports(s *PluginSpec) error {
 	}
 
 	for _, p := range fileList {
-		cmd := exec.Command("goimports", "-w", "-srcdir", s.PackageRoot, p)
+		cmd := exec.Command("goimports", "-w", "-srcdir", g.spec.PackageRoot, p)
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
 		}
-		if err := fixGoImportsNotKnowingHowToLookInLocalVendorFirst(s, p); err != nil {
+		if err := g.fixGoImportsNotKnowingHowToLookInLocalVendorFirst(p); err != nil {
 			return err
 		}
 	}
 	return nil
 }
 
-func vendorPluginDeps(s *PluginSpec) error {
-	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+func (g *Generator) vendorPluginDeps() error {
+	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 	cmd := exec.Command("dep", "init")
 	if doesFileExist(path.Join(rootPath, "manifest.json")) {
 		cmd = exec.Command("dep", "ensure")
 	}
-	cmd.Dir = path.Join(os.Getenv("GOPATH"), "/src/", s.PackageRoot)
+	cmd.Dir = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 	if b, err := cmd.CombinedOutput(); err != nil {
 		return fmt.Errorf("Error while running go dep on %s: %s - %s", cmd.Dir, string(b), err.Error())
 	}
 	return nil
 }
 
-func fixGoImportsNotKnowingHowToLookInLocalVendorFirst(s *PluginSpec, path string) error {
+func (g *Generator) fixGoImportsNotKnowingHowToLookInLocalVendorFirst(path string) error {
 	old := "github.com/komand/komand/plugins/v1/types"
-	new := s.PackageRoot + "/types"
+	new := g.spec.PackageRoot + "/types"
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil

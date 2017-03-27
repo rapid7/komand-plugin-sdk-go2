@@ -5,14 +5,14 @@ VERSION=$(shell git describe --abbrev=0 --tags)
 MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
 
 build:
-	go-bindata templates/...
-	go build
+	go-bindata -pkg sdk templates/...
+	go build -o cmd/plugin-sdk-go/plugin-sdk-go github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go
 
 clean:
-	rm -f ./plugin-sdk-go2
+	rm -f ./github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
 
 run: clean build
-	./plugin-sdk-go2 -spec="./plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
+	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...

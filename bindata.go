@@ -16,7 +16,7 @@
 // templates/vendor/.gitkeep
 // DO NOT EDIT!
 
-package main
+package sdk
 
 import (
 	"bytes"
