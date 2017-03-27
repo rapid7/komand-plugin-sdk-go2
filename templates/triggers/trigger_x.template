@@ -83,7 +83,7 @@ func (t *{{ .Name }}Trigger) StartReadLoop(l plog.Logger) error {
             Output: output,
         }
         wrapper := &message.ResponseWrapper{
-            Response: response,
+            Body: response,
             Type: "trigger_start",
             Version: "v2",
         }
