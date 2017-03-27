@@ -24,7 +24,7 @@ func NewHTTP(url string) *HTTP {
 }
 
 // Send dispatches a trigger event
-func (d *HTTP) Send(e *message.Response) error {
+func (d *HTTP) Send(e *message.ResponseWrapper) error {
 	messageBytes, err := json.Marshal(e)
 	if err != nil {
 		return err

@@ -6,5 +6,5 @@ import "github.com/komand/plugin-sdk-go2/message"
 
 // Dispatcher is a simple interface over the ability to send data out of the current system and into another
 type Dispatcher interface {
-	Send(*message.Response) error
+	Send(*message.ResponseWrapper) error
 }

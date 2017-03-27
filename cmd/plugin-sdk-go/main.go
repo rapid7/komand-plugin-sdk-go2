@@ -17,7 +17,7 @@ func main() {
 	if *packageRoot == "" {
 		log.Fatal("Error, must provide a package root for the resulting go package. Ex: github.com/<company_name>/plugins/<plugin_name>")
 	}
-	g, err := sdk.NewGenerator(*specLoc, *packageRoot)
+	g, err := sdk.NewGenerator(*specLoc, *packageRoot, false)
 	if err != nil {
 		log.Fatalf("error creating generator: %s", err)
 	}

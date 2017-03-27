@@ -11,6 +11,6 @@ func NewNOOP() *NOOP {
 }
 
 // Send dispatches a trigger event, except not for NOOP it doesn't
-func (d *NOOP) Send(e *message.Response) error {
+func (d *NOOP) Send(e *message.ResponseWrapper) error {
 	return nil
 }

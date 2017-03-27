@@ -16,7 +16,7 @@ func NewStdout() *Stdout {
 }
 
 // Send dispatches a trigger event
-func (d *Stdout) Send(e *message.Response) error {
+func (d *Stdout) Send(e *message.ResponseWrapper) error {
 	messageBytes, err := json.Marshal(e)
 	if err != nil {
 		return err

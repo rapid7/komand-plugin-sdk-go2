@@ -10,3 +10,10 @@ type Response struct {
 	Output interface{}      `json:"output"` // Output contains the output of the Action
 	Log    string           `json:"log"`    // Log contains any captured log information
 }
+
+// ResponseWrapper wraps the Response object because thats how we do it in komand/komand
+type ResponseWrapper struct {
+	Type    string   `json:"type"`
+	Version string   `json:"version"`
+	Body    Response `json:"body"`
+}

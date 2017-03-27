@@ -89,7 +89,12 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Log = l.String()
 	response.Output = output
-	b, _ = json.Marshal(response) // There is nothing we can do if this errs?
+	wrapper := &message.ResponseWrapper{
+		Body: response,
+		Type: "action_start",
+		Version: "v2",
+	}
+	b, _ = json.Marshal(wrapper) // There is nothing we can do if this errs?
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }
