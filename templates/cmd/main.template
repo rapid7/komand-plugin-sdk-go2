@@ -63,7 +63,10 @@ func getMessageFromStdin() (*message.V1, error) {
 	m := &message.V1{}
 	dec := json.NewDecoder(os.Stdin)
 	if err := dec.Decode(m); err != nil {
-		return nil, err
+		// Try from os.Args[3] which is where the ui plugin.test seems to send them
+		if err := json.Unmarshal([]byte(os.Args[3]),m); err != nil {
+			return nil, err
+		}
 	}
 	return m, nil
 }
