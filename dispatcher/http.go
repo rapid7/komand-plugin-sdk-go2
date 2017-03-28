@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/komand/plugin-sdk-go2/message"
 )
@@ -18,8 +19,15 @@ type HTTP struct {
 // NewHTTP will return a new HTTP Dispatcher
 func NewHTTP(url string) *HTTP {
 	// TODO build a proper http.Client, don't rely on the 0val default like we did in the v1 sdk
+	hc := &http.Client{
+		Transport: &http.Transport{
+			MaxIdleConnsPerHost: 1,
+		},
+		Timeout: 5 * time.Second,
+	}
 	return &HTTP{
-		URL: url,
+		URL:    url,
+		client: hc,
 	}
 }
 

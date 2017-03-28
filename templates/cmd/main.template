@@ -233,7 +233,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 // to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
 // and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
 func dispatcherFromRaw(data map[string]interface{}) dispatcher.Dispatcher {
-	if url, ok := data["URL"]; ok { // Engine actually sends 2 values, but we only use this one?
+	if url, ok := data["url"]; ok { // Engine actually sends 2 values, but we only use this one?
 		return dispatcher.NewHTTP(url.(string))
 	}
 	return dispatcher.NewStdout()
