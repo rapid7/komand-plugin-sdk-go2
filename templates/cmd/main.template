@@ -164,7 +164,7 @@ func runOneOffAction(mode string, m *message.V1) error {
 		wrapper := &message.ResponseWrapper{
 			Body: response,
 			Type: "action_start",
-			Version: "v2",
+			Version: "v1",
 		}
 		d.Send(wrapper)
 	{{- end }}
@@ -180,6 +180,10 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 	cd := &connection.Data{}
 	l := plog.NewNormalLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
+	meta := &message.TriggerEventMeta{}
+	if err := json.Unmarshal(m.Body.Meta, meta); err != nil {
+		return err
+	}
 
 	switch m.Body.Trigger {
 	{{- range $n, $p := .Triggers }}
@@ -195,7 +199,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		if err != nil {
 			return err
 		}
-		t := triggers.New{{ $p.Name }}Trigger(d)
+		t := triggers.New{{ $p.Name }}Trigger(d, meta)
 		if mode == "test" {
 			o, err := t.Test(conn, input, l);
 			response := message.Response{
@@ -211,7 +215,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 			wrapper := &message.ResponseWrapper{
 				Body: response,
 				Type: "action_start",
-				Version: "v2",
+				Version: "v1",
 			}
 			d.Send(wrapper)
 			return nil

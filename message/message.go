@@ -11,7 +11,7 @@ type V1 struct {
 
 // BodyV1 is the V1 message body
 type BodyV1 struct {
-	Meta map[string]interface{} `json:"meta"`
+	Meta json.RawMessage `json:"meta"`
 	// Of Action and Trigger, only one will be set at a time.
 	Action     string                 `json:"action"`
 	Trigger    string                 `json:"trigger"`

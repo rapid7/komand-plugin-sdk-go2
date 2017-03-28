@@ -5,6 +5,7 @@ package triggers
 import (
     plog "github.com/komand/plugin-sdk-go2/log"
     "github.com/komand/plugin-sdk-go2/dispatcher"
+    "github.com/komand/plugin-sdk-go2/message"
 )
 
 {{ $name := .Name }}
@@ -45,13 +46,15 @@ type {{ .Name }}TriggerOutput struct {
 type {{ .Name }}Trigger struct {
     queue chan *{{ .Name }}TriggerOutput
     dispatcher dispatcher.Dispatcher
+    meta message.TriggerEventMeta
 }
 
 // New{{ .Name }}Trigger returns a new {{.Name }}Trigger properly initialized and ready to run.
-func New{{ .Name }}Trigger(d dispatcher.Dispatcher) *{{ .Name }}Trigger {
+func New{{ .Name }}Trigger(d dispatcher.Dispatcher, meta message.TriggerEventMeta) *{{ .Name }}Trigger {
     return &{{ .Name }}Trigger{
         queue: make(chan *{{ .Name }}TriggerOutput, 1),
         dispatcher: d,
+        meta: meta,
     }
 }
 
@@ -78,16 +81,14 @@ func (t *{{ .Name }}Trigger) StartReadLoop(l plog.Logger) error {
             // The channel was closed, we got an empty-closed-read, so we bail out with no issues
             return nil
         }
-        response := message.Response{
-            Status: "ok",
+        response := message.TriggerEvent{
+            Type: "", // We did not set the type in the SDK before, seems to only be for testing or legacy needs
+            ID: "", // We did not set the ID in the SDK before
+            GroupID: "", // We did not set the GroupID in the SDK before
             Output: output,
+            Meta: t.meta, // Copy the incoming meta to pass it along to the outgoing message
         }
-        wrapper := &message.ResponseWrapper{
-            Body: response,
-            Type: "trigger_start",
-            Version: "v2",
-        }
-		if err := t.dispatcher.Send(wrapper); err != nil {
+		if err := t.dispatcher.Send(response); err != nil {
 			log.Printf("Receieved error sending trigger message: %s", err)
 			return err
 		}

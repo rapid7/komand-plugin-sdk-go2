@@ -3,8 +3,6 @@ package dispatcher
 import (
 	"encoding/json"
 	"os"
-
-	"github.com/komand/plugin-sdk-go2/message"
 )
 
 // Stdout will dispatch events to stdout
@@ -16,7 +14,7 @@ func NewStdout() *Stdout {
 }
 
 // Send dispatches a trigger event
-func (d *Stdout) Send(e *message.ResponseWrapper) error {
+func (d *Stdout) Send(e interface{}) error {
 	messageBytes, err := json.Marshal(e)
 	if err != nil {
 		return err

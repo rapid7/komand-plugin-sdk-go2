@@ -467,6 +467,7 @@ func (g *Generator) runGoImports() error {
 	for _, p := range fileList {
 		cmd := exec.Command("goimports", "-w", "-srcdir", g.spec.PackageRoot, p)
 		if b, err := cmd.CombinedOutput(); err != nil {
+			fmt.Printf("DEBUG ~~~ %s ~~~ %s\n", string(b), err.Error())
 			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
 		}
 		if err := g.fixGoImportsNotKnowingHowToLookInLocalVendorFirst(p); err != nil {
@@ -479,7 +480,7 @@ func (g *Generator) runGoImports() error {
 func (g *Generator) vendorPluginDeps() error {
 	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 	cmd := exec.Command("dep", "init")
-	if doesFileExist(path.Join(rootPath, "manifest.json")) {
+	if doesFileExist(path.Join(rootPath, "manifest.json")) { // TOOD this doesn't work so hot, so just rm the vendor dir and manifests
 		cmd = exec.Command("dep", "ensure")
 	}
 	cmd.Dir = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)

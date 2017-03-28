@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/komand/plugin-sdk-go2/message"
 )
 
 // HTTP will dispatch via HTTP
@@ -32,7 +30,7 @@ func NewHTTP(url string) *HTTP {
 }
 
 // Send dispatches a trigger event
-func (d *HTTP) Send(e *message.ResponseWrapper) error {
+func (d *HTTP) Send(e interface{}) error {
 	messageBytes, err := json.Marshal(e)
 	if err != nil {
 		return err
@@ -43,12 +41,12 @@ func (d *HTTP) Send(e *message.ResponseWrapper) error {
 	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := d.client.Do(req)
-	// Since we don't even touch the body, the Close call will fast-track an ioutil.Discard copy
-	// this will never return an error we need to care about here afaik. Explicitly _-ing the error by design
-	_ = resp.Body.Close()
 	if err != nil {
 		return fmt.Errorf("Unable to send event to http dispatcher: %s", err.Error())
 	}
+	// Since we don't even touch the body, the Close call will fast-track an ioutil.Discard copy
+	// this will never return an error we need to care about here afaik. Explicitly _-ing the error by design
+	_ = resp.Body.Close()
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("Response failed, stopping trigger: %s %+v", resp.Status, resp.Header)
 	}
