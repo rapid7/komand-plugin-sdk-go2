@@ -12,7 +12,7 @@ clean:
 	rm -f ./github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
 
 run: clean build
-	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
+	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.timers.yaml" -package="github.com/komand/testplugins/timers/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...

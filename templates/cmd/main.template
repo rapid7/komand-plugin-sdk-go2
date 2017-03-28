@@ -178,7 +178,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 	l := plog.NewNormalLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
 
-	switch m.Body.Action {
+	switch m.Body.Trigger {
 	{{- range $n, $p := .Triggers }}
 	case "{{ $p.RawName }}":
 		input := &triggers.{{ .Name }}TriggerInput{}
