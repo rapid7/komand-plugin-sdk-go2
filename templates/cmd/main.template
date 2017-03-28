@@ -180,8 +180,8 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 	cd := &connection.Data{}
 	l := plog.NewNormalLogger()
 	d := dispatcherFromRaw(m.Body.Dispatcher)
-	meta := &message.TriggerEventMeta{}
-	if err := json.Unmarshal(m.Body.Meta, meta); err != nil {
+	meta := message.TriggerEventMeta{}
+	if err := json.Unmarshal(m.Body.Meta, &meta); err != nil {
 		return err
 	}
 
@@ -284,7 +284,7 @@ func printSampleInput(action string) error {
 		Body: message.BodyV1{
 			Action: action,
 			Connection: connBytes,
-			Meta: make(map[string]interface{}),
+			Meta: []byte(`{}`),
 			Dispatcher: make(map[string]interface{}),
 		},
 	}
