@@ -28,7 +28,7 @@ func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
 
 // ServeHTTP handles the requests
 func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	m := message.V1{
+	response := message.Response{
 		Status: "ok",
 	}
 	b, err := ioutil.ReadAll(r.Body)
@@ -89,12 +89,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Log = l.String()
 	response.Output = output
-	wrapper := &message.V1{
-		Body: response,
-		Type: "action_start",
-		Version: "v1",
-	}
-	b, _ = json.Marshal(wrapper) // There is nothing we can do if this errs?
+	b, _ = json.Marshal(response) // There is nothing we can do if this errs?
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }

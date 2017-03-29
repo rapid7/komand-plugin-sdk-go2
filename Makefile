@@ -12,7 +12,7 @@ clean:
 	rm -f ./github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
 
 run: clean build
-	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.timers.yaml" -package="github.com/komand/testplugins/timers/"
+	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...
@@ -20,7 +20,7 @@ deps:
 	go get -u honnef.co/go/tools/cmd/gosimple
 	go get -u honnef.co/go/tools/cmd/staticcheck
 	go get -u honnef.co/go/tools/cmd/unused
-	go get -u github.com/golang/dep/...
+	go get -u github.com/FiloSottile/gvt
 
 test: clean build
 	go list ./... | grep -v /vendor/ | xargs -P4 -L1 go test -v
