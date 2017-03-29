@@ -21,19 +21,3 @@ type RawResponse struct {
 	Output json.RawMessage `json:"output"` // Output contains the output of the Action
 	Log    string          `json:"log"`    // Log contains any captured log information
 }
-
-// ResponseWrapper wraps the Response object because thats how we do it in komand/komand
-type ResponseWrapper struct {
-	Type    string   `json:"type"`
-	Version string   `json:"version"`
-	Body    Response `json:"body"`
-}
-
-// RawResponseWrapper wraps the Response object because thats how we do it in komand/komand
-// This leaves Body.Output as a json.RawMessage, which is easier to parse into a custom type on the consumer
-// side than an interface{} is
-type RawResponseWrapper struct {
-	Type    string      `json:"type"`
-	Version string      `json:"version"`
-	Body    RawResponse `json:"body"`
-}
