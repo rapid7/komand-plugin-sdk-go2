@@ -35,9 +35,14 @@ func NewServer(c *connection.Cache) (*http.Server, error) {
 }
 
 // Light wrapper around returning an error with the response object over http
-func replyWithError(response message.Response, w http.ResponseWriter, err error) {
+func replyWithError(response *message.Response, w http.ResponseWriter, err error) {
 	response.Error = err.Error()
 	response.Status = "error"
-	b, _ := json.Marshal(response) // There is nothing we can do if this fails?
+	m := &message.V1{
+		Body: response,
+		Type: "action_event",
+		Version: "v1",
+	}
+	b, _ := json.Marshal(m) // There is nothing we can do if this fails?
 	w.Write(b)
 }

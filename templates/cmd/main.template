@@ -131,7 +131,8 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 	l := plog.NewBufferedLogger()
 	d := dispatcherFromRaw(b.Dispatcher)
 	defer l.Flush(os.Stderr)
-	response := message.Response{
+	response := &message.Response{
+		Meta: []byte(`{}`),
 		Status: "ok",
 	}
 	// Unmarshal the body into the right struct
@@ -166,7 +167,7 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 		// dispatch the result
 		wrapper := &message.V1{
 			Body: response,
-			Type: "action_start",
+			Type: "action_event",
 			Version: "v1",
 		}
 		d.Send(wrapper)
@@ -206,6 +207,7 @@ func runTriggerDaemon(mode string, b *message.BodyV1) error {
 		if mode == "test" {
 			o, err := t.Test(conn, input, l);
 			response := &message.Response{
+				Meta: []byte(`{}`),
 				Output: o,
 				Status: "ok",
 			}
@@ -215,7 +217,7 @@ func runTriggerDaemon(mode string, b *message.BodyV1) error {
 			}
 			wrapper := &message.V1{
 				Body: response,
-				Type: "action_start",
+				Type: "trigger_event",
 				Version: "v1",
 			}
 			d.Send(wrapper)
@@ -293,7 +295,7 @@ func printSampleInput(action string) error {
 	switch action {
 	{{- range $i, $a := .Actions }}
 	case "{{ $a.RawName }}":
-		m.Type = "action"
+		m.Type = "action_event"
 		actionBytes, err := json.Marshal(actions.{{ $a.Name }}Input{})
 		if err != nil {
 			return err
@@ -302,7 +304,7 @@ func printSampleInput(action string) error {
 	{{- end}}
 	{{- range $i, $t := .Triggers }}
 	case "{{ $t.RawName }}":
-		m.Type = "trigger"
+		m.Type = "trigger_event"
 		triggerBytes, err := json.Marshal(triggers.{{ $t.Name }}TriggerInput{})
 		if err != nil {
 			return err

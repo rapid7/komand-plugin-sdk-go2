@@ -28,7 +28,8 @@ func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
 
 // ServeHTTP handles the requests
 func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	response := message.Response{
+	response := &message.Response{
+		Meta: []byte(`{}`),
 		Status: "ok",
 	}
 	b, err := ioutil.ReadAll(r.Body)
@@ -44,7 +45,10 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
 		return
 	}
-	m := &message.V1{}
+	body := &message.BodyV1{}
+	m := &message.V1{
+		Body: &body,
+	}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		replyWithError(response, w, err)
@@ -56,13 +60,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// to do it this way.
 	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
 	input := &actions.{{ .Name }}Input{}
-	if err := json.Unmarshal(m.Body.Input, input); err != nil {
+	if err := json.Unmarshal(body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		replyWithError(response, w, err)
         return
 	}
 	cd := &connection.Data{}
-	if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		replyWithError(response, w, err)
         return
@@ -89,7 +93,12 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	response.Log = l.String()
 	response.Output = output
-	b, _ = json.Marshal(response) // There is nothing we can do if this errs?
+	reply := message.V1{
+		Type: "action_event",
+		Version: "v1",
+		Body: response,
+	}
+	b, _ = json.Marshal(reply) // There is nothing we can do if this errs?
 	w.WriteHeader(http.StatusOK)
 	w.Write(b)
 }
