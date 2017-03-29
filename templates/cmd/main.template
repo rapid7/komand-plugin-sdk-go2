@@ -59,8 +59,11 @@ func getArgsFromCLI() (*cliArgs, error) {
 	return args, nil
 }
 
-func getMessageFromStdin() (*message.V1, error) {
-	m := &message.V1{}
+func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
+	b := &message.BodyV1{}
+	m := &message.V1{
+		Body:  b,// Seed it with a type so marshalling works
+	}
 	dec := json.NewDecoder(os.Stdin)
 	if err := dec.Decode(m); err != nil {
 		// Try from os.Args[3] which is where the ui plugin.test seems to send them
@@ -68,7 +71,7 @@ func getMessageFromStdin() (*message.V1, error) {
 			return nil, err
 		}
 	}
-	return m, nil
+	return m, b, nil
 }
 
 func main() {
@@ -102,18 +105,18 @@ func main() {
 		fallthrough
 	default:
 		// We're running either an action, or a trigger
-		m, err := getMessageFromStdin()
+		m, b, err := getMessageFromStdin()
 		if err != nil {
 			log.Fatalf("you must provide a message body via STDIN to run an action or trigger: %s", err.Error())
 		}
 		switch m.Type {
 		case "action_start":
-			if err := runOneOffAction(args.Command, m); err != nil { // Command should be run, or test
+			if err := runOneOffAction(args.Command, b); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		case "trigger_start":
 			// This will block until the trigger shuts down
-			if err := runTriggerDaemon(args.Command, m); err != nil { // Command should be run, or test
+			if err := runTriggerDaemon(args.Command, b); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		default:
@@ -122,11 +125,11 @@ func main() {
 	}
 }
 
-func runOneOffAction(mode string, m *message.V1) error {
+func runOneOffAction(mode string, b *message.BodyV1) error {
 	{{- if .Actions }}
 	cd := &connection.Data{}
 	l := plog.NewBufferedLogger()
-	d := dispatcherFromRaw(m.Body.Dispatcher)
+	d := dispatcherFromRaw(b.Dispatcher)
 	defer l.Flush(os.Stderr)
 	response := message.Response{
 		Status: "ok",
@@ -136,14 +139,14 @@ func runOneOffAction(mode string, m *message.V1) error {
 	// but in this case, the performance gain is not that great, and it's less generator code to maintain
 	// to do it this way.
 	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
-	switch m.Body.Action {
+	switch b.Action {
 	{{- range $n, $p := .Actions }}
 	case "{{ $p.RawName }}":
 		input := &actions.{{ $p.Name }}Input{}
-		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+		if err := json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
-		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+		if err := json.Unmarshal(b.Connection, cd); err != nil {
 			return err
 		}
 		conn, err := connection.Connect(cd, l)
@@ -169,30 +172,30 @@ func runOneOffAction(mode string, m *message.V1) error {
 		d.Send(wrapper)
 	{{- end }}
 	default:
-		return fmt.Errorf("unknown action %s", m.Body.Action)
+		return fmt.Errorf("unknown action %s", b.Action)
 	}
 	{{- end}}
 	return nil
 }
 
-func runTriggerDaemon(mode string, m *message.V1) error {
+func runTriggerDaemon(mode string, b *message.BodyV1) error {
 	{{- if .Triggers }}
 	cd := &connection.Data{}
 	l := plog.NewNormalLogger()
-	d := dispatcherFromRaw(m.Body.Dispatcher)
+	d := dispatcherFromRaw(b.Dispatcher)
 	meta := message.TriggerEventMeta{}
-	if err := json.Unmarshal(m.Body.Meta, &meta); err != nil {
+	if err := json.Unmarshal(b.Meta, &meta); err != nil {
 		return err
 	}
 
-	switch m.Body.Trigger {
+	switch b.Trigger {
 	{{- range $n, $p := .Triggers }}
 	case "{{ $p.RawName }}":
 		input := &triggers.{{ .Name }}TriggerInput{}
-		if err := json.Unmarshal(m.Body.Input, input); err != nil {
+		if err := json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
-		if err := json.Unmarshal(m.Body.Connection, cd); err != nil {
+		if err := json.Unmarshal(b.Connection, cd); err != nil {
 			return err
 		}
 		conn, err := connection.Connect(cd, l)
@@ -226,7 +229,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 		return t.Run(conn, input, l)
 	{{- end }}
 	default:
-		return fmt.Errorf("unknown trigger %s", m.Body.Action)
+		return fmt.Errorf("unknown trigger %s", b.Action)
 	}
 	{{- end}}
 	return nil
@@ -281,7 +284,7 @@ func printSampleInput(action string) error {
 	}
 	m := message.V1{
 		Version: "v1",
-		Body: message.BodyV1{
+		Body: &message.BodyV1{
 			Action: action,
 			Connection: connBytes,
 			Meta: []byte(`{}`),
