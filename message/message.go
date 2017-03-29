@@ -4,9 +4,9 @@ import "encoding/json"
 
 // V1 is the general purpose komand plugin message envelope, which contains the body and other metadata
 type V1 struct {
-	Version string `json:"version"`
-	Type    string `json:"type"`
-	Body    BodyV1 `json:"body"`
+	Version string      `json:"version"`
+	Type    string      `json:"type"`
+	Body    interface{} `json:"body"`
 }
 
 // BodyV1 is the V1 message body

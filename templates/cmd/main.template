@@ -161,7 +161,7 @@ func runOneOffAction(mode string, m *message.V1) error {
 			response.Error = err.Error()
 		}
 		// dispatch the result
-		wrapper := &message.ResponseWrapper{
+		wrapper := &message.V1{
 			Body: response,
 			Type: "action_start",
 			Version: "v1",
@@ -212,7 +212,7 @@ func runTriggerDaemon(mode string, m *message.V1) error {
 			}
 			// To avoid needing to boot up the readloop and block until the message is consumed
 			// for testing, we emit to the dispatcher directly.
-			wrapper := &message.ResponseWrapper{
+			wrapper := &message.V1{
 				Body: response,
 				Type: "action_start",
 				Version: "v1",
