@@ -477,16 +477,34 @@ func (g *Generator) runGoImports() error {
 }
 
 func (g *Generator) vendorPluginDeps() error {
+	// TODO make this configurable in some way
+	depList := []string{
+		"github.com/komand/plugin-sdk-go2",
+		"github.com/go-yaml/yaml",
+		"github.com/mgutz/ansi",
+	}
 	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
-	cmd := exec.Command("gvt", "fetch", "github.com/komand/plugin-sdk-go2")
-	cmd.Dir = rootPath
-	fmt.Println(rootPath)
-	if doesFileExist(path.Join(rootPath, "vendor", "github.com", "komand", "plugin-sdk-go2")) {
-		cmd = exec.Command("gvt", "update", "github.com/komand/plugin-sdk-go2")
+	// If the deps already exist, remove them
+	// There is an update command that claims to do this, but it is not working for me
+	// I'm choosing to use 2 loops here, to do a proper purge, then a proper update
+	for _, d := range depList {
+		if doesFileExist(path.Join(rootPath, "vendor", d)) {
+			cmd := exec.Command("gvt", "delete", d)
+			cmd.Dir = rootPath
+			if b, err := cmd.CombinedOutput(); err != nil {
+				return fmt.Errorf("Error while running gvt on %s: %s - %s", rootPath, string(b), err.Error())
+			}
+		}
 	}
-	if b, err := cmd.CombinedOutput(); err != nil {
-		return fmt.Errorf("Error while running gvt on %s: %s - %s", rootPath, string(b), err.Error())
+	// Now, update the deps.
+	for _, d := range depList {
+		cmd := exec.Command("gvt", "fetch", d)
+		cmd.Dir = rootPath
+		if b, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("Error while running gvt on %s: %s - %s", rootPath, string(b), err.Error())
+		}
 	}
+
 	return nil
 }
 
