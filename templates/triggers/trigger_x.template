@@ -88,7 +88,12 @@ func (t *{{ .Name }}Trigger) StartReadLoop(l plog.Logger) error {
             Output: output,
             Meta: t.meta, // Copy the incoming meta to pass it along to the outgoing message
         }
-		if err := t.dispatcher.Send(response); err != nil {
+        m := message.V1{
+            Version: "v1",
+            Type: "trigger_event",
+            Body: &response,
+        }
+		if err := t.dispatcher.Send(m); err != nil {
 			log.Printf("Receieved error sending trigger message: %s", err)
 			return err
 		}
