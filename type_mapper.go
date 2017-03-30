@@ -12,13 +12,16 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper { // TO FIGURE OUT object and byte
 	t := &TypeMapper{
 		CustomTypes: map[string]string{
 			"boolean":   "bool",
-			"object":    "map[string]interface{}",
+			"object":    "interface{}",
 			"integer":   "int",
 			"bytes":     "[]byte",
 			"date":      "time.Time",
 			"date-time": "time.Time",
 			"number":    "float64",
 			"float":     "float64",
+			"python":    "string",
+			"password":  "string",
+			"file":      "types.SDKFile",
 		},
 	}
 

@@ -67,6 +67,7 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 	dec := json.NewDecoder(os.Stdin)
 	if err := dec.Decode(m); err != nil {
 		// Try from os.Args[3] which is where the ui plugin.test seems to send them
+		// as well as triggers? Things from the engine don't seem to always use stdin
 		if err := json.Unmarshal([]byte(os.Args[3]),m); err != nil {
 			return nil, nil, err
 		}
@@ -74,11 +75,24 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 	return m, b, nil
 }
 
+func pollSignals(cancel context.CancelFunc, c chan os.Signal) {
+		<-c
+		cancel()
+}
+
 func main() {
 	args, err := getArgsFromCLI()
 	if err != nil {
 		log.Fatal(err)
 	}
+	// Trap the interrupts
+	stopChan := make(chan os.Signal, 1)
+	signal.Notify(stopChan, syscall.SIGTERM, syscall.SIGINT)
+	// Create a context, which will be used to cancel things like triggers in the event of a signal
+	ctx, cancel := context.WithCancel(context.Background())
+	// Kick off a goroutine to handle the signals and the cancellation
+	go pollSignals(cancel, stopChan)
+	// Invoke the command
 	switch args.Command {
 	case "version":
 		printVersion()
@@ -116,7 +130,7 @@ func main() {
 			}
 		case "trigger_start":
 			// This will block until the trigger shuts down
-			if err := runTriggerDaemon(args.Command, b); err != nil { // Command should be run, or test
+			if err := runTriggerDaemon(ctx, args.Command, b); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		default:
@@ -179,60 +193,75 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 	return nil
 }
 
-func runTriggerDaemon(mode string, b *message.BodyV1) error {
+func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error {
 	{{- if .Triggers }}
-	cd := &connection.Data{}
+	// Make a logger
 	l := plog.NewNormalLogger()
+	// Serialize the connection data into the raw struct
+	cd := &connection.Data{}
+	if err := json.Unmarshal(b.Connection, cd); err != nil {
+		return err
+	}
+	// Now, establish a valid connection
+	conn, err := connection.Connect(cd, l)
+	if err != nil {
+		return err
+	}
+	// Get the dispatcher - will send the messages be sent over stdout or posted over http
 	d := dispatcherFromRaw(b.Dispatcher)
+	// Serialize the meta data about the trigger into the meta struct
 	meta := message.TriggerEventMeta{}
 	if err := json.Unmarshal(b.Meta, &meta); err != nil {
 		return err
 	}
-
 	switch b.Trigger {
 	{{- range $n, $p := .Triggers }}
 	case "{{ $p.RawName }}":
+		// Make the input and serialize it into the struct
 		input := &triggers.{{ .Name }}TriggerInput{}
 		if err := json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
-		if err := json.Unmarshal(b.Connection, cd); err != nil {
-			return err
-		}
-		conn, err := connection.Connect(cd, l)
-		if err != nil {
-			return err
-		}
+		// Build the trigger
 		t := triggers.New{{ $p.Name }}Trigger(d, meta)
-		if mode == "test" {
-			o, err := t.Test(conn, input, l);
-			response := &message.Response{
-				Meta: []byte(`{}`),
-				Output: o,
-				Status: "ok",
-			}
-			if  err != nil {
-				response.Error = err.Error()
-				response.Status = "error"
-			}
-			wrapper := &message.V1{
-				Body: response,
-				Type: "trigger_event",
-				Version: "v1",
-			}
-			d.Send(wrapper)
+		if mode == "test" { // Test mode, use the test method
+			// Since the test method doesn't need a run or read loop
+			// we do the boring work of packaging the result here
+			// Invoke the test, pass the results to the message helper func
+			// then pass that message into the dispatcher
+			d.Send(testResultMessage(t.Test(conn, input, l)))
 			return nil
 		}
 		// Start the read loop
-		go t.StartReadLoop(l)
+		go t.ReadLoop(ctx, l)
 		// Run will block until it completes / shutsdown
-		return t.Run(conn, input, l)
+		return t.RunLoop(ctx, conn, input, l)
 	{{- end }}
 	default:
 		return fmt.Errorf("unknown trigger %s", b.Action)
 	}
 	{{- end}}
+	{{- if not .Triggers }}
 	return nil
+	{{- end}}
+}
+
+func testResultMessage(o interface{}, err error) *message.V1 {
+	response := &message.Response{
+		Meta: []byte(`{}`),
+		Output: o,
+		Status: "ok",
+	}
+	if  err != nil {
+		response.Error = err.Error()
+		response.Status = "error"
+	}
+	wrapper := &message.V1{
+		Body: response,
+		Type: "trigger_event",
+		Version: "v1",
+	}
+	return wrapper
 }
 
 // This is pretty hacky, not sure if there is a better way but from the engine, it doesn't look

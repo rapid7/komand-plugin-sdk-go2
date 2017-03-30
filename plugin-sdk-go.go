@@ -119,6 +119,7 @@ type PluginHandlerData struct {
 
 	// Things that are only used to make parsing templates simpler
 	PackageRoot string `yaml:"-"`
+	HasInterval bool   `yaml:"-"`
 }
 
 // TypeData defines the custom types. Much of the data is pulled via a parent-key, so we don't parse much from yaml at all.
@@ -168,9 +169,12 @@ func postProcessSpec(s *PluginSpec) error {
 	for name, param := range s.Connection {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
+		specType := param.Type
 		param.Type = t.SpecTypeToGoType(param.Type)
 		s.Connection[name] = param
-		if param.Type == "string" {
+		// This is all stupid hacky but we need some way to hash the params and have a consistent key
+		// for the connection in the hash for looking up via the data incoming with the message
+		if param.Type == "string" && specType != "python" && specType != "password" {
 			if s.ConnectionDataKey != "" {
 				s.ConnectionDataKey += " + "
 			}
@@ -210,6 +214,11 @@ func postProcessSpec(s *PluginSpec) error {
 		if err := updateParams(trigger.Output, t); err != nil {
 			return err
 		}
+
+		if _, ok := trigger.Input["interval"]; ok {
+			trigger.HasInterval = true
+		}
+
 		s.Triggers[name] = trigger
 	}
 
@@ -218,11 +227,11 @@ func postProcessSpec(s *PluginSpec) error {
 	}
 
 	if s.HTTP.ReadTimeout == 0 {
-		s.HTTP.ReadTimeout = 2
+		s.HTTP.ReadTimeout = 60 // Default read timeout is 60 secs
 	}
 
 	if s.HTTP.WriteTimeout == 0 {
-		s.HTTP.WriteTimeout = 2
+		s.HTTP.WriteTimeout = 60 // default write timeout is 60 secs
 	}
 	return nil
 }
@@ -314,18 +323,19 @@ func runTemplate(templatePath string, outputPath string, data interface{}, skipI
 }
 
 func (g *Generator) generateActions() error {
+	fmt.Printf("Generating actions for %s\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToActionTemplate := "templates/actions/action_x.template"
-	pathToRunTemplate := "templates/actions/action_x_run.template"
+	pathToRunTemplate := "templates/actions/action_x_custom.template"
 	for name, action := range g.spec.Actions {
 		// Make the new action.go
 		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/actions/", name+".go")
 		if err := runTemplate(pathToActionTemplate, newFilePath, action, false); err != nil {
 			return err
 		}
-		// Make the new action_run.go
-		// action_run is broken out, so that re-generating will skip them if they exist, making it easier for the dev
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/actions/", name+"_run.go")
+		// Make the new action_custom.go
+		// action_custom is broken out, so that re-generating will skip them if they exist, making it easier for the dev
+		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/actions/", name+"_custom.go")
 		if err := runTemplate(pathToRunTemplate, newFilePath, action, true); err != nil {
 			return err
 		}
@@ -334,14 +344,15 @@ func (g *Generator) generateActions() error {
 }
 
 func (g *Generator) generateConnections() error {
+	fmt.Printf("Generating connections for %s\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/connection/connection.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/", "connection.go")
 	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
 		return err
 	}
-	// Connect and validate are broken out, so that re-generating will skip them if they exist, making it easier for the dev
-	pathToTemplate = "templates/connection/connect.template"
-	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/connect.go")
+	// connection_custom and validate are broken out, so that re-generating will skip them if they exist, making it easier for the dev
+	pathToTemplate = "templates/connection/connection_custom.template"
+	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/connection_custom.go")
 	if err := runTemplate(pathToTemplate, newFilePath, g.spec, true); err != nil {
 		return err
 	}
@@ -351,9 +362,10 @@ func (g *Generator) generateConnections() error {
 }
 
 func (g *Generator) generateTriggers() error {
+	fmt.Printf("Generating triggers for %s\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToTriggerTemplate := "templates/triggers/trigger_x.template"
-	pathToRunTemplate := "templates/triggers/trigger_x_run.template"
+	pathToRunTemplate := "templates/triggers/trigger_x_custom.template"
 
 	for name, trigger := range g.spec.Triggers {
 		// Make the new action.go
@@ -362,7 +374,7 @@ func (g *Generator) generateTriggers() error {
 			return err
 		}
 		// trigger_run is broken out, so that re-generating will skip them if they exist, making it easier for the dev
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/triggers/", name+"_run.go")
+		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/triggers/", name+"_custom.go")
 		if err := runTemplate(pathToRunTemplate, newFilePath, trigger, true); err != nil {
 			return err
 		}
@@ -371,18 +383,21 @@ func (g *Generator) generateTriggers() error {
 }
 
 func (g *Generator) generateCmd() error {
+	fmt.Printf("Generating main for %s\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/cmd/main.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/cmd/", "main.go")
 	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) generateHTTPServer() error {
+	fmt.Printf("Generating http server for %s\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/server/http/server.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", "server.go")
 	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) generateHTTPHandlers() error {
+	fmt.Printf("Generating http handlers for %s\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToTemplate := "templates/server/http/handler_x.template"
 	for name, action := range g.spec.Actions {
@@ -396,15 +411,23 @@ func (g *Generator) generateHTTPHandlers() error {
 }
 
 func (g *Generator) generateTests() error {
+	fmt.Printf("Generating tests for %s\n", g.spec.PackageRoot)
 	return nil
 }
 
 func (g *Generator) generateTypes() error {
+	fmt.Printf("Generating types for %s\n", g.spec.PackageRoot)
+	pathToTemplate := "templates/types/sdk_file.template"
+	// Do the built in sdk file
+	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/sdk_file.go")
+	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
+		return err
+	}
 	// Now, do one for each action using the type_x template
-	pathToTemplate := "templates/types/type_x.template"
+	pathToTemplate = "templates/types/type_x.template"
 	for name, t := range g.spec.Types {
 		// Make the new action.go
-		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/", name+".go")
+		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/", name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, t, false); err != nil {
 			return err
 		}
@@ -413,6 +436,7 @@ func (g *Generator) generateTypes() error {
 }
 
 func (g *Generator) generateBuildSupport() error {
+	fmt.Printf("Generating build support for %s\n", g.spec.PackageRoot)
 	// Docker
 	pathToTemplate := "templates/Dockerfile.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "Dockerfile")
@@ -438,6 +462,7 @@ func (g *Generator) generateBuildSupport() error {
 }
 
 func (g *Generator) copySpec() error {
+	fmt.Printf("Copying the spec for %s\n", g.spec.PackageRoot)
 	// Read all content of src to data
 	data, err := ioutil.ReadFile(g.spec.SpecLocation)
 	if err != nil {
@@ -448,6 +473,7 @@ func (g *Generator) copySpec() error {
 }
 
 func (g *Generator) runGoImports() error {
+	fmt.Printf("Formatting and updating import statements for %s\n", g.spec.PackageRoot)
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
 	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
@@ -477,6 +503,8 @@ func (g *Generator) runGoImports() error {
 }
 
 func (g *Generator) vendorPluginDeps() error {
+	fmt.Printf("Vendoring dependencies for %s\n", g.spec.PackageRoot)
+	fmt.Println("... This may take a few minutes depending on your network connection")
 	// TODO make this configurable in some way
 	depList := []string{
 		"github.com/komand/plugin-sdk-go2",

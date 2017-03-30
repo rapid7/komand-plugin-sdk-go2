@@ -36,5 +36,5 @@ type {{ .Name }}Output struct {
     {{- end }}
 }
 
-// {{ .Name }}Action is an action
+// {{ .Name }}Action is an action the plugin can take
 type {{ .Name }}Action struct {}

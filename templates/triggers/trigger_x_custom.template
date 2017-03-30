@@ -1,0 +1,59 @@
+package triggers
+
+import (
+    plog "github.com/komand/plugin-sdk-go2/log"
+    "{{ .PackageRoot }}/connection"
+)
+
+// Validate will validate the input is properly setup with whatever rules you put in
+// You can leave this blank if you want to, but if you need to enforce restrictions
+// here is where you can return a number of errors. Otherwise, return nil for success
+func (i *{{ .Name }}TriggerInput) Validate() []error {
+    errors := make([]error, 0)
+    
+    // Custom validation code here
+    // Append errors as needed
+
+    // return
+    if len(errors) > 0 {
+        return errors
+    }
+    return nil
+}
+
+// Validate will validate the output is properly setup with whatever rules you put in
+// You can leave this blank if you want to, but if you need to enforce restrictions
+// here is where you can return a number of errors. Otherwise, return nil for success
+func (o *{{ .Name }}TriggerOutput) Validate() []error {
+    errors := make([]error, 0)
+    
+    // Custom validation code here
+    // Append errors as needed
+
+    // return
+    if len(errors) > 0 {
+        return errors
+    }
+    return nil
+}
+
+// Run runs the trigger, but does not blocks and only runs the trigger polling one time
+// It is intended to be called from inside of a loop, which handles submitting the results
+// and keeping track of when to call this method.
+func (t *{{ .Name }}Trigger) Run(ctx context.Context, conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
+    // Your code here
+    // Use the `log` object passed into the Connect method and any logging information
+    // will be returned with the message in the log field. Otherwise, it will be discarded.
+    
+    // time.Sleep(input.Interval) // If your trigger makes use of a sleep interval, uncomment this line
+}
+
+// Test runs the trigger, but does not block and only runs the trigger polling one time
+func (t *{{ .Name }}Trigger) Test(ctx context.Context, conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
+    output := &{{ .Name }}TriggerOutput{}
+    // Your code here
+    // Use the `log` object passed into the Connect method and any logging information
+    // will be returned with the message in the log field. Otherwise, it will be discarded.
+
+    return output, nil
+}
