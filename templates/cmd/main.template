@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	ansi "github.com/mgutz/ansi"
 
@@ -78,6 +79,10 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 func pollSignals(cancel context.CancelFunc, c chan os.Signal) {
 		<-c
 		cancel()
+		// Major hack - we should be blocking on a channel or series of channels that say
+		// this part of the runtime has shut down, it's ok to proceed, then exit
+		time.Sleep(1 * time.Second)
+		os.Exit(0)
 }
 
 func main() {
