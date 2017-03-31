@@ -154,6 +154,13 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 		Meta: []byte(`{}`),
 		Status: "ok",
 	}
+	if err := json.Unmarshal(b.Connection, cd); err != nil {
+		return err
+	}
+	conn, err := connection.Connect(cd, l)
+	if err != nil {
+		return err
+	}
 	// Unmarshal the body into the right struct
 	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
 	// but in this case, the performance gain is not that great, and it's less generator code to maintain
@@ -166,13 +173,15 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 		if err := json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
-		if err := json.Unmarshal(b.Connection, cd); err != nil {
-			return err
-		}
-		conn, err := connection.Connect(cd, l)
-		if err != nil {
-			return err
-		}
+		
+		var err error
+ 		for _, err = range input.Validate() {
+        	log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
+   		}
+   		if err != nil {
+       		return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
+   		}
+
 		a := &actions.{{ $p.Name }}Action{}
 		runMethod := a.Run
 		if mode == "test" {
