@@ -65,13 +65,23 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		replyWithError(response, w, err)
         return
 	}
+	
+	l := plog.NewBufferedLogger()
+	for _, err = input.Validate(); errs != nil {
+        log.Println(fmt.Sprintf("Error while validating {{ .Name}}Input: %s", err.Error()))
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name}}Input. Check logs for details"))
+        return
+	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		replyWithError(response, w, err)
         return
 	}
-	l := plog.NewBufferedLogger()
+
     conn, err := h.c.Get(cd, l)
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)

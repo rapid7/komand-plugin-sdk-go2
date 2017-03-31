@@ -5,7 +5,7 @@ import "encoding/json"
 // TriggerEvent This an event type for triggering a single workflow.
 // Used for API triggers and Republishing events.
 type TriggerEvent struct {
-	Type    string           `json:"type"`     // Is it a single trigger or a multi-cast trigger?
+	Type    string           `json:"type"`     // Is it a single trigger or a multi-cast trigger? AFAIK this never actually gets set? Plus it means the full message body has Type in it twice.
 	ID      string           `json:"id"`       // This will become the JobID for the resulting job
 	GroupID string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
 	Meta    TriggerEventMeta `json:"meta"`

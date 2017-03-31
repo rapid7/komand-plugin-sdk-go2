@@ -71,8 +71,21 @@ func (t *{{ .Name }}Trigger) Stop() {
 }
 
 // RunLoop runs the trigger and blocks until the trigger polling is complete or errors. It will block.
+// TODO This could be optimized so that the "instant tick" idiom is only used when the ticker is used
+// It would take more work but it would be a definite improvement. Also this does mean the first iteration
+// of the loop will ignore a cancelletion from the context, but at this time i am willing to accept that tradeoff
+// since this helps the more likely case of a message being lost on sudden shutdown.
 func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) error {
-    // This timer idiom is a bit odd - it is the "instant tick" idiom
+   // Trigger inputs only get sent in once. Before we event bother with this loop stuff, check it
+   // Bail if it's invalid
+   var err error
+   for _, err = range input.Validate() {
+        log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
+   }
+   if err != nil {
+       return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
+   }
+   // This timer idiom is a bit odd - it is the "instant tick" idiom
 	// Basically, i don't need to wait for the first iteration of the timer for it to fire
 	// it fires immediately, then every duration thereafter.
 	// See: https://www.reddit.com/r/golang/comments/5g0hor/ticker_with_instant_start/daoxqey/

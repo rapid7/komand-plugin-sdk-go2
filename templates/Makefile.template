@@ -72,4 +72,15 @@ validate:
 	@test -f ../tools/check_spec.py || echo "Check spec tool not included in customer installs!"
 	@test -f ../tools/check_spec.py && python2 ../tools/check_spec.py ./plugin.spec.yaml
 
-.PHONY: all build package image plugin regenerate
+deps:
+	go get -u honnef.co/go/tools/cmd/gosimple
+	go get -u honnef.co/go/tools/cmd/staticcheck
+	go get -u honnef.co/go/tools/cmd/unused
+	go get -u github.com/FiloSottile/gvt
+
+check:
+	staticcheck $$(go list ./... | grep -v /vendor/)
+	gosimple $$(go list ./... | grep -v /vendor/)
+	unused $$(go list ./... | grep -v /vendor/)
+
+.PHONY: all build package image plugin regenerate deps check

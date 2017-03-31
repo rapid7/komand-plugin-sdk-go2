@@ -6,8 +6,11 @@ import (
 )
 
 // Validate will validate the input is properly setup with whatever rules you put in
-// You can leave this blank if you want to, but if you need to enforce restrictions
-// here is where you can return a number of errors. Otherwise, return nil for success
+// You can also use this to pre-set any values before they are run by the Run method.
+// Note that for Actions, the  Input message is inspected every time time, just before it
+// is handed to the Run method. Keep this in mind when setting any properties on the Input i
+// You can return a set of errors for any reason to fail the step.
+// Otherwise, return nil for success
 func (i *{{ .Name }}Input) Validate() []error {
     errs := make([]error, 0)
     

@@ -323,7 +323,7 @@ func runTemplate(templatePath string, outputPath string, data interface{}, skipI
 }
 
 func (g *Generator) generateActions() error {
-	fmt.Printf("Generating actions for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/actions\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToActionTemplate := "templates/actions/action_x.template"
 	pathToRunTemplate := "templates/actions/action_x_custom.template"
@@ -344,7 +344,7 @@ func (g *Generator) generateActions() error {
 }
 
 func (g *Generator) generateConnections() error {
-	fmt.Printf("Generating connections for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/connection\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/connection/connection.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/", "connection.go")
 	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
@@ -383,21 +383,21 @@ func (g *Generator) generateTriggers() error {
 }
 
 func (g *Generator) generateCmd() error {
-	fmt.Printf("Generating main for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/cmd 💖 main✨\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/cmd/main.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/cmd/", "main.go")
 	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) generateHTTPServer() error {
-	fmt.Printf("Generating http server for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/server/http (daemon)\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/server/http/server.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", "server.go")
 	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) generateHTTPHandlers() error {
-	fmt.Printf("Generating http handlers for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/server/http (handlers)\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToTemplate := "templates/server/http/handler_x.template"
 	for name, action := range g.spec.Actions {
@@ -411,12 +411,12 @@ func (g *Generator) generateHTTPHandlers() error {
 }
 
 func (g *Generator) generateTests() error {
-	fmt.Printf("Generating tests for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/tests\n", g.spec.PackageRoot)
 	return nil
 }
 
 func (g *Generator) generateTypes() error {
-	fmt.Printf("Generating types for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/types\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/types/sdk_file.template"
 	// Do the built in sdk file
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/sdk_file.go")
@@ -436,7 +436,7 @@ func (g *Generator) generateTypes() error {
 }
 
 func (g *Generator) generateBuildSupport() error {
-	fmt.Printf("Generating build support for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s Build Artifacts (make, docker) \n", g.spec.PackageRoot)
 	// Docker
 	pathToTemplate := "templates/Dockerfile.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "Dockerfile")
@@ -462,7 +462,7 @@ func (g *Generator) generateBuildSupport() error {
 }
 
 func (g *Generator) copySpec() error {
-	fmt.Printf("Copying the spec for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/plugin.spec.yaml\n", g.spec.PackageRoot)
 	// Read all content of src to data
 	data, err := ioutil.ReadFile(g.spec.SpecLocation)
 	if err != nil {
@@ -473,7 +473,7 @@ func (g *Generator) copySpec() error {
 }
 
 func (g *Generator) runGoImports() error {
-	fmt.Printf("Formatting and updating import statements for %s\n", g.spec.PackageRoot)
+	fmt.Println("Formatting and updating import statements")
 	// TODO add tests?
 	// TODO pivot to using goimports, which expects whole files, not packages :/
 	searchDir := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
@@ -503,8 +503,8 @@ func (g *Generator) runGoImports() error {
 }
 
 func (g *Generator) vendorPluginDeps() error {
-	fmt.Printf("Vendoring dependencies for %s\n", g.spec.PackageRoot)
-	fmt.Println("... This may take a few minutes depending on your network connection")
+	fmt.Println("Vendoring dependencies... ")
+	fmt.Println(" ...This may take a few minutes depending on your network connection")
 	// TODO make this configurable in some way
 	depList := []string{
 		"github.com/komand/plugin-sdk-go2",
