@@ -10,6 +10,7 @@ type TriggerEvent struct {
 	GroupID string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
 	Meta    TriggerEventMeta `json:"meta"`
 	Output  interface{}      `json:"output"`
+	Log     string           `json:"string"`
 }
 
 // TriggerEventMeta is the base information needed to run a step. It contains information both for

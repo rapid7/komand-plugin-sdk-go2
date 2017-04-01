@@ -148,7 +148,10 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 	{{- if .Actions }}
 	cd := &connection.Data{}
 	l := plog.NewBufferedLogger()
-	d := dispatcherFromRaw(b.Dispatcher)
+	d, err := dispatcherFromRaw(b.Dispatcher)
+	if err != nil {
+		return err
+	}
 	defer l.Flush(os.Stderr)
 	response := &message.Response{
 		Meta: []byte(`{}`),
@@ -173,7 +176,6 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 		if err := json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
-		
 		var err error
  		for _, err = range input.Validate() {
         	log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
@@ -181,13 +183,13 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
    		if err != nil {
        		return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
    		}
-
 		a := &actions.{{ $p.Name }}Action{}
 		runMethod := a.Run
 		if mode == "test" {
 			runMethod = a.Test
 		}
 		response.Output, err = runMethod(conn, input, l)
+		response.Log = l.String()
 		if err != nil {
 			response.Status = "error"
 			response.Error = err.Error()
@@ -222,7 +224,10 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 		return err
 	}
 	// Get the dispatcher - will send the messages be sent over stdout or posted over http
-	d := dispatcherFromRaw(b.Dispatcher)
+	d, err := dispatcherFromRaw(b.Dispatcher)
+	if err != nil {
+		return err
+	}
 	// Serialize the meta data about the trigger into the meta struct
 	meta := message.TriggerEventMeta{}
 	if err := json.Unmarshal(b.Meta, &meta); err != nil {
@@ -243,7 +248,8 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 			// we do the boring work of packaging the result here
 			// Invoke the test, pass the results to the message helper func
 			// then pass that message into the dispatcher
-			d.Send(testResultMessage(t.Test(conn, input, l)))
+			o, err := t.Test(conn, input, l)
+			d.Send(testResultMessage(l, o, err))
 			return nil
 		}
 		// Start the read loop
@@ -260,11 +266,12 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 	{{- end}}
 }
 
-func testResultMessage(o interface{}, err error) *message.V1 {
+func testResultMessage(log *plog.Logger, o interface{}, err error) *message.V1 {
 	response := &message.Response{
 		Meta: []byte(`{}`),
 		Output: o,
 		Status: "ok",
+		Log: log.String(),
 	}
 	if  err != nil {
 		response.Error = err.Error()
@@ -282,8 +289,12 @@ func testResultMessage(o interface{}, err error) *message.V1 {
 // like we send any kind of "type" flag with the dispatcher... it looks like what we do is default
 // to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
 // and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
-func dispatcherFromRaw(data map[string]interface{}) dispatcher.Dispatcher {
-	if url, ok := data["url"]; ok { // Engine actually sends 2 values, but we only use this one?
+func dispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
+	m := make(map[string]interface{})
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	if url, ok := m["url"]; ok { // Engine actually sends 2 values, but we only use this one?
 		return dispatcher.NewHTTP(url.(string))
 	}
 	return dispatcher.NewStdout()
@@ -329,7 +340,7 @@ func printSampleInput(action string) error {
 		Action: action,
 		Connection: connBytes,
 		Meta: []byte(`{}`),
-		Dispatcher: make(map[string]interface{}),
+		Dispatcher: []byte(`{}`),
 	}
 	m := message.V1{
 		Version: "v1",

@@ -67,7 +67,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	
 	l := plog.NewBufferedLogger()
-	for _, err = input.Validate(); errs != nil {
+	for _, err = range input.Validate() {
         log.Println(fmt.Sprintf("Error while validating {{ .Name}}Input: %s", err.Error()))
 	}
 	if err != nil {
