@@ -43,20 +43,28 @@ func (o *{{ .Name }}TriggerOutput) Validate() []error {
 // Run runs the trigger, but does not blocks and only runs the trigger polling one time
 // It is intended to be called from inside of a loop, which handles submitting the results
 // and keeping track of when to call this method.
-func (t *{{ .Name }}Trigger) Run(ctx context.Context, conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
-    // Your code here
-    // Use the `log` object passed into the Connect method and any logging information
-    // will be returned with the message in the log field. Otherwise, it will be discarded.
-    
-    // time.Sleep(input.Interval) // If your trigger makes use of a sleep interval, uncomment this line
-}
-
-// Test runs the trigger, but does not block and only runs the trigger polling one time
-func (t *{{ .Name }}Trigger) Test(ctx context.Context, conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
+func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
     output := &{{ .Name }}TriggerOutput{}
     // Your code here
     // Use the `log` object passed into the Connect method and any logging information
     // will be returned with the message in the log field. Otherwise, it will be discarded.
+
+    // return output and no error for success
+    // return nil and error for failure
+
+    return output, nil    
+}
+    
+
+// Test runs the trigger, but does not block and only runs the trigger polling one time
+func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
+    output := &{{ .Name }}TriggerOutput{}
+    // Your code here
+    // Use the `log` object passed into the Connect method and any logging information
+    // will be returned with the message in the log field. Otherwise, it will be discarded.
+
+    // return output and no error for success
+    // return nil and error for failure
 
     return output, nil
 }

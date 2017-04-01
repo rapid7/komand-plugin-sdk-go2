@@ -362,7 +362,7 @@ func (g *Generator) generateConnections() error {
 }
 
 func (g *Generator) generateTriggers() error {
-	fmt.Printf("Generating triggers for %s\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/triggers\n", g.spec.PackageRoot)
 	// Now, do one for each action using the action_x template
 	pathToTriggerTemplate := "templates/triggers/trigger_x.template"
 	pathToRunTemplate := "templates/triggers/trigger_x_custom.template"

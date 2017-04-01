@@ -258,7 +258,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 		return t.RunLoop(ctx, conn, input, l)
 	{{- end }}
 	default:
-		return fmt.Errorf("unknown trigger %s", b.Action)
+		return fmt.Errorf("unknown trigger %s", b.Trigger)
 	}
 	{{- end}}
 	{{- if not .Triggers }}
