@@ -266,12 +266,16 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 	{{- end}}
 }
 
-func testResultMessage(log *plog.Logger, o interface{}, err error) *message.V1 {
+func testResultMessage(log plog.Logger, o interface{}, err error) *message.V1 {
+	l := ""
+	if blog, ok := log.(*plog.BufferedLogger); ok {
+		l = blog.String()
+	}
 	response := &message.Response{
 		Meta: []byte(`{}`),
 		Output: o,
 		Status: "ok",
-		Log: log.String(),
+		Log: l,
 	}
 	if  err != nil {
 		response.Error = err.Error()
@@ -292,12 +296,12 @@ func testResultMessage(log *plog.Logger, o interface{}, err error) *message.V1 {
 func dispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(data, &m); err != nil {
-		return err
+		return nil, err
 	}
 	if url, ok := m["url"]; ok { // Engine actually sends 2 values, but we only use this one?
-		return dispatcher.NewHTTP(url.(string))
+		return dispatcher.NewHTTP(url.(string)), nil
 	}
-	return dispatcher.NewStdout()
+	return dispatcher.NewStdout(), nil
 }
 
 func printDescription() {
