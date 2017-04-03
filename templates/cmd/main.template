@@ -177,7 +177,7 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 			return err
 		}
 		var err error
- 		for _, err = range input.Validate() {
+ 		for _, err = range input.Validate(l) {
         	log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
    		}
    		if err != nil {

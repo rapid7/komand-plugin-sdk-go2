@@ -11,7 +11,7 @@ import (
 // is handed to the Run method. Keep this in mind when setting any properties on the Input i
 // You can return a set of errors for any reason to fail the step.
 // Otherwise, return nil for success
-func (i *{{ .Name }}Input) Validate() []error {
+func (i *{{ .Name }}Input) Validate(log plog.Logger) []error {
     errs := make([]error, 0)
     
     // Custom validation code here
@@ -27,7 +27,7 @@ func (i *{{ .Name }}Input) Validate() []error {
 // Validate will validate the output is properly setup with whatever rules you put in
 // You can leave this blank if you want to, but if you need to enforce restrictions
 // here is where you can return a number of errors. Otherwise, return nil for success
-func (o *{{ .Name }}Output) Validate() []error {
+func (o *{{ .Name }}Output) Validate(log plog.Logger) []error {
     errs := make([]error, 0)
     
     // Custom validation code here

@@ -14,6 +14,7 @@ import (
 {{- range $n, $p := .Input }}
 {{- if $p.EnumLiteral }}
 // Input Enums
+
 {{- range $i, $e := $p.EnumLiteral }}
 // {{ $name }}TriggerInput{{ $e.Name }} is an enumerated value
 const {{ $name}}TriggerInput{{ $e.Name }} = {{ $e.LiteralValue }}
@@ -32,6 +33,8 @@ const {{ $name }}TriggerOutput{{ $e.Name }} = {{ $e.LiteralValue }}
 
 // {{ .Name}}TriggerInput defines the input for the {{ .Name }}Trigger
 type {{ .Name }}TriggerInput struct {
+    Custom{{ .Name }}TriggerInputParams
+
     {{- range $n , $p := .Input}}
     {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
@@ -79,7 +82,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
    // Trigger inputs only get sent in once. Before we event bother with this loop stuff, check it
    // Bail if it's invalid
    var err error
-   for _, err = range input.Validate() {
+   for _, err = range input.Validate(log) {
         log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
    }
    if err != nil {

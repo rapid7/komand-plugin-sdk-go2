@@ -7,5 +7,5 @@ package types
 // experience
 type SDKFile struct {
     FileName string `json:"file_name"`
-    Contents string `json:"contents"`
+    Contents []byte `json:"contents"`
 }
