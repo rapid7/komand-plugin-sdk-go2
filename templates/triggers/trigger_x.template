@@ -14,7 +14,7 @@ import (
 {{- range $n, $p := .Input }}
 {{- if $p.EnumLiteral }}
 // Input Enums
-
+//
 {{- range $i, $e := $p.EnumLiteral }}
 // {{ $name }}TriggerInput{{ $e.Name }} is an enumerated value
 const {{ $name}}TriggerInput{{ $e.Name }} = {{ $e.LiteralValue }}
