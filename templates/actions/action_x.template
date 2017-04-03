@@ -5,8 +5,6 @@ package actions
 {{ $name := .Name }}
 {{- range $n, $p := .Input }}
 {{- if $p.EnumLiteral }}
-// Input Enums
-//
 {{- range $i, $e := $p.EnumLiteral }}
 // {{ $name }}Input{{ $e.Name }} is an enumerated value
 const {{ $name }}Input{{ $e.Name }} = {{ $e.LiteralValue }}
