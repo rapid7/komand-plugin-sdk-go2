@@ -199,6 +199,50 @@ connection:
     description: "Authentication token"
 
 types:
+  ctx_channel:
+    id:
+      type: string
+    name:
+      type: string
+  ctx_message:
+    user:
+      type: string
+    username:
+      type: string
+    text:
+      type: string
+    timestamp:
+      type: string
+    type:
+      type: string
+  slack_search_message:
+    type:
+      type: string
+    channel:
+      type: ctx_channel
+    user:
+      type: string
+    username:
+      type: string
+    text:
+      type: string
+    permalink:
+      type: string
+    previous:
+      type: ctx_message
+    previous2:
+      type: ctx_message
+    next:
+      type: ctx_message
+    next2:
+      type: ctx_message
+  attachment_field:
+    title:
+      type: string
+    value:
+      type: string
+    short:
+      type: boolean
   attachment:
     color:
       type: string
@@ -228,13 +272,6 @@ types:
       type: "[]attachment_field"
     markdown_in:
       type: "[]string"
-  attachment_field:
-    title:
-      type: string
-    value:
-      type: string
-    short:
-      type: boolean
   item_reaction:
     name:
       type: string
@@ -528,7 +565,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: file
+        type: slack_file
 
   upload_file:
     description: "Upload a file to Slack"
@@ -547,7 +584,7 @@ actions:
         description: "Channels which the file should be shared to (comma-separated)"
     output:
       file:
-        type: file
+        type: slack_file
 
   post_message:
     description: "Post a message to the Slack channel"
@@ -587,7 +624,7 @@ actions:
     description: Search message archive.
     output:
       matches:
-        type: "[]slack.SearchMessage"
+        type: "[]slack_search_message"
       count:
         type: int
       total:
