@@ -9,8 +9,7 @@ import (
 	"os"
 	"time"
 
-	ansi "github.com/mgutz/ansi"
-
+	"github.com/komand/plugin-sdk-go2/cli"
 	"github.com/komand/plugin-sdk-go2/dispatcher"
     plog "github.com/komand/plugin-sdk-go2/log"
 	"github.com/komand/plugin-sdk-go2/message"
@@ -34,43 +33,22 @@ var (
     Version = "{{ .Version }}"
 	// Description plugin description
     Description = "{{ .Description }}"
+	// DefaultPort is the default port to use
+	DefaultPort = 10001
 )
 
-// These define various color constants 
-var (
-	lime  = ansi.ColorCode("green+h:black")
-	red   = ansi.ColorCode("red")
-	green = ansi.ColorCode("green")
-	reset = ansi.ColorCode("reset")
-)
-
-type cliArgs struct {
-	Command     string
-	SubCommands []string
-}
-
-func getArgsFromCLI() (*cliArgs, error) {
-	if len(os.Args) <= 1 {
-		return nil, errors.New("you must specify command to invoke a plugin")
-	}
-	args := &cliArgs{
-		Command:     os.Args[1],
-		SubCommands: os.Args[2:],
-	}
-	return args, nil
-}
-
+// getMessageFromStdin looks through both stdin and the os.Args for a message body to work as input
 func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 	b := &message.BodyV1{}
 	m := &message.V1{
-		Body:  b,// Seed it with a type so marshalling works
+		Body: b, // Seed it with a type so marshalling works
 	}
 	dec := json.NewDecoder(os.Stdin)
 	if err := dec.Decode(m); err != nil {
 		// Try from os.Args[3] which is where the komand engine code will send the data
 		// when it's not over stdin - this will always have a "--" in pos 2
 		if len(os.Args) == 4 && os.Args[2] == "--" {
-			if err := json.Unmarshal([]byte(os.Args[3]),m); err != nil {
+			if err := json.Unmarshal([]byte(os.Args[3]), m); err != nil {
 				return nil, nil, err
 			}
 		}
@@ -80,19 +58,13 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 	return m, b, nil
 }
 
-func pollSignals(cancel context.CancelFunc, c chan os.Signal) {
-		<-c
-		cancel()
-		// Major hack - we should be blocking on a channel or series of channels that say
-		// this part of the runtime has shut down, it's ok to proceed, then exit
-		time.Sleep(1 * time.Second)
-		os.Exit(0)
-}
-
 func main() {
-	args, err := getArgsFromCLI()
+	args, err := cli.GetArgsFromCLI()
 	if err != nil {
 		log.Fatal(err)
+	}
+	if args.Port == 0 {
+		args.Port = DefaultPort
 	}
 	// Trap the interrupts
 	stopChan := make(chan os.Signal, 1)
@@ -100,7 +72,7 @@ func main() {
 	// Create a context, which will be used to cancel things like triggers in the event of a signal
 	ctx, cancel := context.WithCancel(context.Background())
 	// Kick off a goroutine to handle the signals and the cancellation
-	go pollSignals(cancel, stopChan)
+	go cli.HandleShutdown(cancel, stopChan)
 	// Invoke the command
 	switch args.Command {
 	case "version":
@@ -119,7 +91,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Println("Plugin {{ .Name }} booting HTTP Daemon...")
+		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", args.DefaultPort)
 		// This will block until the server shuts down
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
@@ -255,7 +227,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 			// Invoke the test, pass the results to the message helper func
 			// then pass that message into the dispatcher
 			o, err := t.Test(conn, input, l)
-			d.Send(testResultMessage(l, o, err))
+			d.Send(cli.WrapTriggerTestResult(l, o, err))
 			return nil
 		}
 		// Start the read loop
@@ -270,29 +242,6 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 	{{- if not .Triggers }}
 	return nil
 	{{- end}}
-}
-
-func testResultMessage(log plog.Logger, o interface{}, err error) *message.V1 {
-	l := ""
-	if blog, ok := log.(*plog.BufferedLogger); ok {
-		l = blog.String()
-	}
-	response := &message.Response{
-		Meta: []byte(`{}`),
-		Output: o,
-		Status: "ok",
-		Log: l,
-	}
-	if  err != nil {
-		response.Error = err.Error()
-		response.Status = "error"
-	}
-	wrapper := &message.V1{
-		Body: response,
-		Type: "trigger_event",
-		Version: "v1",
-	}
-	return wrapper
 }
 
 // This is pretty hacky, not sure if there is a better way but from the engine, it doesn't look
@@ -313,18 +262,18 @@ func dispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
 func printDescription() {
 	// General Info / Header
 	result := "\n"
-	result += fmt.Sprintf("Name:        %s%s%s✨\n", green, Name, reset)
-	result += fmt.Sprintf("Vendor:      %s%s%s✨\n", green, Vendor, reset)
-	result += fmt.Sprintf("Version:     %s%s%s✨\n", green, Version, reset)
-	result += fmt.Sprintf("Description: %s%s%s✨\n", green, Description, reset)
+	result += fmt.Sprintf("Name:        %s%s%s✨\n", cli.Green, Name, cli.Reset)
+	result += fmt.Sprintf("Vendor:      %s%s%s✨\n", cli.Green, Vendor, cli.Reset)
+	result += fmt.Sprintf("Version:     %s%s%s✨\n", cli.Green, Version, cli.Reset)
+	result += fmt.Sprintf("Description: %s%s%s✨\n", cli.Green, Description, cli.Reset)
 
 	{{- if .Triggers }}
 	{{ $trigcount := (len .Triggers) }}
 	// Trigger Info
 	result += fmt.Sprintf("\n")
-	result += fmt.Sprintf("Triggers (%s%d%s): \n", green, {{- $trigcount }}, reset)
+	result += fmt.Sprintf("Triggers (%s%d%s): \n", cli.Green, {{- $trigcount }}, cli.Reset)
 	{{- range $i, $t := .Triggers }}
-	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $t.Name }}", reset, "{{- $t.Description }}", reset)
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $t.Name }}", cli.Reset, "{{- $t.Description }}", cli.Reset)
 	{{- end }}
 	{{- end }}
 
@@ -332,9 +281,9 @@ func printDescription() {
 	{{ $actioncount := (len .Actions) }}
 	// Action Info
 	result += fmt.Sprintf("\n")
-	result += fmt.Sprintf("Actions (%s%d%s): \n", green, {{ $actioncount }}, reset)
+	result += fmt.Sprintf("Actions (%s%d%s): \n", cli.Green, {{ $actioncount }}, cli.Reset)
 	{{- range $i, $a := .Actions }}
-	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", green, "{{- $a.Name }}", reset, "{{- $a.Description }}", reset)
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $a.Name }}", cli.Reset, "{{- $a.Description }}", cli.Reset)
 	{{- end }}
 	{{- end }}
 

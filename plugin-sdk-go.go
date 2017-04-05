@@ -509,7 +509,6 @@ func (g *Generator) vendorPluginDeps() error {
 	depList := []string{
 		"github.com/komand/plugin-sdk-go2",
 		"github.com/go-yaml/yaml",
-		"github.com/mgutz/ansi",
 	}
 	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 	// If the deps already exist, remove them
