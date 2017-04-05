@@ -33,6 +33,7 @@ type Args struct {
 // GetArgsFromCLI specially picks apart os.Args for the specific ways the engine or the cli
 // might invoke a plugin.
 func GetArgsFromCLI() (*Args, error) {
+	fmt.Println(os.Args)
 	if len(os.Args) <= 1 {
 		return nil, errors.New("you must specify command to invoke a plugin")
 	}
