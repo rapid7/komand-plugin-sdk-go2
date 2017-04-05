@@ -52,17 +52,10 @@ regenerate:
 
 runner: $(NAME)-run
 
-runner-http: $(NAME)-run-http
-
 $(NAME)-run:
 	@printf "#!/bin/sh\ndocker run --rm -i $(VENDOR)/$(NAME):$(VERSION) \$$@" > ./$(NAME)-run
 	@chmod 755 ./$(NAME)-run
 	@echo "[-] Use ./$(NAME)-run --help to run the plugin."
-
-$(NAME)-run-http:
-	@printf "#!/bin/sh\ndocker run --rm -p 10001-20001:10001 -i $(VENDOR)/$(NAME):$(VERSION) http" > ./$(NAME)-run-http
-	@chmod 755 ./$(NAME)-run-http
-	@echo "[-] Use ./$(NAME)-run-http --help to run the plugin."
 
 help:
 	@test -f ../tools/help.py || echo "Check spec tool not included in customer installs!"

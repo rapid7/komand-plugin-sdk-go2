@@ -4,11 +4,15 @@ package cli
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/komand/plugin-sdk-go2/dispatcher"
 	plog "github.com/komand/plugin-sdk-go2/log"
 	"github.com/komand/plugin-sdk-go2/message"
 	ansi "github.com/mgutz/ansi"
@@ -32,16 +36,41 @@ type Args struct {
 // GetArgsFromCLI specially picks apart os.Args for the specific ways the engine or the cli
 // might invoke a plugin.
 func GetArgsFromCLI() (*Args, error) {
-	fmt.Println(os.Args)
 	if len(os.Args) <= 1 {
 		return nil, errors.New("you must specify command to invoke a plugin")
 	}
-	// First, we have one optional arg - look for it
 	args := &Args{
 		Command:     os.Args[1],
 		SubCommands: os.Args[2:],
 	}
+	if args.Command == "http" && len(args.SubCommands) > 0 {
+		var err error
+		if args.Port, err = parsePort(args.SubCommands); err != nil {
+			return nil, err
+		}
+	}
 	return args, nil
+}
+
+// This is just a simple hack to parse the port out of the cli args in the event it's passed
+// We can't use os.Flag for this because os.Flag only works when you don't use positional params ahead of the flags
+func parsePort(args []string) (int, error) {
+	port := 0
+	var err error
+	switch len(args) {
+	case 1:
+		parts := strings.Split(args[0], "=")
+		port, err = strconv.Atoi(parts[1])
+		if err != nil {
+			return 0, fmt.Errorf("Error with -port flag: You must provide a valid integer: %s", err.Error())
+		}
+	case 2:
+		port, err = strconv.Atoi(args[1])
+		if err != nil {
+			return 0, fmt.Errorf("Error with -port flag: You must provide a valid integer: %s", err.Error())
+		}
+	}
+	return port, nil
 }
 
 // HandleShutdown will block on the os.Signal channel, then begin a shutdown procedure
@@ -83,4 +112,19 @@ func WrapTriggerTestResult(log plog.Logger, o interface{}, err error) *message.V
 		Version: "v1",
 	}
 	return wrapper
+}
+
+// DispatcherFromRaw is pretty hacky, not sure if there is a better way but from the engine, it doesn't look
+// like we send any kind of "type" flag with the dispatcher... it looks like what we do is default
+// to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
+// and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
+func DispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
+	m := make(map[string]interface{})
+	if err := json.Unmarshal(data, &m); err != nil {
+		return nil, err // TODO default to STDOUT here?
+	}
+	if url, ok := m["url"]; ok { // Engine actually sends 2 values, but we only use this one?
+		return dispatcher.NewHTTP(url.(string)), nil
+	}
+	return dispatcher.NewStdout(), nil
 }
