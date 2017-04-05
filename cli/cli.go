@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	plog "github.com/komand/plugin-sdk-go2/log"
@@ -38,26 +37,10 @@ func GetArgsFromCLI() (*Args, error) {
 		return nil, errors.New("you must specify command to invoke a plugin")
 	}
 	// First, we have one optional arg - look for it
-	args := &Args{}
-	for i, arg := range os.Args {
-		// If this is the arg for port, and there is another arg after it
-		if arg == "--port" { // This is all wrong, thought I was clever, am not. Will fix tomorrow. brain is broken.
-			// Alsp, remove these from os.Args afterwards, so that the rest of the pos-params are fine
-			if len(os.Args) > i {
-				var err error
-				args.Port, err = strconv.Atoi(os.Args[i])
-				if err != nil {
-					return nil, fmt.Errorf("you provided an invalid value for --port: %s", os.Args[i])
-				}
-				os.Args = append(os.Args[:i], os.Args[i+2:]...)
-			} else {
-				os.Args = append(os.Args[:i], os.Args[i:]...)
-			}
-			break
-		}
+	args := &Args{
+		Command:     os.Args[1],
+		SubCommands: os.Args[2:],
 	}
-	args.Command = os.Args[1]
-	args.SubCommands = os.Args[2:]
 	return args, nil
 }
 

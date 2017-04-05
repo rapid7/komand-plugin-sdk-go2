@@ -87,11 +87,16 @@ func main() {
 		}
 		printSampleInput(args.SubCommands[0])
 	case "http": // Daemonize as http
+		port := flag.Int("port","port",10001, "the port to boot the http server on")
+		flag.Parse()
+		if port == 0 {
+			*port = DefaultPort
+		}
 		s, err := http.NewServer(connection.NewCache())
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", args.Port)
+		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", port)
 		// This will block until the server shuts down
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
