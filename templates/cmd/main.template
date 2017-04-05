@@ -96,7 +96,7 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", port)
+		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", *port)
 		// This will block until the server shuts down
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
