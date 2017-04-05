@@ -41,7 +41,7 @@ func GetArgsFromCLI() (*Args, error) {
 	args := &Args{}
 	for i, arg := range os.Args {
 		// If this is the arg for port, and there is another arg after it
-		if arg == "--port" {
+		if arg == "--port" { // This is all wrong, thought I was clever, am not. Will fix tomorrow. brain is broken.
 			// Alsp, remove these from os.Args afterwards, so that the rest of the pos-params are fine
 			if len(os.Args) > i {
 				var err error
