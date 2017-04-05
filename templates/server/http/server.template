@@ -11,10 +11,10 @@ import (
 )
 
 // NewServer returns a new http server
-func NewServer(c *connection.Cache) (*http.Server, error) {
+func NewServer(port int, c *connection.Cache) (*http.Server, error) {
 	// TODO each plugin needs a unique port to expose
 	// but internally, can all use a common port
-	addr := ":{{ .HTTP.Port }}"
+	addr := fmt.Sprintf(":%d",port)
 	// TODO make these configurable somehow
 	readTimeout := time.Second * time.Duration({{ .HTTP.ReadTimeout}})
 	writeTimeout := time.Second * time.Duration({{ .HTTP.WriteTimeout}})

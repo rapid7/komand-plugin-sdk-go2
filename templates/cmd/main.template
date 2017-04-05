@@ -92,7 +92,7 @@ func main() {
 		if *port == 0 {
 			*port = DefaultPort
 		}
-		s, err := http.NewServer(connection.NewCache())
+		s, err := http.NewServer(*port, connection.NewCache())
 		if err != nil {
 			log.Fatal(err)
 		}
