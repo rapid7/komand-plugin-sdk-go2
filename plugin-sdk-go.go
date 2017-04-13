@@ -520,7 +520,7 @@ func (g *Generator) vendorPluginDeps() error {
 			cmd.Dir = rootPath
 			if b, err := cmd.CombinedOutput(); err != nil {
 				// Could be they didn't have this dependency because it's new, this isn't a failure case, but log it
-				fmt.Printf("error while running gvt on %s: %s - %s", rootPath, string(b), err.Error())
+				fmt.Printf("error while running gvt delete on %s: %s - %s. you can likely ignore this if it's just a missing dep on delete", rootPath, string(b), err.Error())
 			}
 		}
 	}
@@ -529,7 +529,7 @@ func (g *Generator) vendorPluginDeps() error {
 		cmd := exec.Command("gvt", "fetch", d)
 		cmd.Dir = rootPath
 		if b, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("error while running gvt on %s: %s - %s", rootPath, string(b), err.Error())
+			return fmt.Errorf("error while running gvt fetch on %s: %s - %s", rootPath, string(b), err.Error())
 		}
 	}
 
