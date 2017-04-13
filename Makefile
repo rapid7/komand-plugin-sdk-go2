@@ -12,7 +12,7 @@ clean:
 	rm -f ./github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
 
 run: clean build
-	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.slack.yaml" -package="github.com/komand/testplugins/slack/"
+	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.timers.yaml" -package="github.com/komand/testplugins/timers/"
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...
@@ -43,3 +43,4 @@ run_all:
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.slack.yaml" -package="github.com/komand/testplugins/slack/"
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.uuid.yaml" -package="github.com/komand/testplugins/uuid/"
 	# ./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.virustotal.yaml" -package="github.com/komand/testplugins/virustotal/"
+	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.timers.yaml" -package="github.com/komand/testplugins/timers/"

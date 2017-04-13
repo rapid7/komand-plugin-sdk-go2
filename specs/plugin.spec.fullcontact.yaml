@@ -2,7 +2,7 @@ plugin_spec_version: v2
 name: fullcontact
 title: "FullContact"
 description: "Search for people, email, and names with FullContact"
-version: 0.1.3
+version: 1.0.0
 # version: 0.1.3 - added retry for 202
 # version: 0.1.2 - added look_up_name_stats action
 # version: 0.1.1 - original look_up_by_* and validate_email actions

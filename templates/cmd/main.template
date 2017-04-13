@@ -51,6 +51,7 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 			if err := json.Unmarshal([]byte(os.Args[3]), m); err != nil {
 				return nil, nil, err
 			}
+			return m, b, nil
 		}
 		// If it wasn't over stdin, and it wasn't in pos3, following "--" in pos2, it's an error
 		return nil, nil, fmt.Errorf("Unable to find message in os.Stdin nor os.Args: %+v", os.Args)
