@@ -5,12 +5,14 @@ import "encoding/json"
 // TriggerEvent This an event type for triggering a single workflow.
 // Used for API triggers and Republishing events.
 type TriggerEvent struct {
-	Type    string           `json:"type"`     // Is it a single trigger or a multi-cast trigger? AFAIK this never actually gets set? Plus it means the full message body has Type in it twice.
-	ID      string           `json:"id"`       // This will become the JobID for the resulting job
-	GroupID string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
-	Meta    TriggerEventMeta `json:"meta"`
-	Output  interface{}      `json:"output"`
-	Log     string           `json:"string"`
+	Type            string           `json:"type"`     // Is it a single trigger or a multi-cast trigger? AFAIK this never actually gets set? Plus it means the full message body has Type in it twice.
+	ID              string           `json:"id"`       // This will become the JobID for the resulting job
+	GroupID         string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
+	UserID          int              `json:"user_id"`
+	InvestigationID string           `json:"investigation_id"`
+	Meta            TriggerEventMeta `json:"meta"`
+	Output          interface{}      `json:"output"`
+	Log             string           `json:"string"`
 }
 
 // TriggerEventMeta is the base information needed to run a step. It contains information both for
@@ -30,9 +32,12 @@ type TriggerEventMeta struct {
 // RawTriggerEvent is the consumer version where the consumer will want to make a choice about the data
 // structure it marshals the output into
 type RawTriggerEvent struct {
-	Type    string           `json:"type"`     // Is it a single trigger or a multi-cast trigger?
-	ID      string           `json:"id"`       // This will become the JobID for the resulting job
-	GroupID string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
-	Meta    TriggerEventMeta `json:"meta"`
-	Output  json.RawMessage  `json:"output"`
+	Type            string           `json:"type"`     // Is it a single trigger or a multi-cast trigger?
+	ID              string           `json:"id"`       // This will become the JobID for the resulting job
+	GroupID         string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
+	UserID          int              `json:"user_id"`
+	InvestigationID string           `json:"investigation_id"`
+	Meta            TriggerEventMeta `json:"meta"`
+	Output          json.RawMessage  `json:"output"`
+	Log             string           `json:"string"`
 }
