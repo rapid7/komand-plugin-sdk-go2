@@ -30,7 +30,7 @@ check:
 	gosimple $$(go list ./... | grep -v /vendor/)
 	unused $$(go list ./... | grep -v /vendor/)
 
-run_all:
+run_all: clean build
 	# ./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.cacador.yaml" -package="github.com/komand/testplugins/cacador/"
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example_types.yaml" -package="github.com/komand/testplugins/example_types/"
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
