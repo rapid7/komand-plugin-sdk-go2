@@ -21,7 +21,7 @@ type {{ .Name }}Handler struct {
 
 // New{{ .Name }}Handler returns a new {{ .Name }}Handler
 func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
-	return &{{ .Name}}Handler{
+	return &{{ .Name }}Handler{
 		c: c,
 	}
 }
@@ -36,13 +36,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO use a limit reader to prevent resource attacks?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
 		return
 	}
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
+		replyWithError(response, w, "action_event", fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
 		return
 	}
 	body := &message.BodyV1{}
@@ -51,7 +51,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
 		return
 	}
 	// Unmarshal the body into the right struct
@@ -62,7 +62,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	input := &actions.{{ .Name }}Input{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
         return
 	}
 	// Each request needs a new logger to capture it's output
@@ -72,17 +72,17 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// Thats why this is a TODO and not a TODONE
 	l := plog.NewBufferedLogger()
 	for _, err = range input.Validate(l) {
-        log.Println(fmt.Sprintf("Error while validating {{ .Name}}Input: %s", err.Error()))
+        log.Println(fmt.Sprintf("Error while validating {{ .Name }}Input: %s", err.Error()))
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name}}Input. Check logs for details"))
+		replyWithError(response, w,  "action_event", fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
         return
 	}
 
@@ -90,12 +90,12 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
 		response.Log = l.String()
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
         return
     }
 
 	action := actions.{{ .Name }}Action{}
-	var output actions.{{ .Name }}Output{}
+	output := &actions.{{ .Name }}Output{}
 	if strings.HasSuffix(r.URL.String(), "test") {
 		output, err = action.Test(conn, input, l)
 	} else {
@@ -104,7 +104,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "action_event", err)
 		return
 	}
 	response.Log = l.String()

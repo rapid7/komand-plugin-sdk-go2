@@ -21,7 +21,7 @@ type {{ .Name }}TriggerHandler struct {
 
 // New{{ .Name }}TriggerHandler returns a new {{ .Name }}Handler
 func New{{ .Name }}TriggerHandler(c *connection.Cache) *{{ .Name }}TriggerHandler {
-	return &{{ .Name}}TriggerHandler{
+	return &{{ .Name }}TriggerHandler{
 		c: c,
 	}
 }
@@ -36,13 +36,13 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	// TODO use a limit reader to prevent resource attacks?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
 		return
 	}
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
+		replyWithError(response, w, "trigger_event", fmt.Errorf("method %s is unsupported for plugin triggers", r.Method))
 		return
 	}
 	body := &message.BodyV1{}
@@ -51,7 +51,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
 		return
 	}
 	// Unmarshal the body into the right struct
@@ -62,7 +62,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	input := &triggers.{{ .Name }}TriggerInput{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
         return
 	}
 	// Each request needs a new logger to capture it's output
@@ -72,17 +72,17 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	// Thats why this is a TODO and not a TODONE
 	l := plog.NewBufferedLogger()
 	for _, err = range input.Validate(l) {
-        log.Println(fmt.Sprintf("Error while validating {{ .Name}}Input: %s", err.Error()))
+        log.Println(fmt.Sprintf("Error while validating {{ .Name }}Input: %s", err.Error()))
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name}}Input. Check logs for details"))
+		replyWithError(response, w, "trigger_event", fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
         return
 	}
 
@@ -90,7 +90,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
 		response.Log = l.String()
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
         return
     }
 
@@ -101,19 +101,19 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	} else {
 		// Triggers can ONLY be tested via proxy, never invoked
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
 		return
 	}
 	
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, err)
+		replyWithError(response, w, "trigger_event", err)
 		return
 	}
 	response.Log = l.String()
 	response.Output = output
 	reply := message.V1{
-		Type: "tigger_event",
+		Type: "trigger_event",
 		Version: "v1",
 		Body: response,
 	}
