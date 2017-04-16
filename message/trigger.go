@@ -13,6 +13,8 @@ type TriggerEvent struct {
 	Meta            TriggerEventMeta `json:"meta"`
 	Output          interface{}      `json:"output"`
 	Log             string           `json:"string"`
+	Error           string           `json:"error"`  // Error identifies any error that occured during the Trigger - only used in testing currently
+	Status          string           `json:"status"` // Status identifies the result status from the Trigger - only used in testing currently
 }
 
 // TriggerEventMeta is the base information needed to run a step. It contains information both for
@@ -40,4 +42,6 @@ type RawTriggerEvent struct {
 	Meta            TriggerEventMeta `json:"meta"`
 	Output          json.RawMessage  `json:"output"`
 	Log             string           `json:"string"`
+	Error           string           `json:"error"`  // Error identifies any error that occured during the Trigger - only used in testing currently
+	Status          string           `json:"status"` // Status identifies the result status from the Trigger - only used in testing currently
 }

@@ -36,13 +36,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO use a limit reader to prevent resource attacks?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		replyWithError(response, w, "action_event", fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
+		h.replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
 		return
 	}
 	body := &message.BodyV1{}
@@ -51,7 +51,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	// Unmarshal the body into the right struct
@@ -62,7 +62,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	input := &actions.{{ .Name }}Input{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
         return
 	}
 	// Each request needs a new logger to capture it's output
@@ -76,13 +76,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w,  "action_event", fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
+		h.replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
         return
 	}
 
@@ -90,7 +90,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
 		response.Log = l.String()
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
         return
     }
 
@@ -104,7 +104,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "action_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	response.Log = l.String()
@@ -116,5 +116,18 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	b, _ = json.Marshal(reply) // There is nothing we can do if this errs?
 	w.WriteHeader(http.StatusOK)
+	w.Write(b)
+}
+
+// Light wrapper around returning an error with the response object over http
+func (h *{{ .Name }}Handler) replyWithError(response *message.Response, w http.ResponseWriter, err error) {
+	response.Error = err.Error()
+	response.Status = "error"
+	m := &message.V1{
+		Body: response,
+		Type: "action_event",
+		Version: "v1",
+	}
+	b, _ := json.Marshal(m) // There is nothing we can do if this fails?
 	w.Write(b)
 }

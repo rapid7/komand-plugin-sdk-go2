@@ -28,21 +28,18 @@ func New{{ .Name }}TriggerHandler(c *connection.Cache) *{{ .Name }}TriggerHandle
 
 // ServeHTTP handles the requests
 func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	response := &message.Response{
-		Meta: []byte(`{}`),
-		Status: "ok",
-	}
+	response := &message.TriggerEvent{}
 	b, err := ioutil.ReadAll(r.Body)
 	// TODO use a limit reader to prevent resource attacks?
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		replyWithError(response, w, "trigger_event", fmt.Errorf("method %s is unsupported for plugin triggers", r.Method))
+		h.replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin triggers", r.Method))
 		return
 	}
 	body := &message.BodyV1{}
@@ -51,7 +48,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	}
 	if err := json.Unmarshal(b, m); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	// Unmarshal the body into the right struct
@@ -62,7 +59,13 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	input := &triggers.{{ .Name }}TriggerInput{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
+        return
+	}
+	// Grab the Meta from the incoming data to send to the output as well
+	if err := json.Unmarshal(body.Meta, &response.Meta); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		h.replyWithError(response, w, err)
         return
 	}
 	// Each request needs a new logger to capture it's output
@@ -76,13 +79,13 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	}
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "trigger_event", fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
+		h.replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
         return
 	}
 
@@ -90,7 +93,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
     if err != nil {
         w.WriteHeader(http.StatusInternalServerError)
 		response.Log = l.String()
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
         return
     }
 
@@ -101,13 +104,13 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	} else {
 		// Triggers can ONLY be tested via proxy, never invoked
 		w.WriteHeader(http.StatusBadRequest)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		replyWithError(response, w, "trigger_event", err)
+		h.replyWithError(response, w, err)
 		return
 	}
 	response.Log = l.String()
@@ -119,5 +122,18 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	}
 	b, _ = json.Marshal(reply) // There is nothing we can do if this errs?
 	w.WriteHeader(http.StatusOK)
+	w.Write(b)
+}
+
+// Light wrapper around returning an error with the response object over http
+func (h *{{ .Name }}TriggerHandler) replyWithError(response *message.TriggerEvent, w http.ResponseWriter, err error) {
+	response.Error = err.Error()
+	response.Status = "error"
+	m := &message.V1{
+		Body: response,
+		Type: "trigger_event",
+		Version: "v1",
+	}
+	b, _ := json.Marshal(m) // There is nothing we can do if this fails?
 	w.Write(b)
 }
