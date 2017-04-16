@@ -8,30 +8,27 @@ import (
     "io/ioutil"
     "net/http"
 
-    "{{ .PackageRoot }}/actions"
     "{{ .PackageRoot }}/connection"
+    "{{ .PackageRoot }}/triggers"
     plog "github.com/komand/plugin-sdk-go2/log"
     "github.com/komand/plugin-sdk-go2/message"
 )
 
-// {{ .Name }}Handler is a handler
-type {{ .Name }}Handler struct {
+// {{ .Name }}TriggerHandler is a handler
+type {{ .Name }}TriggerHandler struct {
 	c *connection.Cache
 }
 
-// New{{ .Name }}Handler returns a new {{ .Name }}Handler
-func New{{ .Name }}Handler(c *connection.Cache) *{{ .Name }}Handler {
-	return &{{ .Name }}Handler{
+// New{{ .Name }}TriggerHandler returns a new {{ .Name }}Handler
+func New{{ .Name }}TriggerHandler(c *connection.Cache) *{{ .Name }}TriggerHandler {
+	return &{{ .Name }}TriggerHandler{
 		c: c,
 	}
 }
 
 // ServeHTTP handles the requests
-func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	response := &message.Response{
-		Meta: []byte(`{}`),
-		Status: "ok",
-	}
+func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	response := &message.TriggerEvent{}
 	b, err := ioutil.ReadAll(r.Body)
 	// TODO use a limit reader to prevent resource attacks?
 	if err != nil {
@@ -42,7 +39,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	r.Body.Close()
 	if r.Method != "POST" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		h.replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin actions", r.Method))
+		h.replyWithError(response, w, fmt.Errorf("method %s is unsupported for plugin triggers", r.Method))
 		return
 	}
 	body := &message.BodyV1{}
@@ -59,8 +56,14 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// but in this case, the performance gain is not that great, and it's less generator code to maintain
 	// to do it this way.
 	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
-	input := &actions.{{ .Name }}Input{}
+	input := &triggers.{{ .Name }}TriggerInput{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		h.replyWithError(response, w, err)
+        return
+	}
+	// Grab the Meta from the incoming data to send to the output as well
+	if err := json.Unmarshal(body.Meta, &response.Meta); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		h.replyWithError(response, w, err)
         return
@@ -94,12 +97,15 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-	action := actions.{{ .Name }}Action{}
-	output := &actions.{{ .Name }}Output{}
+	trigger := triggers.{{ .Name }}Trigger{}
+	output := &triggers.{{ .Name }}TriggerOutput{}
 	if strings.HasSuffix(r.URL.String(), "test") {
-		output, err = action.Test(conn, input, l)
+		output, err = trigger.Test(conn, input, l)
 	} else {
-		output, err = action.Run(conn, input, l)
+		// Triggers can ONLY be tested via proxy, never invoked
+		w.WriteHeader(http.StatusBadRequest)
+		h.replyWithError(response, w, err)
+		return
 	}
 	
 	if err != nil {
@@ -110,7 +116,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	response.Log = l.String()
 	response.Output = output
 	reply := message.V1{
-		Type: "action_event",
+		Type: "trigger_event",
 		Version: "v1",
 		Body: response,
 	}
@@ -120,12 +126,12 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Light wrapper around returning an error with the response object over http
-func (h *{{ .Name }}Handler) replyWithError(response *message.Response, w http.ResponseWriter, err error) {
+func (h *{{ .Name }}TriggerHandler) replyWithError(response *message.TriggerEvent, w http.ResponseWriter, err error) {
 	response.Error = err.Error()
 	response.Status = "error"
 	m := &message.V1{
 		Body: response,
-		Type: "action_event",
+		Type: "trigger_event",
 		Version: "v1",
 	}
 	b, _ := json.Marshal(m) // There is nothing we can do if this fails?

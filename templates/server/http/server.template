@@ -22,7 +22,12 @@ func NewServer(port int, c *connection.Cache) (*http.Server, error) {
 	mux := http.NewServeMux()
     // one for each action
     {{- range $n, $p := .Actions }}
-    mux.Handle("/actions/{{ $p.RawName }}", New{{ $p.Name}}Handler(c))
+	mux.Handle("/actions/{{ $p.RawName }}", New{{ $p.Name}}Handler(c))
+	mux.Handle("/actions/{{ $p.RawName }}/test", New{{ $p.Name}}Handler(c))
+    {{- end }}
+
+	{{- range $n, $p := .Triggers }}
+    mux.Handle("/triggers/{{ $p.RawName }}/test", New{{ $p.Name}}TriggerHandler(c))
     {{- end }}
 
 	s := &http.Server{
@@ -33,17 +38,4 @@ func NewServer(port int, c *connection.Cache) (*http.Server, error) {
 		MaxHeaderBytes: 1 << 20,
 	}
 	return s, nil
-}
-
-// Light wrapper around returning an error with the response object over http
-func replyWithError(response *message.Response, w http.ResponseWriter, err error) {
-	response.Error = err.Error()
-	response.Status = "error"
-	m := &message.V1{
-		Body: response,
-		Type: "action_event",
-		Version: "v1",
-	}
-	b, _ := json.Marshal(m) // There is nothing we can do if this fails?
-	w.Write(b)
 }

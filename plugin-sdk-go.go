@@ -383,7 +383,7 @@ func (g *Generator) generateTriggers() error {
 }
 
 func (g *Generator) generateCmd() error {
-	fmt.Printf("Generating %s/cmd 💖 main✨\n", g.spec.PackageRoot)
+	fmt.Printf("Generating %s/cmd\n", g.spec.PackageRoot)
 	pathToTemplate := "templates/cmd/main.template"
 	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/cmd/", "main.go")
 	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
@@ -403,6 +403,14 @@ func (g *Generator) generateHTTPHandlers() error {
 	for name, action := range g.spec.Actions {
 		// Make the new action.go
 		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", name+".go")
+		if err := runTemplate(pathToTemplate, newFilePath, action, false); err != nil {
+			return err
+		}
+	}
+	pathToTemplate = "templates/server/http/handler_trigger_x.template"
+	for name, action := range g.spec.Triggers {
+		// Make the new trigger.go
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/server/http/", "trigger_"+name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, action, false); err != nil {
 			return err
 		}
