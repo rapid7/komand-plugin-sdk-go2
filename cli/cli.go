@@ -5,7 +5,6 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"strconv"
@@ -31,25 +30,6 @@ type Args struct {
 	Command     string
 	SubCommands []string
 	Port        int
-}
-
-// GetArgsFromCLI specially picks apart os.Args for the specific ways the engine or the cli
-// might invoke a plugin.
-func GetArgsFromCLI() (*Args, error) {
-	if len(os.Args) <= 1 {
-		return nil, errors.New("you must specify command to invoke a plugin")
-	}
-	args := &Args{
-		Command:     os.Args[1],
-		SubCommands: os.Args[2:],
-	}
-	if args.Command == "http" && len(args.SubCommands) > 0 {
-		var err error
-		if args.Port, err = parsePort(args.SubCommands); err != nil {
-			return nil, err
-		}
-	}
-	return args, nil
 }
 
 // This is just a simple hack to parse the port out of the cli args in the event it's passed

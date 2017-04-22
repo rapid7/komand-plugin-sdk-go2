@@ -34,7 +34,7 @@ var (
 	// Description plugin description
     Description = "{{ .Description }}"
 	// DefaultPort is the default port to use
-	DefaultPort = 10001
+	DefaultPort = "10001"
 )
 
 // getMessageFromStdin looks through both stdin and the os.Args for a message body to work as input
@@ -60,13 +60,32 @@ func getMessageFromStdin() (*message.V1, *message.BodyV1, error) {
 }
 
 func main() {
-	args, err := cli.GetArgsFromCLI()
-	if err != nil {
-		log.Fatal(err)
+	app := kingpin.New(Name, Description)
+	app.Version(Version)
+
+	_ = app.Flag("debug", "Log events to stdout.").Bool()
+	test := app.Command("test", "Run a test using the start message over STDIN.")
+	info := app.Command("info", "Display plugin info (triggers and actions).")
+	sample := app.Command("sample", "Show a sample start message for the provided trigger or action.")
+	sampleOpt := sample.Arg("handler_name", "Trigger or Action name to generate sample inputs for.").Required().String()
+	run := app.Command("run", "Run the plugin (default command). You must supply the start message over STDIN.")
+	httpServer := app.Command("http", "Run the plugin as a REST daemon")
+	port := app.Flag("port", "The http port to run the server on (defaults to 10001).").Default(DefaultPort).Int()
+
+	args := os.Args[1:] // Chop off the first element, we don't care about the binary name/path
+
+	// Code lifted from old SDK to make kingpin happy
+	for i, argv := range args {
+		if argv == "--" {
+			args = args[0:(i)]
+			break
+		}
 	}
-	if args.Port == 0 {
-		args.Port = DefaultPort
+	if len(args) < 1 || (len(args) == 1 && strings.HasSuffix(args[0], "debug")) {
+		args = append(args, "run")
 	}
+	// End of kingpin happiness making
+
 	// Trap the interrupts
 	stopChan := make(chan os.Signal, 1)
 	signal.Notify(stopChan, syscall.SIGTERM, syscall.SIGINT)
@@ -75,29 +94,28 @@ func main() {
 	// Kick off a goroutine to handle the signals and the cancellation
 	go cli.HandleShutdown(cancel, stopChan)
 	// Invoke the command
-	switch args.Command {
-	case "version":
-		printVersion()
-	case "help":
-		printHelp()
-	case "info":
-		printDescription()
-	case "sample":
-		if len(args.SubCommands) == 0 {
-			log.Fatal("You must provide an action or trigger to generate sample input\nEx: sample my_action")
-		}
-		printSampleInput(args.SubCommands[0])
-	case "http": // Daemonize as http
-		s, err := http.NewServer(args.Port, connection.NewCache())
+
+	mode := "run"
+	cmd, err := app.Parse(args)
+	switch kingpin.MustParse(cmd, err) {
+	case sample.FullCommand():
+		printSampleInput(*sampleOpt)
+	case info.FullCommand():
+		printInfo()
+	case httpServer.FullCommand():
+		s, err := http.NewServer(*port, connection.NewCache())
 		if err != nil {
 			log.Fatal(err)
 		}
-		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", args.Port)
+		fmt.Printf("Plugin {{ .Name }} booting HTTP Daemon on port %d...", *port)
 		// This will block until the server shuts down
 		if err := s.ListenAndServe(); err != nil {
 			log.Fatal(err)
 		}
-	case "run":
+	case test.FullCommand():
+		mode = "test"
+		fallthrough
+	case run.FullCommand():
 		fallthrough
 	default:
 		// We're running either an action, or a trigger
@@ -107,12 +125,12 @@ func main() {
 		}
 		switch m.Type {
 		case "action_start":
-			if err := runOneOffAction(args.Command, b); err != nil { // Command should be run, or test
+			if err := runOneOffAction(mode, b); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		case "trigger_start":
 			// This will block until the trigger shuts down
-			if err := runTriggerDaemon(ctx, args.Command, b); err != nil { // Command should be run, or test
+			if err := runTriggerDaemon(ctx, mode, b); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		default:
@@ -245,7 +263,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 	{{- end}}
 }
 
-func printDescription() {
+func printInfo() {
 	// General Info / Header
 	result := "\n"
 	result += fmt.Sprintf("Name:        %s%s%s✨\n", cli.Green, Name, cli.Reset)
@@ -320,19 +338,4 @@ func printSampleInput(action string) error {
 	}
 	fmt.Println(string(result))
 	return nil
-}
-
-func printVersion() {
-	fmt.Println(Version)
-}
-
-func printHelp() {
-	fmt.Print("{{ .Name}} Help:\n\n")
-	fmt.Print("Commands:\n\n")
-	fmt.Print("help:\n\tShows this menu\n\n")
-	fmt.Print("version:\n\tDisplay version info\n\n")
-	fmt.Print("info:\n\tDisplay information about the available actions and triggers, as well as general plugin metadata\n\n")
-	fmt.Print("sample <trigger or action name>:\n\tDisplay a sample input message for the defined trigger or action\n\n")
-	fmt.Print("test:\n\tRun the test method associated with the provided trigger or action specified via an input message over stdin\n\n")
-	fmt.Print("run:\n\tRun the run method associated with the provided trigger or action specified via an input message over stdin\n\n")
 }

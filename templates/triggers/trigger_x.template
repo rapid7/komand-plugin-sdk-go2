@@ -87,7 +87,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
        return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
    }
    // This timer idiom is a bit odd - it is the "instant tick" idiom
-	// Basically, i don't need to wait for the first iteration of the timer for it to fire
+    // Basically, i don't need to wait for the first iteration of the timer for it to fire
 	// it fires immediately, then every duration thereafter.
 	// See: https://www.reddit.com/r/golang/comments/5g0hor/ticker_with_instant_start/daoxqey/
     // You will only see a ticker here if the Trigger defined the "Interval" field, otherwise this is a vanilla for{select{}}

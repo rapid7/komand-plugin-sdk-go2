@@ -42,13 +42,8 @@ image:
 
 regenerate:
 	@echo Generating new plugin skeleton
-	@test -d ../$(NAME) || mv -f ../$(CWD) ../$(NAME)
-	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path komandtmp || true
 	@echo Overlaying plugin skeleton to the current directory
-	@test -d komandtmp && diff -uNr ../$(NAME) komandtmp/ > $(NAME).diff || true
-	@test -f $(NAME).diff && patch -s -p1 < $(NAME).diff || true
-	@rm -f *.orig *.diff *.gz || true
-	@test -d komandtmp && rm -rf komandtmp || true
+	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path $(CWD)
 
 runner: $(NAME)-run
 
