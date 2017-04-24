@@ -1,1 +1,5 @@
-It's like the old plugin sdk, but i slapped the number 2 on it, and now it doesn't depend on komand/komand at all, so people can just generate plugins to their hearts content and don't need any binaries from komand itself.
+# Komand Go Plugin SDK [![Build Status](https://ci.dev.komand.net/api/badges/komand/plugin-sdk-go2/status.svg)](https://ci.dev.komand.net/komand/plugin-sdk-go2)
+
+## Welcome to the Komand Plugin SDK for Go!
+
+Official documentation is maintained at [docs.komand.com](https://docs.komand.com/docs/plugin-development)
