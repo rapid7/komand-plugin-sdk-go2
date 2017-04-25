@@ -4,7 +4,7 @@ ENV BASE=/go/src/github.com/komand/plugin-sdk-go2
 ADD . /go/src/github.com/komand/plugin-sdk-go2
 
 # Get Dependencies
-RUN make dep
+RUN make deps
 
 WORKDIR /go/src/github.com/komand/plugin-sdk-go2
-RUN make build && make test
+RUN make build && make check && make test
