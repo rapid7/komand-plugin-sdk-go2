@@ -1,4 +1,4 @@
-.PHONY= build run clean deps test
+.PHONY= build run clean deps test image tag
 
 GOWORKDIR=$(GOPATH)/src
 VERSION=$(shell git describe --abbrev=0 --tags)
@@ -13,6 +13,14 @@ clean:
 
 run: clean build
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
+
+image:
+	docker build -t komand/go-plugin2 .
+
+tag: image
+	@echo version is $(VERSION)
+	docker tag komand/go-plugin2 komand/go-plugin2:$(VERSION)
+	docker tag komand/go-plugin2:$(VERSION) komand/go-plugin2:$(MAJOR_VERSION)
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...
