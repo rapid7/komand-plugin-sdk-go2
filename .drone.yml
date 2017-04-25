@@ -1,7 +1,6 @@
 build:
-    # first, build the build image
   build_image:
-    image: docker:1.9
+    image: docker:1.11
     commands:
       - docker build -t komand/go-plugin-2 .
     volumes:
