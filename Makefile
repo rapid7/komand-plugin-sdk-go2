@@ -15,12 +15,12 @@ run: clean build
 	./cmd/plugin-sdk-go/plugin-sdk-go -spec="$(GOWORKDIR)/github.com/komand/plugin-sdk-go2/specs/plugin.spec.example.yaml" -package="github.com/komand/testplugins/example/"
 
 image:
-	docker build -t komand/go-plugin2 .
+	docker build -t komand/go-plugin-2 .
 
 tag: image
 	@echo version is $(VERSION)
-	docker tag komand/go-plugin2 komand/go-plugin2:$(VERSION)
-	docker tag komand/go-plugin2:$(VERSION) komand/go-plugin2:$(MAJOR_VERSION)
+	docker tag komand/go-plugin-2 komand/go-plugin-2:$(VERSION)
+	docker tag komand/go-plugin-2:$(VERSION) komand/go-plugin-2:$(MAJOR_VERSION)
 
 deps:
 	go get -u github.com/jteeuwen/go-bindata/...
