@@ -227,11 +227,11 @@ func postProcessSpec(s *PluginSpec) error {
 	}
 
 	if s.HTTP.ReadTimeout == 0 {
-		s.HTTP.ReadTimeout = 60 // Default read timeout is 60 secs
+		s.HTTP.ReadTimeout = 60 * 10 // Default read timeout is 10 mins
 	}
 
 	if s.HTTP.WriteTimeout == 0 {
-		s.HTTP.WriteTimeout = 60 // default write timeout is 60 secs
+		s.HTTP.WriteTimeout = 60 * 10 // default write timeout is 10 mins
 	}
 	return nil
 }
