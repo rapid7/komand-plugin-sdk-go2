@@ -312,7 +312,7 @@ func printSampleInput(action string) error {
 	switch action {
 	{{- range $i, $a := .Actions }}
 	case "{{ $a.RawName }}":
-		m.Type = "action_event"
+		m.Type = "action_start"
 		actionBytes, err := json.Marshal(actions.{{ $a.Name }}Input{})
 		if err != nil {
 			return err
@@ -321,7 +321,7 @@ func printSampleInput(action string) error {
 	{{- end}}
 	{{- range $i, $t := .Triggers }}
 	case "{{ $t.RawName }}":
-		m.Type = "trigger_event"
+		m.Type = "trigger_start"
 		triggerBytes, err := json.Marshal(triggers.{{ $t.Name }}TriggerInput{})
 		if err != nil {
 			return err
