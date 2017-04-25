@@ -1,0 +1,18 @@
+build:
+    # first, build the build image
+  build_image:
+    image: docker:1.9
+    commands:
+      - docker build -t komand/go-plugin-2 .
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+  build_project:
+    image: komand/go-plugin-2:latest
+    commands:
+      - make build
+      - make test
+notify:
+  slack:
+     webhook_url: $$SLACK_URL
+     channel: devstatus
+     username: drone
