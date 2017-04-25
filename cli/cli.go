@@ -5,10 +5,7 @@ package cli
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"os"
-	"strconv"
-	"strings"
 	"time"
 
 	"github.com/komand/plugin-sdk-go2/dispatcher"
@@ -30,27 +27,6 @@ type Args struct {
 	Command     string
 	SubCommands []string
 	Port        int
-}
-
-// This is just a simple hack to parse the port out of the cli args in the event it's passed
-// We can't use os.Flag for this because os.Flag only works when you don't use positional params ahead of the flags
-func parsePort(args []string) (int, error) {
-	port := 0
-	var err error
-	switch len(args) {
-	case 1:
-		parts := strings.Split(args[0], "=")
-		port, err = strconv.Atoi(parts[1])
-		if err != nil {
-			return 0, fmt.Errorf("Error with -port flag: You must provide a valid integer: %s", err.Error())
-		}
-	case 2:
-		port, err = strconv.Atoi(args[1])
-		if err != nil {
-			return 0, fmt.Errorf("Error with -port flag: You must provide a valid integer: %s", err.Error())
-		}
-	}
-	return port, nil
 }
 
 // HandleShutdown will block on the os.Signal channel, then begin a shutdown procedure
