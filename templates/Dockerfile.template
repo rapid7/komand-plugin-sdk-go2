@@ -1,4 +1,4 @@
-FROM komand/go-plugin:0.2 
+FROM komand/go-plugin-2:0.2 
 LABEL organization=komand
 LABEL sdk=go
 LABEL type=plugin
