@@ -15,6 +15,8 @@ To generate a plugin using only the SDK alone, and not a part of the Komand Plat
 * `plugin-sdk-go -spec="full/path/to.plugin.spec.example.yaml" -package="github.com/:company/:pluginname/"
 * Review the documentation linked above for how to fill out and run the plugin
 
+Note that not all functionality present in the Makefile of the plugin you build will work naturally without the presence of the Komand utilities from our platform. Contact Komand if you run into any issues.
+
 ## Example Spec
 
 ```yaml
