@@ -88,6 +88,8 @@ func updateParams(data map[string]ParamData, t *TypeMapper) error {
 			// So, here's how we're gonna do this: marshal the interface to json
 			// this will give us a string representation of the value to write out as a literal
 			// then we'll do const X = {{ Literal Value }}
+			// The marshal approach might not be super efficient, but since generating a spec is a one-time
+			// upfront cost, the convenience factor wins out for now.
 			b, err := json.Marshal(e)
 			if err != nil {
 				return err
@@ -102,16 +104,14 @@ func updateParams(data map[string]ParamData, t *TypeMapper) error {
 	return nil
 }
 
-// Hello
-// I hope that this method in no way becomes the unadulterated shitshow that it probably will
-// Sincerely
-// Everyone who ever tried to do something useful in the spur of the moment, ever
+// sortParamData takes the proprties for a generated class and sorts them based on if they are Embedded or not
+// this is due to go wanting to see embeddables up front, then non embedded properties.
 func sortParamData(pd map[string]ParamData) []ParamData {
 	list := make([]ParamData, len(pd)) // <-
-	var i int
+	var x int
 	for _, v := range pd {
-		list[i] = v
-		i++
+		list[x] = v
+		x++
 	}
 	sort.Slice(list, func(i, j int) bool {
 		return list[i].Embed && !list[j].Embed // <-
