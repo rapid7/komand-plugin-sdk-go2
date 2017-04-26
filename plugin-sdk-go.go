@@ -11,7 +11,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/go-yaml/yaml"
+	yaml "gopkg.in/yaml.v2"
 )
 
 // Generator is a wrapper around building a plugin based on a spec

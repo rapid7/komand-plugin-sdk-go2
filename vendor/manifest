@@ -18,14 +18,6 @@
 			"notests": true
 		},
 		{
-			"importpath": "github.com/go-yaml/yaml",
-			"repository": "https://github.com/go-yaml/yaml",
-			"vcs": "git",
-			"revision": "a3f3340b5840cee44f372bddb5880fcbc419b46a",
-			"branch": "v2",
-			"notests": true
-		},
-		{
 			"importpath": "github.com/mattn/go-colorable",
 			"repository": "https://github.com/mattn/go-colorable",
 			"vcs": "git",
@@ -64,6 +56,14 @@
 			"vcs": "git",
 			"revision": "7f0871f2e17818990e4eed73f9b5c2f429501228",
 			"branch": "master",
+			"notests": true
+		},
+		{
+			"importpath": "gopkg.in/yaml.v2",
+			"repository": "https://gopkg.in/yaml.v2",
+			"vcs": "git",
+			"revision": "cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b",
+			"branch": "v2",
 			"notests": true
 		}
 	]
