@@ -43,7 +43,7 @@ image:
 regenerate:
 	@echo Generating new plugin skeleton
 	@echo Overlaying plugin skeleton to the current directory
-	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path $(CWD)
+	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path $(CWD) --repo "{{ .PackageRoot }}"
 
 runner: $(NAME)-run
 
