@@ -48,21 +48,21 @@ func NewBufferedLogger(level Level) *BufferedLogger {
 // Error logs at the error level
 func (l *BufferedLogger) Error(line string) {
 	if l.level >= Error {
-		l.buf.WriteString(line + `\n`)
+		l.buf.WriteString(line + "\n")
 	}
 }
 
 // Warn logs at the warn level
 func (l *BufferedLogger) Warn(line string) {
 	if l.level >= Warn {
-		l.buf.WriteString(line + `\n`)
+		l.buf.WriteString(line + "\n")
 	}
 }
 
 // Info logs at the info level
 func (l *BufferedLogger) Info(line string) {
 	if l.level >= Info {
-		l.buf.WriteString(line + `\n`)
+		l.buf.WriteString(line + "\n")
 	}
 }
 
