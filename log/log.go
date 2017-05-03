@@ -29,7 +29,6 @@ type Logger interface {
 	Errorf(string, ...interface{})
 	Warnf(string, ...interface{})
 	Infof(string, ...interface{})
-	GetLevel() Level
 	SetLevel(Level)
 }
 
@@ -98,6 +97,12 @@ func (l *BufferedLogger) String() string {
 	return l.buf.String()
 }
 
+// SetLevel will change the level of the logger. This call is not threadsafe - by design it is never called in a location
+// where multiple threads would touch it.
+func (l *BufferedLogger) SetLevel(level Level) {
+	l.level = level
+}
+
 // NormalLogger is just a passthrough to calling log.X
 // The reason this exists instead of just using the builtin logger as an interface
 // is that the Println signature takes a variadic of interfaces{} which i can't easily
@@ -154,4 +159,10 @@ func (l *NormalLogger) Infof(line string, vals ...interface{}) {
 	if l.level >= Info {
 		log.Printf(line, vals...)
 	}
+}
+
+// SetLevel will change the level of the logger. This call is not threadsafe - by design it is never called in a location
+// where multiple threads would touch it.
+func (l *NormalLogger) SetLevel(level Level) {
+	l.level = level
 }
