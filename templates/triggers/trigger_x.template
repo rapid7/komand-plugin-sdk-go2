@@ -81,7 +81,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
    // Bail if it's invalid
    var err error
    for _, err = range input.Validate(log) {
-        log.Errorf(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s\n", err.Error()))
+        log.Errorf("Error while validating {{ .Name}}TriggerInput: %s\n", err.Error())
    }
    if err != nil {
        return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
@@ -117,7 +117,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
 }
 
 // ReadLoop will block, reading until a nil message is received, meaning the internal queue was closed
-func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, l plog.Logger) error {
+func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, log plog.Logger) error {
     for {
         select {
         case output := <-t.queue:
