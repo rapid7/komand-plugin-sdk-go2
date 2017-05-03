@@ -61,7 +61,7 @@ func main() {
 	app := kingpin.New(Name, Description)
 	app.Version(Version)
 
-	debug := app.Flag("debug", "Log events to stdout.").Default(false).Bool()
+	debug := app.Flag("debug", "Log events to stdout.").Default("false").Bool()
 	test := app.Command("test", "Run a test using the start message over STDIN.")
 	info := app.Command("info", "Display plugin info (triggers and actions).")
 	sample := app.Command("sample", "Show a sample start message for the provided trigger or action.")
