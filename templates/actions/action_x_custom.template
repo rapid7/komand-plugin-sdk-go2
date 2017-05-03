@@ -60,6 +60,8 @@ func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}I
 func (a *{{ .Name }}Action) Test(conn *connection.Connection, input *{{ .Name }}Input, log plog.Logger) (*{{ .Name }}Output, error) {
     output := &{{ .Name }}Output{}
     // Your code here
+    // NOTE: The input you receive in the test method cannot be gauranteed to contain "good" value.
+    // You should not assume the input is something you can trust in this context.
 
     // Use the `log` object passed into the Connect method and any logging information
     // will be returned with the message in the log field. Otherwise, it will be discarded.
