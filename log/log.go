@@ -11,30 +11,81 @@ import (
 	"log"
 )
 
+// Level defines logging levels
+type Level int
+
+// This const block defines logging level constants for other packages to use
+const (
+	Info  Level = 0
+	Warn  Level = 1
+	Error Level = 2
+)
+
 // Logger is a very lightweight interface around 2 simple log calls
 type Logger interface {
-	Println(string)
-	Printf(string, ...interface{})
+	Error(string)
+	Warn(string)
+	Info(string)
+	Errorf(string, ...interface{})
+	Warnf(string, ...interface{})
+	Infof(string, ...interface{})
+	GetLevel() Level
+	SetLevel(Level)
 }
 
 // BufferedLogger is a wrapper around a []string buffer. It is threadsafe questionmarks?
 type BufferedLogger struct {
-	buf bytes.Buffer
+	buf   bytes.Buffer
+	level Level
 }
 
 // NewBufferedLogger will return a new instance of Logger
-func NewBufferedLogger() *BufferedLogger {
-	return &BufferedLogger{}
+func NewBufferedLogger(level Level) *BufferedLogger {
+	return &BufferedLogger{
+		level: level,
+	}
 }
 
-// Println prints a line
-func (l *BufferedLogger) Println(line string) {
-	l.buf.WriteString(line + `\n`)
+// Error logs at the error level
+func (l *BufferedLogger) Error(line string) {
+	if l.level >= Error {
+		l.buf.WriteString(line + `\n`)
+	}
 }
 
-// Printf prints an f
-func (l *BufferedLogger) Printf(line string, vals ...interface{}) {
-	l.buf.WriteString(fmt.Sprintf(line, vals...))
+// Warn logs at the warn level
+func (l *BufferedLogger) Warn(line string) {
+	if l.level >= Warn {
+		l.buf.WriteString(line + `\n`)
+	}
+}
+
+// Info logs at the info level
+func (l *BufferedLogger) Info(line string) {
+	if l.level >= Info {
+		l.buf.WriteString(line + `\n`)
+	}
+}
+
+// Errorf logs at the error level
+func (l *BufferedLogger) Errorf(line string, vals ...interface{}) {
+	if l.level >= Error {
+		l.buf.WriteString(fmt.Sprintf(line, vals...))
+	}
+}
+
+// Warnf logs at the warn level
+func (l *BufferedLogger) Warnf(line string, vals ...interface{}) {
+	if l.level >= Warn {
+		l.buf.WriteString(fmt.Sprintf(line, vals...))
+	}
+}
+
+// Infof logs at the info level
+func (l *BufferedLogger) Infof(line string, vals ...interface{}) {
+	if l.level >= Info {
+		l.buf.WriteString(fmt.Sprintf(line, vals...))
+	}
 }
 
 // Flush will flush the logger to the provided io.Writer. This could be stdout, stderr, a string builder, etc.
@@ -52,19 +103,55 @@ func (l *BufferedLogger) String() string {
 // is that the Println signature takes a variadic of interfaces{} which i can't easily
 // turn into strings for the buffer in the buffered logger. So, it's a little bit of
 // fuffery to make things easier for the real purpose of the logger, which is buffering.
-type NormalLogger struct{}
+type NormalLogger struct {
+	level Level
+}
 
 // NewNormalLogger returns a new normal logger
-func NewNormalLogger() *NormalLogger {
-	return &NormalLogger{}
+func NewNormalLogger(level Level) *NormalLogger {
+	return &NormalLogger{
+		level: level,
+	}
 }
 
-// Println prints a line
-func (l *NormalLogger) Println(line string) {
-	log.Println(line)
+// Error logs at the error level
+func (l *NormalLogger) Error(line string) {
+	if l.level >= Error {
+		log.Println(line)
+	}
 }
 
-// Printf prints an f
-func (l *NormalLogger) Printf(line string, vals ...interface{}) {
-	log.Printf(line, vals...)
+// Warn logs at the warn level
+func (l *NormalLogger) Warn(line string) {
+	if l.level >= Warn {
+		log.Println(line)
+	}
+}
+
+// Info logs at the info level
+func (l *NormalLogger) Info(line string) {
+	if l.level >= Info {
+		log.Println(line)
+	}
+}
+
+// Errorf logs at the error level
+func (l *NormalLogger) Errorf(line string, vals ...interface{}) {
+	if l.level >= Error {
+		log.Printf(line, vals...)
+	}
+}
+
+// Warnf logs at the warn level
+func (l *NormalLogger) Warnf(line string, vals ...interface{}) {
+	if l.level >= Warn {
+		log.Printf(line, vals...)
+	}
+}
+
+// Infof logs at the info level
+func (l *NormalLogger) Infof(line string, vals ...interface{}) {
+	if l.level >= Info {
+		log.Printf(line, vals...)
+	}
 }

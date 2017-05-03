@@ -61,7 +61,7 @@ func main() {
 	app := kingpin.New(Name, Description)
 	app.Version(Version)
 
-	_ = app.Flag("debug", "Log events to stdout.").Bool()
+	debug := app.Flag("debug", "Log events to stdout.").Default(false).Bool()
 	test := app.Command("test", "Run a test using the start message over STDIN.")
 	info := app.Command("info", "Display plugin info (triggers and actions).")
 	sample := app.Command("sample", "Show a sample start message for the provided trigger or action.")
@@ -123,12 +123,12 @@ func main() {
 		}
 		switch m.Type {
 		case "action_start":
-			if err := runOneOffAction(mode, b); err != nil { // Command should be run, or test
+			if err := runOneOffAction(mode, b, *debug); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		case "trigger_start":
 			// This will block until the trigger shuts down
-			if err := runTriggerDaemon(ctx, mode, b); err != nil { // Command should be run, or test
+			if err := runTriggerDaemon(ctx, mode, b, *debug); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
 		default:
@@ -137,12 +137,15 @@ func main() {
 	}
 }
 
-func runOneOffAction(mode string, b *message.BodyV1) error {
+func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 	{{- if .Actions }}
 	// Set up all the standard data structures we need to process an action
 	cd := &connection.Data{}
-	l := plog.NewBufferedLogger()
-	d, err := cli.DispatcherFromRaw(b.Dispatcher)
+	l := plog.NewBufferedLogger(plog.Error)
+	if mode == "test" || isDebug {
+		l.SetLevel(plog.Info)
+	}
+	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug)
 	if err != nil {
 		return err
 	}
@@ -204,10 +207,13 @@ func runOneOffAction(mode string, b *message.BodyV1) error {
 	return nil
 }
 
-func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error {
+func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDebug bool) error {
 	{{- if .Triggers }}
 	// Make a logger
-	l := plog.NewNormalLogger()
+	l := plog.NewNormalLogger(plog.Error)
+	if mode == "test" || isDebug {
+		l.SetLevel(plog.Info)
+	}
 	// Serialize the connection data into the raw struct
 	cd := &connection.Data{}
 	if err := json.Unmarshal(b.Connection, cd); err != nil {
@@ -219,7 +225,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 		return err
 	}
 	// Get the dispatcher - will send the messages be sent over stdout or posted over http
-	d, err := cli.DispatcherFromRaw(b.Dispatcher)
+	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug)
 	if err != nil {
 		return err
 	}
