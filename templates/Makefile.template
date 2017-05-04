@@ -32,6 +32,10 @@ icon:
 	sed -i.bu "/^icon/s/\(icon: \).*/\1\"data:image\/png;base64,$(ENCODING)\"/" plugin.spec.yaml || true
 	@rm -f *.bu || true
 
+tarball:
+	rm -rf $(PKG)
+	tar -cvzf $(PKG) --exclude=$(PKG) *
+ 
 package:
 	rm -rf $(PKG)
 	tar -cvzf $(PKG) --exclude=$(PKG) *
@@ -77,5 +81,9 @@ check:
 	staticcheck $$(go list ./... | grep -v /vendor/)
 	gosimple $$(go list ./... | grep -v /vendor/)
 	unused $$(go list ./... | grep -v /vendor/)
+
+export: image
+	@printf "\n ---> Exporting Docker image to ./$(NAME).img\n"
+	@docker save $(VENDOR)/$(NAME):$(VERSION) | gzip > $(NAME)_$(VERSION).img
 
 .PHONY: all build package image plugin regenerate deps check
