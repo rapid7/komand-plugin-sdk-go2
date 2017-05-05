@@ -19,9 +19,7 @@ import (
 	{{- end }}
 	"{{ .PackageRoot }}/connection"
 	"{{ .PackageRoot }}/server/http"
-	{{- if .Triggers }}
 	"{{ .PackageRoot }}/triggers"
-	{{- end }}
 )
 
 var (
@@ -251,6 +249,10 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1) error
 		}
 		// Start the read loop
 		go t.ReadLoop(ctx, l)
+		var ti interface{} = t
+		if cl, ok := ti.(triggers.CustomLooper); ok {
+			return cl.RunLoopCustom(ctx, conn, input, l)
+		}
 		// Run will block until it completes / shutsdown
 		return t.RunLoop(ctx, conn, input, l)
 	{{- end }}

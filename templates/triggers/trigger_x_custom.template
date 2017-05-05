@@ -5,6 +5,11 @@ import (
     "{{ .PackageRoot }}/connection"
 )
 
+// CustomLooper is an interface you can implement to override RunLoop behavior
+type CustomLooper interface {
+	RunLoopCustom(ctx context.Context, conn *connection.Connection, input *{{ .Name }}TriggerInput, log plog.Logger) error
+}
+
 // Custom{{ .Name }}TriggerInputParams defines any bonus params needed for the trigger run
 type Custom{{ .Name }}TriggerInputParams struct {
     // Put any custom parameters that the input might need here
