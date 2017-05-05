@@ -19,9 +19,7 @@ import (
 	{{- end }}
 	"{{ .PackageRoot }}/connection"
 	"{{ .PackageRoot }}/server/http"
-	{{- if .Triggers }}
 	"{{ .PackageRoot }}/triggers"
-	{{- end }}
 )
 
 var (
