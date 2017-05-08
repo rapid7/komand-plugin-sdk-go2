@@ -285,7 +285,7 @@ func printInfo() {
 	result += fmt.Sprintf("\n")
 	result += fmt.Sprintf("Triggers (%s%d%s): \n", cli.Green, {{- $trigcount }}, cli.Reset)
 	{{- range $i, $t := .Triggers }}
-	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $t.Name }}", cli.Reset, "{{- $t.Description }}", cli.Reset)
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $t.RawName }}", cli.Reset, "{{- $t.Description }}", cli.Reset)
 	{{- end }}
 	{{- end }}
 
@@ -295,7 +295,7 @@ func printInfo() {
 	result += fmt.Sprintf("\n")
 	result += fmt.Sprintf("Actions (%s%d%s): \n", cli.Green, {{ $actioncount }}, cli.Reset)
 	{{- range $i, $a := .Actions }}
-	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $a.Name }}", cli.Reset, "{{- $a.Description }}", cli.Reset)
+	result += fmt.Sprintf("└── %s%s%s (%s%s)\n", cli.Green, "{{- $a.RawName }}", cli.Reset, "{{- $a.Description }}", cli.Reset)
 	{{- end }}
 	{{- end }}
 
