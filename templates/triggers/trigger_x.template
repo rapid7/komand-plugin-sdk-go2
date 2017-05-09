@@ -81,7 +81,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
    // Bail if it's invalid
    var err error
    for _, err = range input.Validate(log) {
-        log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
+        log.Errorf("Error while validating {{ .Name}}TriggerInput: %s\n", err.Error())
    }
    if err != nil {
        return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
@@ -94,7 +94,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
     for {{- if .HasInterval }} tick := time.NewTicker(time.Second * time.Duration(input.Interval)); ;{{- end }}{
         output, err := t.Run(conn, input, log)
         if err != nil {
-            log.Printf("Error while running trigger action for {{ .Name }}Trigger: %s\n", err.Error())
+            log.Errorf("Error while running trigger action for {{ .Name }}Trigger: %s\n", err.Error())
             continue
         }
         t.Send(output) // Leave this untouched line, it will submit the trigger output to the Komand system.
@@ -117,7 +117,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
 }
 
 // ReadLoop will block, reading until a nil message is received, meaning the internal queue was closed
-func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, l plog.Logger) error {
+func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, log plog.Logger) error {
     for {
         select {
         case output := <-t.queue:
@@ -139,7 +139,7 @@ func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, l plog.Logger) error 
             }
             // Send the message to the komand system
 		    if err := t.dispatcher.Send(m); err != nil {
-			    log.Printf("Receieved error sending trigger message: %s", err)
+			    log.Errorf("Receieved error sending trigger message: %s\n", err)
 			    return err
 		    }
         case <-ctx.Done():

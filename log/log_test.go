@@ -7,24 +7,24 @@ import (
 	"github.com/komand/plugin-sdk-go2/log"
 )
 
-func BenchmarkPrintln(b *testing.B) {
-	l := log.NewBufferedLogger()
+func BenchmarkError(b *testing.B) {
+	l := log.NewBufferedLogger(log.Info)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		l.Println("Hey everybody!")
+		l.Error("Hey everybody!")
 	}
 }
 
-func BenchmarkPrintf(b *testing.B) {
-	l := log.NewBufferedLogger()
+func BenchmarkErrorf(b *testing.B) {
+	l := log.NewBufferedLogger(log.Info)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		l.Printf("Hey everybody! %s %d %+v", "Nick Riviera", 50003, []string{"stuff", "and", "things"})
+		l.Errorf("Hey everybody! %s %d %+v", "Nick Riviera", 50003, []string{"stuff", "and", "things"})
 	}
 }
 
 func BenchmarkWriteAndFlush5(b *testing.B) {
-	l := log.NewBufferedLogger()
+	l := log.NewBufferedLogger(log.Info)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		if i%100 == 0 {
@@ -32,7 +32,7 @@ func BenchmarkWriteAndFlush5(b *testing.B) {
 				b.Fatal(err)
 			}
 		} else {
-			l.Println("Hey everybody!")
+			l.Error("Hey everybody!")
 		}
 	}
 }

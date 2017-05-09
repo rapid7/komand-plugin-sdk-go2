@@ -74,7 +74,12 @@ func WrapTriggerTestResult(log plog.Logger, o interface{}, err error) *message.V
 // like we send any kind of "type" flag with the dispatcher... it looks like what we do is default
 // to a certain type, and replace it only in certain hardcoded instances. So, the old approach is a pain
 // and the new approach is a pain. I'm calling this a lateral change at best until proven otherwise
-func DispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
+func DispatcherFromRaw(data json.RawMessage, isDebug bool) (dispatcher.Dispatcher, error) {
+	// No matter what, debug always wins - and always defaults to stdout
+	if isDebug {
+		return dispatcher.NewStdout(), nil
+	}
+	// If not debug, try to parse out the HTTP dispatcher data
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(data, &m); err != nil {
 		return nil, err // TODO default to STDOUT here?
@@ -82,5 +87,6 @@ func DispatcherFromRaw(data json.RawMessage) (dispatcher.Dispatcher, error) {
 	if url, ok := m["url"]; ok { // Engine actually sends 2 values, but we only use this one?
 		return dispatcher.NewHTTP(url.(string)), nil
 	}
+	// If all else fails, fall back to stdout
 	return dispatcher.NewStdout(), nil
 }
