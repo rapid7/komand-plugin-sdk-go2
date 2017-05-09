@@ -141,7 +141,7 @@ type HTTP struct {
 // postProcessSpec does some minor post-processing on the spec object to fill a few things in that make
 // template generation easier
 func postProcessSpec(s *PluginSpec) error {
-	// I don't like this dual-dependency shit on typemapper and spec but idgaf right now to bother with it
+	// Create a new TypeManager and feed it some metadata about the spec, for it's own benefits
 	t := NewTypeMapper(s)
 	s.TypeMapper = t
 

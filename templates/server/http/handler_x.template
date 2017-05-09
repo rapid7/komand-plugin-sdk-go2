@@ -70,7 +70,11 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// note to anyone reading this: Do not go adding in sync.Pool without understanding how they
 	// work and how to profile to see if adding one will actually make a difference :) It's tricky iirc.
 	// Thats why this is a TODO and not a TODONE
+	isTest := strings.HasSuffix(r.URL.String(), "test")
 	l := plog.NewBufferedLogger(plog.Error)
+	if isTest {
+		l.SetLevel(plog.Info)
+	}
 	for _, err = range input.Validate(l) {
         log.Println(fmt.Sprintf("Error while validating {{ .Name }}Input: %s", err.Error()))
 	}
@@ -96,7 +100,8 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	action := actions.{{ .Name }}Action{}
 	output := &actions.{{ .Name }}Output{}
-	if strings.HasSuffix(r.URL.String(), "test") {
+	if isTest {
+		l.SetLevel(plog.Info)
 		output, err = action.Test(conn, input, l)
 	} else {
 		output, err = action.Run(conn, input, l)
