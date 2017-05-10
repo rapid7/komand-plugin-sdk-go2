@@ -101,7 +101,6 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	action := actions.{{ .Name }}Action{}
 	output := &actions.{{ .Name }}Output{}
 	if isTest {
-		l.SetLevel(plog.Info)
 		output, err = action.Test(conn, input, l)
 	} else {
 		output, err = action.Run(conn, input, l)
