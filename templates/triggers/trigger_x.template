@@ -10,6 +10,11 @@ import (
     "{{ .PackageRoot }}/connection"
 )
 
+// {{ .Name}}TriggerCustomLooper is an interface you can implement to override RunLoop behavior
+type {{ .Name}}TriggerCustomLooper interface {
+	RunLoopCustom(ctx context.Context, conn *connection.Connection, input *{{ .Name }}TriggerInput, log plog.Logger) error
+}
+
 {{ $name := .Name }}
 {{- range $n, $p := .Input }}
 {{- if $p.EnumLiteral }}
