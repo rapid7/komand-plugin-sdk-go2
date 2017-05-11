@@ -4,7 +4,7 @@ package types
 
 {{ $Name := .Name }}
 {{- range $n, $p := .Fields }}
-// Enumerated values for {{ $p.Name  }}
+// Enumerated values for {{ $p.Name }}
 const (
 {{- range $i, $e := $p.EnumLiteral }}
     // {{ $Name }}{{ $e.Name }} is an enumerated value
