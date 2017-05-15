@@ -274,10 +274,10 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDeb
 func printInfo() {
 	// General Info / Header
 	result := "\n"
-	result += fmt.Sprintf("Name:        %s%s%s✨\n", cli.Green, Name, cli.Reset)
-	result += fmt.Sprintf("Vendor:      %s%s%s✨\n", cli.Green, Vendor, cli.Reset)
-	result += fmt.Sprintf("Version:     %s%s%s✨\n", cli.Green, Version, cli.Reset)
-	result += fmt.Sprintf("Description: %s%s%s✨\n", cli.Green, Description, cli.Reset)
+	result += fmt.Sprintf("Name:        %s%s%s\n", cli.Green, Name, cli.Reset)
+	result += fmt.Sprintf("Vendor:      %s%s%s\n", cli.Green, Vendor, cli.Reset)
+	result += fmt.Sprintf("Version:     %s%s%s\n", cli.Green, Version, cli.Reset)
+	result += fmt.Sprintf("Description: %s%s%s\n", cli.Green, Description, cli.Reset)
 
 	{{- if .Triggers }}
 	{{ $trigcount := (len .Triggers) }}
