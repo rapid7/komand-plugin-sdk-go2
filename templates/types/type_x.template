@@ -4,10 +4,15 @@ package types
 
 {{ $Name := .Name }}
 {{- range $n, $p := .Fields }}
+{{ $length := len $p.EnumLiteral }} {{ if gt $length 0 }}
+// Enumerated values for {{ $p.Name }}
+const (
 {{- range $i, $e := $p.EnumLiteral }}
-// {{ $Name }}{{ $e.Name }} is an enumerated value
-const {{ $Name }}{{ $e.Name }} = {{ $e.LiteralValue }}
+    {{ $Name }}{{ $e.Name }} = {{ $e.LiteralValue }}
 {{- end}}
+)
+
+{{- end }}
 {{- end }}
 
 // {{ .Name }} is a custom type generated off of the spec
