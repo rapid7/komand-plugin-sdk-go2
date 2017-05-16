@@ -8,7 +8,6 @@ package types
 // Enumerated values for {{ $p.Name }}
 const (
 {{- range $i, $e := $p.EnumLiteral }}
-    // {{ $Name }}{{ $e.Name }} is an enumerated value
     {{ $Name }}{{ $e.Name }} = {{ $e.LiteralValue }}
 {{- end}}
 )
