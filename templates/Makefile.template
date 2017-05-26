@@ -14,7 +14,7 @@ ifndef REPO
 	REPO=$(NAME)
 endif
 
-all: icon image package runner
+all: icon image tarball runner
 
 plugin: install
 
@@ -36,10 +36,6 @@ tarball:
 	rm -rf $(PKG)
 	tar -cvzf $(PKG) --exclude=$(PKG) *
  
-package:
-	rm -rf $(PKG)
-	tar -cvzf $(PKG) --exclude=$(PKG) *
-
 image:
 	docker build --pull -t $(VENDOR)/$(NAME):$(VERSION) .
 	docker tag $(VENDOR)/$(NAME):$(VERSION) $(VENDOR)/$(NAME):latest
