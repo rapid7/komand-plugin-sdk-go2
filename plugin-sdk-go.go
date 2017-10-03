@@ -281,10 +281,7 @@ func (g *Generator) GeneratePlugin() error {
 	if err := g.runGoImports(); err != nil {
 		return err
 	}
-	if err := g.vendorPluginDeps(); err != nil {
-		return err
-	}
-	return nil
+	return g.vendorPluginDeps()
 }
 
 func doesFileExist(path string) bool {
