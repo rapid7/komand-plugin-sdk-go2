@@ -455,14 +455,6 @@ func (g *Generator) generateBuildSupport() error {
 	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
 		return err
 	}
-
-	// Make the vendor directory for them, add a .gitkeep just incase
-	if err := os.MkdirAll(path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/vendor/"), 0700); err != nil {
-		return err
-	}
-	if err := ioutil.WriteFile(path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/vendor/.gitkeep"), make([]byte, 0), 0644); err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -510,32 +502,20 @@ func (g *Generator) runGoImports() error {
 func (g *Generator) vendorPluginDeps() error {
 	fmt.Println("Vendoring dependencies... ")
 	fmt.Println(" ...This may take a few minutes depending on your network connection")
-	// TODO make this configurable in some way
-	depList := []string{
-		"github.com/komand/plugin-sdk-go2",
-		"github.com/go-yaml/yaml",
-		"gopkg.in/alecthomas/kingpin.v2",
-	}
 	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
-	// If the deps already exist, remove them
-	// There is an update command that claims to do this, but it is not working for me
-	// I'm choosing to use 2 loops here, to do a proper purge, then a proper update
-	for _, d := range depList {
-		if doesFileExist(path.Join(rootPath, "vendor", d)) {
-			cmd := exec.Command("gvt", "delete", d)
-			cmd.Dir = rootPath
-			if b, err := cmd.CombinedOutput(); err != nil {
-				// Could be they didn't have this dependency because it's new, this isn't a failure case, but log it
-				fmt.Printf("error while running gvt delete on %s: %s - %s. you can likely ignore this if it's just a missing dep on delete", rootPath, string(b), err.Error())
-			}
-		}
-	}
-	// Now, update the deps.
-	for _, d := range depList {
-		cmd := exec.Command("gvt", "fetch", d)
+	if doesFileExist(path.Join(rootPath, "vendor")) {
+		// run ensure
+		cmd := exec.Command("dep", "ensure")
 		cmd.Dir = rootPath
 		if b, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("error while running gvt fetch on %s: %s - %s", rootPath, string(b), err.Error())
+			return fmt.Errorf("error while running dep ensure on %s: %s - %s", rootPath, string(b), err.Error())
+		}
+	} else {
+		// first time, run init
+		cmd := exec.Command("dep", "init")
+		cmd.Dir = rootPath
+		if b, err := cmd.CombinedOutput(); err != nil {
+			return fmt.Errorf("error while running dep init on %s: %s - %s", rootPath, string(b), err.Error())
 		}
 	}
 
