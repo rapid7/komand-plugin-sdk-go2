@@ -145,7 +145,11 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 	if mode == "test" || isDebug {
 		l.SetLevel(plog.Info)
 	}
-	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug)
+	// Actions always default to using STDOUT since we never send dispatch info
+	// with their message invocations, but to try and keep things consistent between actions
+	// and triggers in the hopes of further generalizing their code, we'll continue 
+	// to use the method below to make the determination of what to use
+	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug, mode)
 	if err != nil {
 		return err
 	}
@@ -225,7 +229,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDeb
 		return err
 	}
 	// Get the dispatcher - will send the messages be sent over stdout or posted over http
-	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug)
+	d, err := cli.DispatcherFromRaw(b.Dispatcher, isDebug, mode)
 	if err != nil {
 		return err
 	}
