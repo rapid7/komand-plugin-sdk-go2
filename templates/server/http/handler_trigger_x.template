@@ -99,7 +99,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 
 	// We initialize with a nil dispatcher because we do not want to dispatch events on test
 	trigger := triggers.New{{ .Name }}Trigger(nil, response.Meta)
-	output := &triggers.{{ .Name }}TriggerOutput{}
+	var output *triggers.{{ .Name }}TriggerOutput
 	if strings.HasSuffix(r.URL.String(), "test") {
 		output, err = trigger.Test(conn, input, l)
 	} else {
