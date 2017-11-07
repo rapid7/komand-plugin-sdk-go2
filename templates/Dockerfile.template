@@ -3,8 +3,6 @@ LABEL organization=komand
 LABEL sdk=go
 LABEL type=plugin
 
-ENV GO15VENDOREXPERIMENT=1
-
 RUN mkdir -p /komand/plugins/bin
 ADD . /go/src/{{ .PackageRoot }}
 WORKDIR /go/src/{{ .PackageRoot}}
@@ -12,7 +10,5 @@ WORKDIR /go/src/{{ .PackageRoot}}
 ADD ./plugin.spec.yaml /plugin.spec.yaml
 
 RUN make plugin
-
-RUN rm -rf /go/src
 
 ENTRYPOINT ["/komand/plugins/bin/{{.Name}}"]
