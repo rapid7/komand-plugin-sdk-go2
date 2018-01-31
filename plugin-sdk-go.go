@@ -452,10 +452,7 @@ func (g *Generator) generateBuildSupport() error {
 	// Make
 	pathToTemplate = "templates/Makefile.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "Makefile")
-	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
-		return err
-	}
-	return nil
+	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) copySpec() error {
