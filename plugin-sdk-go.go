@@ -523,7 +523,7 @@ func (g *Generator) vendorPluginDeps() error {
 }
 
 func (g *Generator) fixGoImportsNotKnowingHowToLookInLocalVendorFirst(path string) error {
-	old := "github.com/komand/komand/plugins/v1/types"
+	old := "github.com/rapid7/komand/plugins/v1/types"
 	new := g.spec.PackageRoot + "/types"
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
