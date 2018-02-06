@@ -10,8 +10,8 @@ import (
 
     "{{ .PackageRoot }}/actions"
     "{{ .PackageRoot }}/connection"
-    plog "github.com/komand/plugin-sdk-go2/log"
-    "github.com/komand/plugin-sdk-go2/message"
+    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
+    "github.com/rapid7/komand-plugin-sdk-go2/message"
 )
 
 // {{ .Name }}Handler is a handler
