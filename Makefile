@@ -6,10 +6,10 @@ MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
 
 build:
 	go-bindata -pkg sdk templates/...
-	go build -o cmd/plugin-sdk-go/plugin-sdk-go github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go
+	go build -o cmd/plugin-sdk-go/plugin-sdk-go github.com/rapid7/komand-plugin-sdk-go2/cmd/plugin-sdk-go
 
 clean:
-	rm -f ./github.com/komand/plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
+	rm -f ./github.com/rapid7/komand-plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
 	
 image:
 	docker build -t komand/go-plugin-2 .

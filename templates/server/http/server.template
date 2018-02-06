@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"{{ .PackageRoot }}/connection"
-	"github.com/komand/plugin-sdk-go2/message"
+	"github.com/rapid7/komand-plugin-sdk-go2/message"
 )
 
 // NewServer returns a new http server
