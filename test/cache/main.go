@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/komand/plugin-sdk-go2/cache"
+	"github.com/rapid7/komand-plugin-sdk-go2/cache"
 )
 
 // Counter is a canary struct to alert us to issues

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/komand/plugin-sdk-go2/utils"
+	"github.com/rapid7/komand-plugin-sdk-go2/utils"
 )
 
 const cacheDir = "/var/cache/"

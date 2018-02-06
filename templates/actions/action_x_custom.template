@@ -2,7 +2,7 @@ package actions
 
 import (
     "{{ .PackageRoot }}/connection"
-    plog "github.com/komand/plugin-sdk-go2/log"
+    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
 )
 
 // Validate will validate the input is properly setup with whatever rules you put in
