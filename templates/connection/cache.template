@@ -6,7 +6,7 @@ import (
     "fmt"
     "sync"
 
-    plog "github.com/komand/plugin-sdk-go2/log"
+    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
 )
 
 // Cache is a simple wrapper around a map with a mutex, to store connections in
