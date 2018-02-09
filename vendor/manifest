@@ -42,6 +42,14 @@
 			"notests": true
 		},
 		{
+			"importpath": "github.com/rapid7/go-bindata",
+			"repository": "https://github.com/rapid7/go-bindata",
+			"vcs": "git",
+			"revision": "797d0a2ec2d308684a6672c38f863847dfe8704e",
+			"branch": "master",
+			"notests": true
+		},
+		{
 			"importpath": "golang.org/x/sys/unix",
 			"repository": "https://go.googlesource.com/sys",
 			"vcs": "git",
