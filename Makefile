@@ -10,7 +10,7 @@ build:
 
 clean:
 	rm -f ./github.com/rapid7/komand-plugin-sdk-go2/cmd/plugin-sdk-go/plugin-sdk-go
-	
+
 image:
 	docker build -t komand/go-plugin-2 .
 
@@ -20,7 +20,7 @@ tag: image
 	docker tag komand/go-plugin-2:$(VERSION) komand/go-plugin-2:$(MAJOR_VERSION)
 
 deps:
-	go get -u github.com/jteeuwen/go-bindata/...
+	go build -o $(GOPATH)/bin/go-bindata ./vendor/github.com/rapid7/go-bindata/go-bindata
 	go get golang.org/x/tools/cmd/goimports
 	go get -u honnef.co/go/tools/cmd/gosimple
 	go get -u honnef.co/go/tools/cmd/staticcheck
