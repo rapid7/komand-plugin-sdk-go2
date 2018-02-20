@@ -1,7 +1,7 @@
 package connection
 
 import (
-    plog "github.com/komand/plugin-sdk-go2/log"
+    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
 )
 
 // CustomParams is where you the developer will fill in any custom properties, which you would need

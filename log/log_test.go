@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/komand/plugin-sdk-go2/log"
+	"github.com/rapid7/komand-plugin-sdk-go2/log"
 )
 
 func BenchmarkError(b *testing.B) {

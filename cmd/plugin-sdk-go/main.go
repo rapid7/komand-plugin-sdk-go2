@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	sdk "github.com/komand/plugin-sdk-go2"
+	sdk "github.com/rapid7/komand-plugin-sdk-go2"
 )
 
 func main() {

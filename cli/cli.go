@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/komand/plugin-sdk-go2/dispatcher"
-	plog "github.com/komand/plugin-sdk-go2/log"
-	"github.com/komand/plugin-sdk-go2/message"
+	"github.com/rapid7/komand-plugin-sdk-go2/dispatcher"
+	plog "github.com/rapid7/komand-plugin-sdk-go2/log"
+	"github.com/rapid7/komand-plugin-sdk-go2/message"
 	ansi "github.com/mgutz/ansi"
 )
 
