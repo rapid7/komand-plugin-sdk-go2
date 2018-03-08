@@ -1,0 +1,22 @@
+language: go
+go:
+- '1.8'
+- '1.9'
+sudo: required
+services:
+  - docker
+script:
+ - docker build -t komand/go-plugin-2 .
+ - docker run komand/go-plugin-2:latest make build
+ - docker run komand/go-plugin-2:latest make test
+deploy:
+  provider: script
+  script:
+    - echo deploying to dockerhub
+    - docker login -u $KOMAND_DOCKER_USERNAME -p $KOMAND_DOCKER_PASSWORD
+    - docker tag komand/go-plugin-2:latest komand/go-plugin-2:$TRAVIS_TAG
+    - docker push komand/go-plugin-2:latest
+    - docker push komand/go-plugin-2:$TRAVIS_TAG
+  skip_cleanup: true
+  on:
+      condition: $TRAVIS_BRANCH == "master" || -n $TRAVIS_TAG
