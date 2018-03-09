@@ -46,7 +46,7 @@ regenerate:
 	@which komand 1>/dev/null && komand plugin generate go plugin.spec.yaml --path $(CWD) --repo "{{ .PackageRoot }}"
 
 runner:
-	@ln -s ../tools/run run
+	@ls -f -s ../tools/run run
 
 runner-http: $(NAME)-run-http
 
