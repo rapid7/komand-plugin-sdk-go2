@@ -4,6 +4,10 @@ GOWORKDIR=$(GOPATH)/src
 VERSION=$(shell git describe --abbrev=0 --tags)
 MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
 
+TAG=$(shell \
+([ "$(TRAVIS_TAG)" != "" ] && echo $(TRAVIS_TAG)) \
+|| ([ "$(TRAVIS_BRANCH)" = "master" ] && echo latest))
+
 build:
 	go-bindata -pkg sdk templates/...
 	go build -o cmd/plugin-sdk-go/plugin-sdk-go github.com/rapid7/komand-plugin-sdk-go2/cmd/plugin-sdk-go
@@ -34,3 +38,10 @@ check:
 	staticcheck $$(go list ./... | grep -v /vendor/)
 	gosimple $$(go list ./... | grep -v /vendor/)
 	unused $$(go list ./... | grep -v /vendor/)
+
+deploy:
+	@echo deploying "$(TAG)" to dockerhub
+	@docker login -u "$(KOMAND_DOCKER_USERNAME)" -p "$(KOMAND_DOCKER_PASSWORD)"
+	docker tag komand/go-plugin-2:latest komand/go-plugin-2:$(TAG)
+	docker push komand/go-plugin-2:latest
+	docker push komand/go-plugin-2:$(TAG)
