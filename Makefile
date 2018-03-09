@@ -2,11 +2,8 @@
 
 GOWORKDIR=$(GOPATH)/src
 VERSION=$(shell git describe --abbrev=0 --tags)
-MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
-
-TAG=$(shell \
-([ "$(TRAVIS_TAG)" != "" ] && echo $(TRAVIS_TAG)) \
-|| ([ "$(TRAVIS_BRANCH)" = "master" ] && echo latest))
+MINOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1-2)
+MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1)
 
 build:
 	go-bindata -pkg sdk templates/...
@@ -40,8 +37,13 @@ check:
 	unused $$(go list ./... | grep -v /vendor/)
 
 deploy:
-	@echo deploying "$(TAG)" to dockerhub
+	@echo deploying "$(VERSION)", "$(MINOR_VERSION)", "$(MAJOR_VERSION)" to dockerhub
+	@echo docker login -u "********" -p "********"
 	@docker login -u "$(KOMAND_DOCKER_USERNAME)" -p "$(KOMAND_DOCKER_PASSWORD)"
-	docker tag komand/go-plugin-2:latest komand/go-plugin-2:$(TAG)
-	docker push komand/go-plugin-2:latest
-	docker push komand/go-plugin-2:$(TAG)
+	docker tag komand/go-plugin-2 komand/go-plugin-2:$(VERSION)
+	docker tag komand/go-plugin-2 komand/go-plugin-2:$(MINOR_VERSION)
+	docker tag komand/go-plugin-2 komand/go-plugin-2:$(MAJOR_VERSION)
+	docker push komand/go-plugin-2
+	docker push komand/go-plugin-2:$(VERSION)
+	docker push komand/go-plugin-2:$(MINOR_VERSION)
+	docker push komand/go-plugin-2:$(MAJOR_VERSION)
