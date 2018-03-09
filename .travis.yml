@@ -10,11 +10,7 @@ script:
  - docker run komand/go-plugin-2:latest make test
 deploy:
   provider: script
-  script: echo deploying "$TRAVIS_TAG" to dockerhub \
-          && docker login -u "$KOMAND_DOCKER_USERNAME" -p "$KOMAND_DOCKER_PASSWORD" \
-          && docker tag komand/go-plugin-2:latest komand/go-plugin-2:$TRAVIS_TAG \
-          && docker push komand/go-plugin-2:latest \
-          && docker push komand/go-plugin-2:$TRAVIS_TAG
+  script: make deploy
   skip_cleanup: true
   on:
       tags: true
