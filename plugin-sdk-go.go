@@ -40,7 +40,7 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 		return nil, err
 	}
 	// Fill in some basic stuff that isn't readily available from the parse, but helps the generation
-	postProcessSpec(s)
+	PostProcessSpec(s)
 	return &Generator{
 		spec:          s,
 		forceOverwise: force,
@@ -138,9 +138,9 @@ type HTTP struct {
 	WriteTimeout int `yaml:"write_timeout"`
 }
 
-// postProcessSpec does some minor post-processing on the spec object to fill a few things in that make
+// PostProcessSpec does some minor post-processing on the spec object to fill a few things in that make
 // template generation easier
-func postProcessSpec(s *PluginSpec) error {
+func PostProcessSpec(s *PluginSpec) error {
 	// Create a new TypeManager and feed it some metadata about the spec, for it's own benefits
 	t := NewTypeMapper(s)
 	s.TypeMapper = t

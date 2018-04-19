@@ -1,3 +1,4 @@
 .DS_Store
 cmd/plugin-sdk-go/plugin-sdk-go
+cmd/spec-parser/spec-parser
 .orig
