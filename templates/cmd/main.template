@@ -122,11 +122,11 @@ func main() {
 			log.Fatalf("you must provide a message body via STDIN to run an action or trigger: %s", err.Error())
 		}
 		switch m.Type {
-		case "action_start":
+		case message.ActionStart:
 			if err := runOneOffAction(mode, b, *debug); err != nil { // Command should be run, or test
 				log.Fatal(err)
 			}
-		case "trigger_start":
+		case message.TriggerStart:
 			// This will block until the trigger shuts down
 			if err := runTriggerDaemon(ctx, mode, b, *debug); err != nil { // Command should be run, or test
 				log.Fatal(err)

@@ -2,6 +2,12 @@ package message
 
 import "encoding/json"
 
+// These define the types of messages used in the SDK
+const (
+	ActionStart  = "action_start"
+	TriggerStart = "trigger_start"
+)
+
 // V1 is the general purpose komand plugin message envelope, which contains the body and other metadata
 type V1 struct {
 	Version string      `json:"version"`
