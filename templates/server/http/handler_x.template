@@ -61,7 +61,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// TODO if we suspect this is a bottleneck, profile it and swap back to the switch-case approach
 	input := &actions.{{ .Name }}Input{}
 	if err := json.Unmarshal(body.Input, input); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		h.replyWithError(response, w, err)
         return
 	}
@@ -79,13 +79,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
         log.Println(fmt.Sprintf("Error while validating {{ .Name }}Input: %s", err.Error()))
 	}
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		h.replyWithError(response, w, fmt.Errorf("Error while validating {{ .Name }}Input. Check logs for details"))
         return
 	}
 	cd := &connection.Data{}
 	if err := json.Unmarshal(body.Connection, cd); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		h.replyWithError(response, w, err)
         return
 	}
