@@ -40,7 +40,9 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 		return nil, err
 	}
 	// Fill in some basic stuff that isn't readily available from the parse, but helps the generation
-	PostProcessSpec(s)
+	if err := PostProcessSpec(s); err != nil {
+		return nil, err
+	}
 	return &Generator{
 		spec:          s,
 		forceOverwise: force,
@@ -81,6 +83,7 @@ type ParamData struct {
 	RawName     string        `yaml:"name"`
 	Name        string        `yaml:"-"` // This is the joined and camelled name for the param
 	Type        string        `yaml:"type"`
+	Structure   string        `yaml:"structure"` // This is only used when type == credential
 	Required    bool          `yaml:"required"`
 	Description string        `yaml:"description"`
 	Enum        []interface{} `yaml:"enum"`
@@ -170,7 +173,7 @@ func PostProcessSpec(s *PluginSpec) error {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
 		specType := param.Type
-		param.Type = t.SpecTypeToGoType(param.Type)
+		param.Type = t.SpecTypeToGoType(param)
 		s.Connection[name] = param
 		// This is all stupid hacky but we need some way to hash the params and have a consistent key
 		// for the connection in the hash for looking up via the data incoming with the message

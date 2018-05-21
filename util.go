@@ -82,7 +82,7 @@ func updateParams(data map[string]ParamData, t *TypeMapper) error {
 	for name, param := range data {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
-		param.Type = t.SpecTypeToGoType(param.Type)
+		param.Type = t.SpecTypeToGoType(param)
 		param.EnumLiteral = make([]EnumData, len(param.Enum))
 		for i, e := range param.Enum {
 			// So, here's how we're gonna do this: marshal the interface to json
