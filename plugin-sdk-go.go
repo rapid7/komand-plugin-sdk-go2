@@ -40,11 +40,11 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 		return nil, err
 	}
 	// Fill in some basic stuff that isn't readily available from the parse, but helps the generation
-	PostProcessSpec(s)
+	err = PostProcessSpec(s)
 	return &Generator{
 		spec:          s,
 		forceOverwise: force,
-	}, nil
+	}, err
 }
 
 // PluginSpec is a spec for plugins
@@ -422,17 +422,25 @@ func (g *Generator) generateTests() error {
 
 func (g *Generator) generateTypes() error {
 	fmt.Printf("Generating %s/types\n", g.spec.PackageRoot)
-	pathToTemplate := "templates/types/sdk_file.template"
-	// Do the built in sdk file
-	newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/sdk_file.go")
-	if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
-		return err
+	tList := []string{
+		"sdk_file",
+		"credential_asymmetric_key",
+		"credential_token",
+		"credential_username_password",
 	}
-	// Now, do one for each action using the type_x template
-	pathToTemplate = "templates/types/type_x.template"
+	// Do the stock ones first
+	for _, t := range tList {
+		pathToTemplate := "templates/types/" + t + ".template"
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/"+t+".go")
+		if err := runTemplate(pathToTemplate, newFilePath, g.spec, false); err != nil {
+			return err
+		}
+	}
+	// Now, do one for each type using the type_x template
+	pathToTemplate := "templates/types/type_x.template"
 	for name, t := range g.spec.Types {
 		// Make the new action.go
-		newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/", name+".go")
+		newFilePath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/types/", name+".go")
 		if err := runTemplate(pathToTemplate, newFilePath, t, false); err != nil {
 			return err
 		}
@@ -520,11 +528,18 @@ func (g *Generator) vendorPluginDeps() error {
 }
 
 func (g *Generator) fixGoImportsNotKnowingHowToLookInLocalVendorFirst(path string) error {
-	old := "github.com/rapid7/komand/plugins/v1/types"
+	olds := []string{
+		"github.com/komand/komand/plugins/v1/types",
+	}
 	new := g.spec.PackageRoot + "/types"
 	b, err := ioutil.ReadFile(path)
 	if err != nil {
 		return nil
 	}
-	return ioutil.WriteFile(path, []byte(strings.Replace(string(b), old, new, -1)), 0)
+	for _, old := range olds {
+		if err := ioutil.WriteFile(path, []byte(strings.Replace(string(b), old, new, -1)), 0); err != nil {
+			return err
+		}
+	}
+	return nil
 }

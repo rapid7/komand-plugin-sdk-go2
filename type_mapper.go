@@ -22,6 +22,9 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper { // TO FIGURE OUT object and byte
 			"python":    "string",
 			"password":  "string",
 			"file":      "types.SDKFile",
+			"credential_username_password": "types.CredentialUsernamePassword",
+			"credential_token":             "types.CredentialToken",
+			"credential_asymmetric_key":    "types.CredentialAsymmetricKey",
 		},
 	}
 
