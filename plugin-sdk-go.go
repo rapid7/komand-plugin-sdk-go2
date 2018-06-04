@@ -49,20 +49,21 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 
 // PluginSpec is a spec for plugins
 type PluginSpec struct {
-	PluginSpecVersion string                          `yaml:"plugin_spec_version"`
-	Name              string                          `yaml:"name"`
-	Title             string                          `yaml:"title"`
-	Description       string                          `yaml:"description"`
-	Version           string                          `yaml:"version"`
-	Vendor            string                          `yaml:"vendor"`
-	Tags              []string                        `yaml:"tags"`
-	Icon              string                          `yaml:"icon"`
-	Help              string                          `yaml:"help"`
-	Connection        map[string]ParamData            `yaml:"connection"`
-	RawTypes          map[string]map[string]ParamData `yaml:"types"`
-	Types             map[string]TypeData             `yaml:"-"`
-	Triggers          map[string]PluginHandlerData    `yaml:"triggers"`
-	Actions           map[string]PluginHandlerData    `yaml:"actions"`
+	PluginSpecVersion             string                          `yaml:"plugin_spec_version"`
+	Name                          string                          `yaml:"name"`
+	Title                         string                          `yaml:"title"`
+	Description                   string                          `yaml:"description"`
+	Version                       string                          `yaml:"version"`
+	Vendor                        string                          `yaml:"vendor"`
+	Tags                          []string                        `yaml:"tags"`
+	Icon                          string                          `yaml:"icon"`
+	Help                          string                          `yaml:"help"`
+	Connection                    map[string]ParamData            `yaml:"connection"`
+	ConnectionRequiresCustomTypes bool                            `yaml:"-"`
+	RawTypes                      map[string]map[string]ParamData `yaml:"types"`
+	Types                         map[string]TypeData             `yaml:"-"`
+	Triggers                      map[string]PluginHandlerData    `yaml:"triggers"`
+	Actions                       map[string]PluginHandlerData    `yaml:"actions"`
 
 	// Things that are not part of the spec, but still important
 	PackageRoot string `yaml:"package_root"`
@@ -110,12 +111,13 @@ func (p ParamData) TypesInternalType() string {
 
 // PluginHandlerData defines the actions or triggers
 type PluginHandlerData struct {
-	RawName     string `yaml:"name"`
-	Name        string `yaml:"-"` // This is the joined and camelled name for the action
-	Title       string `yaml:"title"`
-	Description string `yaml:"description"`
-	Input       map[string]ParamData
-	Output      map[string]ParamData
+	RawName             string `yaml:"name"`
+	Name                string `yaml:"-"` // This is the joined and camelled name for the action
+	Title               string `yaml:"title"`
+	Description         string `yaml:"description"`
+	Input               map[string]ParamData
+	Output              map[string]ParamData
+	RequiresCustomTypes bool // Used to assist in generating correct imports
 
 	// Things that are only used to make parsing templates simpler
 	PackageRoot string `yaml:"-"`
@@ -152,11 +154,9 @@ func PostProcessSpec(s *PluginSpec) error {
 		td := TypeData{}
 		td.RawName = name
 		td.Name = UpperCamelCase(name)
-
-		if err := updateParams(data, t); err != nil {
+		if _, err := updateParams(data, t); err != nil {
 			return err
 		}
-
 		td.Fields = data
 		// Sort them  - currently this is by their embedded status, as embeds must appear uptop in go structs
 		td.SortedFields = sortParamData(td.Fields)
@@ -171,6 +171,10 @@ func PostProcessSpec(s *PluginSpec) error {
 		param.Name = UpperCamelCase(name)
 		specType := param.Type
 		param.Type = t.SpecTypeToGoType(param.Type)
+		// Make sure to import the plugins own types package when generating the connection
+		if !s.ConnectionRequiresCustomTypes && strings.Contains(param.Type, "types.") {
+			s.ConnectionRequiresCustomTypes = true
+		}
 		s.Connection[name] = param
 		// This is all stupid hacky but we need some way to hash the params and have a consistent key
 		// for the connection in the hash for looking up via the data incoming with the message
@@ -194,11 +198,16 @@ func PostProcessSpec(s *PluginSpec) error {
 		action.Name = UpperCamelCase(name)
 		action.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		if err := updateParams(action.Input, t); err != nil {
+		customTypesInput, err := updateParams(action.Input, t)
+		if err != nil {
 			return err
 		}
-		if err := updateParams(action.Output, t); err != nil {
+		customTypesOutput, err := updateParams(action.Output, t)
+		if err != nil {
 			return err
+		}
+		if customTypesInput || customTypesOutput {
+			action.RequiresCustomTypes = true
 		}
 		s.Actions[name] = action
 	}
@@ -208,13 +217,17 @@ func PostProcessSpec(s *PluginSpec) error {
 		trigger.Name = UpperCamelCase(name)
 		trigger.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		if err := updateParams(trigger.Input, t); err != nil {
+		customTypesInput, err := updateParams(trigger.Input, t)
+		if err != nil {
 			return err
 		}
-		if err := updateParams(trigger.Output, t); err != nil {
+		customTypesOutput, err := updateParams(trigger.Output, t)
+		if err != nil {
 			return err
 		}
-
+		if customTypesInput || customTypesOutput {
+			trigger.RequiresCustomTypes = true
+		}
 		if _, ok := trigger.Input["interval"]; ok {
 			trigger.HasInterval = true
 		}
@@ -487,7 +500,6 @@ func (g *Generator) runGoImports() error {
 		}
 		return nil
 	})
-
 	if err != nil {
 		return err
 	}
@@ -496,9 +508,6 @@ func (g *Generator) runGoImports() error {
 		cmd := exec.Command("goimports", "-w", "-srcdir", g.spec.PackageRoot, p)
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
-		}
-		if err := g.fixGoImportsNotKnowingHowToLookInLocalVendorFirst(p); err != nil {
-			return err
 		}
 	}
 	return nil
@@ -524,22 +533,5 @@ func (g *Generator) vendorPluginDeps() error {
 		}
 	}
 
-	return nil
-}
-
-func (g *Generator) fixGoImportsNotKnowingHowToLookInLocalVendorFirst(path string) error {
-	olds := []string{
-		"github.com/komand/komand/plugins/v1/types",
-	}
-	new := g.spec.PackageRoot + "/types"
-	b, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil
-	}
-	for _, old := range olds {
-		if err := ioutil.WriteFile(path, []byte(strings.Replace(string(b), old, new, -1)), 0); err != nil {
-			return err
-		}
-	}
 	return nil
 }

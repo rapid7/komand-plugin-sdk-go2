@@ -78,11 +78,17 @@ var commonInitialisms = map[string]bool{
 
 // This is a light weight helper to handle some post-processing boilerplate after parsing a spec
 // We need to convert the spec param names into go friendly names, and lookup the proper type
-func updateParams(data map[string]ParamData, t *TypeMapper) error {
+// Returns a boolean indicating if any custom spec types were found, for the caller
+// to note on the space when generating templates
+func updateParams(data map[string]ParamData, t *TypeMapper) (bool, error) {
+	var customTypes bool
 	for name, param := range data {
 		param.RawName = name
 		param.Name = UpperCamelCase(name)
 		param.Type = t.SpecTypeToGoType(param.Type)
+		if !customTypes && strings.Contains(param.Type, "types.") {
+			customTypes = true
+		}
 		param.EnumLiteral = make([]EnumData, len(param.Enum))
 		for i, e := range param.Enum {
 			// So, here's how we're gonna do this: marshal the interface to json
@@ -92,7 +98,7 @@ func updateParams(data map[string]ParamData, t *TypeMapper) error {
 			// upfront cost, the convenience factor wins out for now.
 			b, err := json.Marshal(e)
 			if err != nil {
-				return err
+				return false, err
 			}
 			param.EnumLiteral[i] = EnumData{
 				Name:         param.Name + UpperCamelCase(string(b)),
@@ -101,7 +107,7 @@ func updateParams(data map[string]ParamData, t *TypeMapper) error {
 		}
 		data[name] = param // Godbless go for this feature
 	}
-	return nil
+	return customTypes, nil
 }
 
 // sortParamData takes the proprties for a generated class and sorts them based on if they are Embedded or not
