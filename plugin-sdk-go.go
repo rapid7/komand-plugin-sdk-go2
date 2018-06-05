@@ -519,14 +519,14 @@ func (g *Generator) vendorPluginDeps() error {
 	rootPath := path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot)
 	if doesFileExist(path.Join(rootPath, "vendor")) {
 		// run ensure
-		cmd := exec.Command("dep", "ensure")
+		cmd := exec.Command("dep", "ensure", "-v")
 		cmd.Dir = rootPath
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("error while running dep ensure on %s: %s - %s", rootPath, string(b), err.Error())
 		}
 	} else {
 		// first time, run init
-		cmd := exec.Command("dep", "init")
+		cmd := exec.Command("dep", "init", "-v")
 		cmd.Dir = rootPath
 		if b, err := cmd.CombinedOutput(); err != nil {
 			return fmt.Errorf("error while running dep init on %s: %s - %s", rootPath, string(b), err.Error())
