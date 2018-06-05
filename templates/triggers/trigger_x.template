@@ -8,6 +8,9 @@ import (
     "github.com/rapid7/komand-plugin-sdk-go2/message"
 
     "{{ .PackageRoot }}/connection"
+    {{- if .RequiresCustomTypes }}
+	"{{ .PackageRoot }}/types"
+	{{- end }}
 )
 
 // {{ .Name}}TriggerCustomLooper is an interface you can implement to override RunLoop behavior
