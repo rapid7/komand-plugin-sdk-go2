@@ -49,13 +49,6 @@ regenerate:
 runner:
 	@ls -f -s ../tools/run run
 
-runner-http: $(NAME)-run-http
-
-$(NAME)-run-http:
-	@printf "#!/bin/sh\ndocker run --rm -p 10001-20001:10001 -i $(VENDOR)/$(NAME):$(VERSION) http \$$@" > ./$(NAME)-run-http
-	@chmod 755 ./$(NAME)-run-http
-	@echo "[-] Use ./$(NAME)-run-http --help to run the plugin."
-
 help:
 	@test -f ../tools/help.py || echo "Check spec tool not included in customer installs!"
 	@test -f ../tools/help.py && python2 ../tools/help.py ./plugin.spec.yaml
