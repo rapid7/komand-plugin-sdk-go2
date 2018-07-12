@@ -86,7 +86,7 @@ func (fi bindataFileInfo) Sys() interface{} {
 	return nil
 }
 
-var _templatesDockerfileTemplate = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x8e\x41\x4b\x03\x31\x10\x85\xef\xf9\x15\x43\xef\x9b\xa8\x47\x61\x0f\x95\xad\x50\xac\xd9\x12\x2a\x22\xe2\x61\xdc\x0d\x21\xa4\xc9\x84\xcd\x7a\xa8\x21\xff\xdd\x43\xe2\x49\x7b\x9c\x79\xef\x7d\x7c\x8f\x6a\x7c\x06\x47\x1e\xc3\x2c\x0c\x75\xf1\xfc\x65\x6c\xe8\xee\xee\x6f\xf9\x0d\x3b\x6c\x1f\x76\x07\xa0\xc5\x60\xb0\xdf\xb8\x5a\x0a\x7d\x6d\xb6\x24\xcd\xae\x37\xd4\x8e\xf5\x12\x75\x5f\xe7\x8c\xa9\x17\x09\xde\xcd\x76\x81\x2e\x82\x68\xf8\x1a\x26\xf1\x69\x03\xdb\x0e\x03\x70\x10\x86\x44\x5a\x26\x91\x33\xf0\x23\x4e\x0e\x8d\x56\x44\x2b\x94\xc2\x5e\x47\xf5\x34\xec\xd5\xb5\x4a\x29\xac\x32\x1a\x95\xa7\xa8\x27\x7e\x41\x7f\x86\x3f\x9f\xa6\x83\x4e\xc3\xaf\xdf\x4e\x9e\xd4\xdb\x71\xdc\xcb\x13\xbc\x6f\xfe\xf1\x13\x39\x73\x89\x5e\x97\xb2\xf9\x60\x3f\x01\x00\x00\xff\xff\xd6\x34\xc1\x5f\x23\x01\x00\x00")
+var _templatesDockerfileTemplate = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x74\x8e\x31\x4b\x04\x31\x10\x85\xfb\xfc\x8a\xe1\xfa\x4d\xe0\x4a\x61\x8b\x93\x3d\xe1\xf0\xcc\x1e\xe1\x44\x44\x2c\xc6\xdd\x10\x42\x2e\x99\xb0\x59\x8b\x35\xe4\xbf\x5b\x24\x56\x6a\x39\xf3\xde\xfb\xf8\x1e\xd4\xf8\x04\x8e\x3c\x86\x59\x18\xea\xe2\xed\xd3\xd8\xd0\xed\xef\xf6\xec\x7c\xb8\x3f\x9e\x81\x16\x83\xc1\x7e\xe1\x6a\x29\xf4\xb5\xd7\x92\x34\xbb\xde\x50\x3b\xd6\x2d\xea\xbe\x8e\x19\x53\xcf\x12\xbc\x9b\xed\x02\x5d\x04\xd1\xe0\x35\x4c\xe2\xc3\x06\x76\x18\x06\xe0\x20\x0c\x89\xb4\x4c\x22\x67\xe0\x17\x9c\x1c\x1a\xad\x88\x56\x28\x85\xbd\x8c\xea\x71\x38\xa9\xff\x2a\xa5\xb0\xca\x68\x54\x9e\xa2\x9e\xf8\x86\xfe\x06\xbf\x3e\x4d\x07\x9d\x86\x1f\xbf\xa3\xbc\xaa\xd7\xcb\x78\x92\x57\x78\xdb\xfd\xe1\x27\x72\xe6\x12\xbd\x2e\x65\xf7\xce\xbe\x03\x00\x00\xff\xff\xbc\xe1\x51\x32\x21\x01\x00\x00")
 
 func templatesDockerfileTemplateBytes() ([]byte, error) {
 	return bindataRead(
@@ -101,7 +101,7 @@ func templatesDockerfileTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/Dockerfile.template", size: 291, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/Dockerfile.template", size: 289, mode: os.FileMode(420), modTime: time.Unix(1531424659, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -121,7 +121,7 @@ func templatesMakefileTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/Makefile.template", size: 2370, mode: os.FileMode(420), modTime: time.Unix(1530544408, 0)}
+	info := bindataFileInfo{name: "templates/Makefile.template", size: 2370, mode: os.FileMode(420), modTime: time.Unix(1531424654, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -141,7 +141,7 @@ func templatesActionsAction_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/actions/action_x.template", size: 1154, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/actions/action_x.template", size: 1154, mode: os.FileMode(420), modTime: time.Unix(1528222337, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -161,7 +161,7 @@ func templatesActionsAction_x_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1519142960, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -181,7 +181,7 @@ func templatesCmdMainTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/cmd/main.template", size: 11067, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/cmd/main.template", size: 11067, mode: os.FileMode(420), modTime: time.Unix(1524502329, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -201,7 +201,7 @@ func templatesConnectionCacheTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/connection/cache.template", size: 1317, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/connection/cache.template", size: 1317, mode: os.FileMode(420), modTime: time.Unix(1519142960, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -221,7 +221,7 @@ func templatesConnectionConnectionTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/connection/connection.template", size: 1059, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/connection/connection.template", size: 1059, mode: os.FileMode(420), modTime: time.Unix(1528222337, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -241,7 +241,7 @@ func templatesConnectionConnection_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/connection/connection_custom.template", size: 1925, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/connection/connection_custom.template", size: 1925, mode: os.FileMode(420), modTime: time.Unix(1519142960, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -261,7 +261,7 @@ func templatesServerHttpHandler_trigger_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/http/handler_trigger_x.template", size: 4560, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/server/http/handler_trigger_x.template", size: 4560, mode: os.FileMode(420), modTime: time.Unix(1524503065, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -281,7 +281,7 @@ func templatesServerHttpHandler_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/http/handler_x.template", size: 4119, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/server/http/handler_x.template", size: 4119, mode: os.FileMode(420), modTime: time.Unix(1524503065, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -301,7 +301,7 @@ func templatesServerHttpServerTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/server/http/server.template", size: 1171, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/server/http/server.template", size: 1171, mode: os.FileMode(420), modTime: time.Unix(1519142960, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -321,7 +321,7 @@ func templatesTriggersTrigger_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/triggers/trigger_x.template", size: 6489, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/triggers/trigger_x.template", size: 6489, mode: os.FileMode(420), modTime: time.Unix(1528222337, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -341,7 +341,7 @@ func templatesTriggersTrigger_x_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/triggers/trigger_x_custom.template", size: 3167, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/triggers/trigger_x_custom.template", size: 3167, mode: os.FileMode(420), modTime: time.Unix(1519142960, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -361,7 +361,7 @@ func templatesTypesCredential_asymmetric_keyTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types/credential_asymmetric_key.template", size: 401, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/types/credential_asymmetric_key.template", size: 401, mode: os.FileMode(420), modTime: time.Unix(1528207738, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -381,7 +381,7 @@ func templatesTypesCredential_tokenTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types/credential_token.template", size: 472, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/types/credential_token.template", size: 472, mode: os.FileMode(420), modTime: time.Unix(1528207738, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -401,7 +401,7 @@ func templatesTypesCredential_username_passwordTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types/credential_username_password.template", size: 578, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/types/credential_username_password.template", size: 578, mode: os.FileMode(420), modTime: time.Unix(1528207738, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -421,7 +421,7 @@ func templatesTypesSdk_fileTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types/sdk_file.template", size: 368, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/types/sdk_file.template", size: 368, mode: os.FileMode(420), modTime: time.Unix(1517422002, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -441,7 +441,7 @@ func templatesTypesType_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/types/type_x.template", size: 719, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/types/type_x.template", size: 719, mode: os.FileMode(420), modTime: time.Unix(1517422002, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -461,7 +461,7 @@ func templatesVendorGitkeep() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/vendor/.gitkeep", size: 0, mode: os.FileMode(420), modTime: time.Unix(1529000327, 0)}
+	info := bindataFileInfo{name: "templates/vendor/.gitkeep", size: 0, mode: os.FileMode(420), modTime: time.Unix(1517422002, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
