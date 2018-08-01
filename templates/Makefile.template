@@ -51,11 +51,11 @@ runner:
 
 help:
 	@test -f ../tools/help.py || echo "Check spec tool not included in customer installs!"
-	@test -f ../tools/help.py && python2 ../tools/help.py ./plugin.spec.yaml
+	@test -f ../tools/help.py && python ../tools/help.py ./plugin.spec.yaml
 
 validate:
 	@test -f ../tools/check_spec.py || echo "Check spec tool not included in customer installs!"
-	@test -f ../tools/check_spec.py && python2 ../tools/check_spec.py ./plugin.spec.yaml
+	@test -f ../tools/check_spec.py && python ../tools/check_spec.py ./plugin.spec.yaml
 
 deps:
 	go get -u honnef.co/go/tools/cmd/gosimple
