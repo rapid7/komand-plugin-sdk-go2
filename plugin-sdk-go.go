@@ -440,6 +440,7 @@ func (g *Generator) generateTypes() error {
 		"credential_asymmetric_key",
 		"credential_token",
 		"credential_username_password",
+		"credential_secret_key",
 	}
 	// Do the stock ones first
 	for _, t := range tList {

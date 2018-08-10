@@ -14,6 +14,7 @@
 // templates/triggers/trigger_x.template
 // templates/triggers/trigger_x_custom.template
 // templates/types/credential_asymmetric_key.template
+// templates/types/credential_secret_key.template
 // templates/types/credential_token.template
 // templates/types/credential_username_password.template
 // templates/types/sdk_file.template
@@ -221,7 +222,7 @@ func templatesConnectionConnectionTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/connection/connection.template", size: 1119, mode: os.FileMode(420), modTime: time.Unix(1532717387, 0)}
+	info := bindataFileInfo{name: "templates/connection/connection.template", size: 1119, mode: os.FileMode(420), modTime: time.Unix(1533651493, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -241,7 +242,7 @@ func templatesConnectionConnection_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/connection/connection_custom.template", size: 1959, mode: os.FileMode(420), modTime: time.Unix(1532784832, 0)}
+	info := bindataFileInfo{name: "templates/connection/connection_custom.template", size: 1959, mode: os.FileMode(420), modTime: time.Unix(1533651493, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -362,6 +363,26 @@ func templatesTypesCredential_asymmetric_keyTemplate() (*asset, error) {
 	}
 
 	info := bindataFileInfo{name: "templates/types/credential_asymmetric_key.template", size: 401, mode: os.FileMode(420), modTime: time.Unix(1528137881, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _templatesTypesCredential_secret_keyTemplate = []byte("\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\xff\x6c\x8e\xc1\x4e\xc3\x30\x10\x44\xef\xfe\x8a\x51\x4e\x09\x02\x7a\x8f\x10\x17\x8e\x1c\xf3\x01\x74\xeb\x6c\x82\x49\x62\x5b\xde\x4d\x25\x0b\xf5\xdf\x91\x13\x8a\x8a\xd4\xeb\xce\xbe\x99\x17\xc9\x4e\x34\x32\x34\x47\x16\x63\x0e\x07\xbc\x25\xee\xd9\xab\xa3\xb9\x63\x9b\x58\xdf\x39\xc3\x09\x08\x12\xd9\x3a\x9a\x61\xc3\x12\x83\x38\xdd\xa1\x47\x2c\x14\xa3\xf3\x23\x34\xdc\xb0\x4f\x9d\xa6\xd5\xea\x9a\xb8\x85\x6c\x3d\x1f\x13\x67\x53\x88\xbb\x0b\xb2\xbd\xe3\xdb\x00\xc0\xbf\x73\xa9\x3e\x7e\x49\xf0\x6d\x25\xd7\x7b\x75\x34\x97\x4d\xb6\xdb\xf3\x4f\x9e\xa3\x60\x15\xc4\xc4\x67\xf6\x8a\x99\x69\x2a\x41\x4c\xee\x4c\xca\xe8\x49\xa9\x08\xce\x61\x14\x9c\x32\xc8\x5a\x57\x1c\x4a\xc7\x29\x23\x71\x4f\x56\x6f\x01\xe7\x87\x60\x86\xd5\x5b\xd4\x16\x0f\x77\x8c\x9b\xdf\xed\xba\xb9\x4a\xee\xee\x89\x75\x4d\x1e\xc3\xa2\xcf\x5d\x4c\xce\xeb\x50\x57\x7f\x50\x8b\x97\x7d\x8a\xfb\xd7\xaa\x31\x97\x9f\x00\x00\x00\xff\xff\x26\xd9\x54\x15\x7e\x01\x00\x00")
+
+func templatesTypesCredential_secret_keyTemplateBytes() ([]byte, error) {
+	return bindataRead(
+		_templatesTypesCredential_secret_keyTemplate,
+		"templates/types/credential_secret_key.template",
+	)
+}
+
+func templatesTypesCredential_secret_keyTemplate() (*asset, error) {
+	bytes, err := templatesTypesCredential_secret_keyTemplateBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "templates/types/credential_secret_key.template", size: 382, mode: os.FileMode(420), modTime: time.Unix(1533905359, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -532,6 +553,7 @@ var _bindata = map[string]func() (*asset, error){
 	"templates/triggers/trigger_x.template": templatesTriggersTrigger_xTemplate,
 	"templates/triggers/trigger_x_custom.template": templatesTriggersTrigger_x_customTemplate,
 	"templates/types/credential_asymmetric_key.template": templatesTypesCredential_asymmetric_keyTemplate,
+	"templates/types/credential_secret_key.template": templatesTypesCredential_secret_keyTemplate,
 	"templates/types/credential_token.template": templatesTypesCredential_tokenTemplate,
 	"templates/types/credential_username_password.template": templatesTypesCredential_username_passwordTemplate,
 	"templates/types/sdk_file.template": templatesTypesSdk_fileTemplate,
@@ -607,6 +629,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 		}},
 		"types": &bintree{nil, map[string]*bintree{
 			"credential_asymmetric_key.template": &bintree{templatesTypesCredential_asymmetric_keyTemplate, map[string]*bintree{}},
+			"credential_secret_key.template": &bintree{templatesTypesCredential_secret_keyTemplate, map[string]*bintree{}},
 			"credential_token.template": &bintree{templatesTypesCredential_tokenTemplate, map[string]*bintree{}},
 			"credential_username_password.template": &bintree{templatesTypesCredential_username_passwordTemplate, map[string]*bintree{}},
 			"sdk_file.template": &bintree{templatesTypesSdk_fileTemplate, map[string]*bintree{}},
