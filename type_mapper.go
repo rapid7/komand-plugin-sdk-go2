@@ -25,6 +25,7 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper { // TO FIGURE OUT object and byte
 			"credential_username_password": "types.CredentialUsernamePassword",
 			"credential_token":             "types.CredentialToken",
 			"credential_asymmetric_key":    "types.CredentialAsymmetricKey",
+			"credential_secret_key":        "types.CredentialSecretKey",
 		},
 	}
 
