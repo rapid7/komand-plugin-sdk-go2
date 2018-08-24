@@ -56,8 +56,8 @@ help:
 validate:
 	@test -f ../tools/check_spec.py || echo "Check spec tool not included in customer installs!"
 	@test -f ../tools/check_spec.py && python2 ../tools/check_spec.py ./plugin.spec.yaml
-	@test -d ../0_ci || echo "Plugin validators not included in customer installs"
-	@test -x ../0_ci/komand_plugin_ci/bin/komand-plugin-ci && komand-plugin-ci validate . || true
+	@test -d ../0_ci || echo "Plugin validators not included in customer installs, exiting"
+	@test -d ../0_ci && echo "Validating plugin..." && make -C ../ install-ci &> /dev/null && komand-plugin-ci validate . || true
 
 deps:
 	go get -u honnef.co/go/tools/cmd/gosimple
