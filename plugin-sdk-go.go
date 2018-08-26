@@ -194,6 +194,12 @@ func PostProcessSpec(s *PluginSpec) error {
 	}
 	// fill in the trigger names
 	for name, action := range s.Actions {
+		if action.RawName != "" && action.Title == "" {
+			// Very old plugins used name, not title
+			// We use RawName for different purposes in the gosdk
+			// swap the values around if no title, but name was set
+			action.Title = action.RawName
+		}
 		action.RawName = name // not set in the yaml this way, but set for the benefit of the template
 		action.Name = UpperCamelCase(name)
 		action.PackageRoot = s.PackageRoot
@@ -213,6 +219,12 @@ func PostProcessSpec(s *PluginSpec) error {
 	}
 
 	for name, trigger := range s.Triggers {
+		if trigger.RawName != "" && trigger.Title == "" {
+			// Very old plugins used name, not title
+			// We use RawName for different purposes in the gosdk
+			// swap the values around if no title, but name was set
+			trigger.Title = trigger.RawName
+		}
 		trigger.RawName = name // not set in the yaml this way, but set for the benefit of the template
 		trigger.Name = UpperCamelCase(name)
 		trigger.PackageRoot = s.PackageRoot
