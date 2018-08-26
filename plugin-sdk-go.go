@@ -35,6 +35,9 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 	s := &PluginSpec{
 		PackageRoot:  packageRoot,
 		SpecLocation: specPath,
+		Actions:      make(map[string]PluginHandlerData),
+		Triggers:     make(map[string]PluginHandlerData),
+		Connection:   make(map[string]ParamData),
 	}
 	if err := yaml.Unmarshal(data, s); err != nil {
 		return nil, err
@@ -49,21 +52,21 @@ func NewGenerator(specPath, packageRoot string, force bool) (*Generator, error) 
 
 // PluginSpec is a spec for plugins
 type PluginSpec struct {
-	PluginSpecVersion             string                          `yaml:"plugin_spec_version"`
-	Name                          string                          `yaml:"name"`
-	Title                         string                          `yaml:"title"`
-	Description                   string                          `yaml:"description"`
-	Version                       string                          `yaml:"version"`
-	Vendor                        string                          `yaml:"vendor"`
-	Tags                          []string                        `yaml:"tags"`
-	Icon                          string                          `yaml:"icon"`
-	Help                          string                          `yaml:"help"`
-	Connection                    map[string]ParamData            `yaml:"connection"`
-	ConnectionRequiresCustomTypes bool                            `yaml:"-"`
-	RawTypes                      map[string]map[string]ParamData `yaml:"types"`
-	Types                         map[string]TypeData             `yaml:"-"`
-	Triggers                      map[string]PluginHandlerData    `yaml:"triggers"`
-	Actions                       map[string]PluginHandlerData    `yaml:"actions"`
+	PluginSpecVersion             string                         `yaml:"plugin_spec_version"`
+	Name                          string                         `yaml:"name"`
+	Title                         string                         `yaml:"title"`
+	Description                   string                         `yaml:"description"`
+	Version                       string                         `yaml:"version"`
+	Vendor                        string                         `yaml:"vendor"`
+	Tags                          []string                       `yaml:"tags"`
+	Icon                          string                         `yaml:"icon"`
+	Help                          string                         `yaml:"help"`
+	Connection                    ParamDataCollection            `yaml:"connection"`
+	ConnectionRequiresCustomTypes bool                           `yaml:"-"`
+	RawTypes                      map[string]ParamDataCollection `yaml:"types"`
+	Types                         map[string]TypeData            `yaml:"-"`
+	Triggers                      PluginHandlerCollection        `yaml:"triggers"`
+	Actions                       PluginHandlerCollection        `yaml:"actions"`
 
 	// Things that are not part of the spec, but still important
 	PackageRoot string `yaml:"package_root"`
@@ -88,9 +91,43 @@ type ParamData struct {
 	Default     interface{}   `yaml:"default"`
 	Embed       bool          `yaml:"embed"`
 	Nullable    bool          `yaml:"nullable"`
+	Order       int
 
 	// Things that are used for background help
 	EnumLiteral []EnumData `yaml:"-"`
+}
+
+// ParamDataCollection defines a type we can control marshal behavior with
+type ParamDataCollection map[string]ParamData
+
+// UnmarshalYAML lets us do some magic to set an order since go maps lack it
+func (pdc *ParamDataCollection) UnmarshalYAML(unmarshal func(v interface{}) error) error {
+	if pdc == nil {
+		pdc = &ParamDataCollection{}
+	}
+	m := make(map[string]ParamData)
+	if err := unmarshal(&m); err != nil {
+		return fmt.Errorf("Unable to unmarshal yaml into ParamDataCollection: %s", err)
+	}
+	// Unmarshal again into an ordered list (in order to set Order property)
+	orderedParameters := make(yaml.MapSlice, 0)
+	if err := unmarshal(&orderedParameters); err != nil {
+		return fmt.Errorf("Unable to unmarshal yaml into ordered parameters: %s", err)
+	}
+	for i, p := range orderedParameters {
+		key, ok := p.Key.(string)
+		if !ok {
+			return fmt.Errorf("Unable to unmarshal yaml parameters: Parameter name was not a string")
+		}
+		val, ok := m[key]
+		if !ok {
+			return fmt.Errorf("Could not unmarshal yaml parameter: %s key was somehow not in ParamDataCollection", key)
+		}
+		val.Order = i + 1 // Set the order
+		m[key] = val
+	}
+	*pdc = m
+	return nil
 }
 
 // EnumData is used to parse and write out enums
@@ -115,22 +152,56 @@ type PluginHandlerData struct {
 	Name                string `yaml:"-"` // This is the joined and camelled name for the action
 	Title               string `yaml:"title"`
 	Description         string `yaml:"description"`
-	Input               map[string]ParamData
-	Output              map[string]ParamData
+	Input               ParamDataCollection
+	Output              ParamDataCollection
 	RequiresCustomTypes bool // Used to assist in generating correct imports
+	Order               int  // Used to preserve the exact ordering in the spec
 
 	// Things that are only used to make parsing templates simpler
 	PackageRoot string `yaml:"-"`
 	HasInterval bool   `yaml:"-"`
 }
 
+// PluginHandlerCollection defines a type we can control marshal behavior with
+type PluginHandlerCollection map[string]PluginHandlerData
+
+// UnmarshalYAML lets us do some magic to set an order since go maps lack it
+func (phc *PluginHandlerCollection) UnmarshalYAML(unmarshal func(v interface{}) error) error {
+	if phc == nil {
+		phc = &PluginHandlerCollection{}
+	}
+	m := make(map[string]PluginHandlerData)
+	if err := unmarshal(&m); err != nil {
+		return fmt.Errorf("Unable to unmarshal yaml into PluginHandlerCollection: %s", err)
+	}
+	// Unmarshal again into an ordered list (in order to set Order property)
+	op := make(yaml.MapSlice, 0)
+	if err := unmarshal(&op); err != nil {
+		return fmt.Errorf("Unable to unmarshal yaml into ordered parameters: %s", err)
+	}
+	for i, p := range op {
+		key, ok := p.Key.(string)
+		if !ok {
+			return fmt.Errorf("Unable to unmarshal yaml parameters: Parameter name was not a string")
+		}
+		val, ok := m[key]
+		if !ok {
+			return fmt.Errorf("Could not unmarshal yaml parameter: %s key was somehow not in PluginHandlerCollection", key)
+		}
+		val.Order = i + 1 // Set the order
+		m[key] = val
+	}
+	*phc = m
+	return nil
+}
+
 // TypeData defines the custom types. Much of the data is pulled via a parent-key, so we don't parse much from yaml at all.
 // Instead, we post-process populate it for the benefit of the template
 type TypeData struct {
-	RawName      string               `yaml:"-"`
-	Name         string               `yaml:"-"`
-	Fields       map[string]ParamData `yaml:"-"`
-	SortedFields []ParamData          `yaml:"-"`
+	RawName      string              `yaml:"-"`
+	Name         string              `yaml:"-"`
+	Fields       ParamDataCollection `yaml:"-"`
+	SortedFields []ParamData         `yaml:"-"`
 }
 
 // HTTP Defines the settings for the plugins http server
@@ -192,7 +263,7 @@ func PostProcessSpec(s *PluginSpec) error {
 		// TODO if there is no connection to generate, skip the whole connection pkg?
 		s.ConnectionDataKey = `""`
 	}
-	// fill in the trigger names
+	// fill in the action and trigger data
 	for name, action := range s.Actions {
 		if action.RawName != "" && action.Title == "" {
 			// Very old plugins used name, not title
@@ -243,7 +314,6 @@ func PostProcessSpec(s *PluginSpec) error {
 		if _, ok := trigger.Input["interval"]; ok {
 			trigger.HasInterval = true
 		}
-
 		s.Triggers[name] = trigger
 	}
 
