@@ -2,9 +2,7 @@ package sdk
 
 import (
 	"bytes"
-	"encoding/json"
 	"regexp"
-	"sort"
 	"strings"
 )
 
@@ -30,6 +28,16 @@ func CamelCase(src string, startWithUpper bool) string {
 		}
 	}
 	return string(bytes.Join(chunks, nil))
+}
+
+// CamelCase camel cases things
+func Title(src string) string {
+	byteSrc := []byte(src)
+	chunks := camelingRegex.FindAll(byteSrc, -1)
+	for idx, val := range chunks {
+		chunks[idx] = bytes.Title(val)
+	}
+	return string(bytes.Join(chunks, []byte(" ")))
 }
 
 // Actually taken from: https://github.com/serenize/snaker/blob/master/snaker.go
@@ -74,53 +82,4 @@ var commonInitialisms = map[string]bool{
 	"XMPP":  true,
 	"XSRF":  true,
 	"XSS":   true,
-}
-
-// This is a light weight helper to handle some post-processing boilerplate after parsing a spec
-// We need to convert the spec param names into go friendly names, and lookup the proper type
-// Returns a boolean indicating if any custom spec types were found, for the caller
-// to note on the space when generating templates
-func updateParams(data map[string]ParamData, t *TypeMapper) (bool, error) {
-	var customTypes bool
-	for name, param := range data {
-		param.RawName = name
-		param.Name = UpperCamelCase(name)
-		param.Type = t.SpecTypeToGoType(param.Type)
-		if !customTypes && strings.Contains(param.Type, "types.") {
-			customTypes = true
-		}
-		param.EnumLiteral = make([]EnumData, len(param.Enum))
-		for i, e := range param.Enum {
-			// So, here's how we're gonna do this: marshal the interface to json
-			// this will give us a string representation of the value to write out as a literal
-			// then we'll do const X = {{ Literal Value }}
-			// The marshal approach might not be super efficient, but since generating a spec is a one-time
-			// upfront cost, the convenience factor wins out for now.
-			b, err := json.Marshal(e)
-			if err != nil {
-				return false, err
-			}
-			param.EnumLiteral[i] = EnumData{
-				Name:         param.Name + UpperCamelCase(string(b)),
-				LiteralValue: string(b),
-			}
-		}
-		data[name] = param // Godbless go for this feature
-	}
-	return customTypes, nil
-}
-
-// sortParamData takes the proprties for a generated class and sorts them based on if they are Embedded or not
-// this is due to go wanting to see embeddables up front, then non embedded properties.
-func sortParamData(pd map[string]ParamData) []ParamData {
-	list := make([]ParamData, len(pd)) // <-
-	var x int
-	for _, v := range pd {
-		list[x] = v
-		x++
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return list[i].Embed && !list[j].Embed // <-
-	})
-	return list
 }

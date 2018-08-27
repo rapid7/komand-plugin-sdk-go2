@@ -84,6 +84,7 @@ type PluginSpec struct {
 type ParamData struct {
 	RawName     string        `yaml:"name"`
 	Name        string        `yaml:"-"` // This is the joined and camelled name for the param
+	RawType     string        `yaml:"-"` // This is the original type as it was in the yaml
 	Type        string        `yaml:"type"`
 	Required    bool          `yaml:"required"`
 	Description string        `yaml:"description"`
@@ -92,6 +93,7 @@ type ParamData struct {
 	Embed       bool          `yaml:"embed"`
 	Nullable    bool          `yaml:"nullable"`
 	Order       int
+	Schema      JSONSchema
 
 	// Things that are used for background help
 	EnumLiteral []EnumData `yaml:"-"`
@@ -123,6 +125,9 @@ func (pdc *ParamDataCollection) UnmarshalYAML(unmarshal func(v interface{}) erro
 		if !ok {
 			return fmt.Errorf("Could not unmarshal yaml parameter: %s key was somehow not in ParamDataCollection", key)
 		}
+		val.RawType = val.Type
+		val.RawName = key
+		val.Name = UpperCamelCase(key)
 		val.Order = i + 1 // Set the order
 		m[key] = val
 	}
@@ -156,7 +161,7 @@ type PluginHandlerData struct {
 	Output              ParamDataCollection
 	RequiresCustomTypes bool // Used to assist in generating correct imports
 	Order               int  // Used to preserve the exact ordering in the spec
-
+	Schema              JSONSchema
 	// Things that are only used to make parsing templates simpler
 	PackageRoot string `yaml:"-"`
 	HasInterval bool   `yaml:"-"`
@@ -188,6 +193,8 @@ func (phc *PluginHandlerCollection) UnmarshalYAML(unmarshal func(v interface{}) 
 		if !ok {
 			return fmt.Errorf("Could not unmarshal yaml parameter: %s key was somehow not in PluginHandlerCollection", key)
 		}
+		val.RawName = key
+		val.Name = UpperCamelCase(key)
 		val.Order = i + 1 // Set the order
 		m[key] = val
 	}
@@ -202,6 +209,7 @@ type TypeData struct {
 	Name         string              `yaml:"-"`
 	Fields       ParamDataCollection `yaml:"-"`
 	SortedFields []ParamData         `yaml:"-"`
+	Schema       JSONSchema
 }
 
 // HTTP Defines the settings for the plugins http server
@@ -222,17 +230,16 @@ func PostProcessSpec(s *PluginSpec) error {
 	// We'll both populate Types AND update RawTypes so the original source is correct w/r/t the downstream source
 	s.Types = make(map[string]TypeData)
 	for name, data := range s.RawTypes {
-		td := TypeData{}
-		td.RawName = name
-		td.Name = UpperCamelCase(name)
-		if _, err := updateParams(data, t); err != nil {
+		td, err := t.RawTypeToType(name, data)
+		if err != nil {
 			return err
 		}
-		td.Fields = data
-		// Sort them  - currently this is by their embedded status, as embeds must appear uptop in go structs
-		td.SortedFields = sortParamData(td.Fields)
 		s.RawTypes[name] = data
-		s.Types[name] = td
+		s.Types[name] = *td
+	}
+	// now fill in all the schemas
+	if err := t.PopulateSchemas(s.Types); err != nil {
+		return err
 	}
 
 	// fill in the connection names
@@ -242,6 +249,7 @@ func PostProcessSpec(s *PluginSpec) error {
 		param.Name = UpperCamelCase(name)
 		specType := param.Type
 		param.Type = t.SpecTypeToGoType(param.Type)
+		param.RawType = specType
 		// Make sure to import the plugins own types package when generating the connection
 		if !s.ConnectionRequiresCustomTypes && strings.Contains(param.Type, "types.") {
 			s.ConnectionRequiresCustomTypes = true
@@ -275,11 +283,11 @@ func PostProcessSpec(s *PluginSpec) error {
 		action.Name = UpperCamelCase(name)
 		action.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		customTypesInput, err := updateParams(action.Input, t)
+		customTypesInput, err := t.updateParams(action.Input)
 		if err != nil {
 			return err
 		}
-		customTypesOutput, err := updateParams(action.Output, t)
+		customTypesOutput, err := t.updateParams(action.Output)
 		if err != nil {
 			return err
 		}
@@ -300,11 +308,11 @@ func PostProcessSpec(s *PluginSpec) error {
 		trigger.Name = UpperCamelCase(name)
 		trigger.PackageRoot = s.PackageRoot
 		// We need to do the same thing for the params too
-		customTypesInput, err := updateParams(trigger.Input, t)
+		customTypesInput, err := t.updateParams(trigger.Input)
 		if err != nil {
 			return err
 		}
-		customTypesOutput, err := updateParams(trigger.Output, t)
+		customTypesOutput, err := t.updateParams(trigger.Output)
 		if err != nil {
 			return err
 		}
