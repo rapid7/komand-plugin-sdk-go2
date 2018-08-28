@@ -21,17 +21,17 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	}
 	b, _ := json.MarshalIndent(s.ConnectionSchema, "", "    ")
 	fmt.Println(string(b))
-	for _, t := range s.Actions {
-		if t.InputSchema == nil || t.OutputSchema == nil {
-			t.Fatal("action schemas were nil")
+	for _, ac := range s.Actions {
+		if ac.InputSchema.Equal(JSONSchema{}) || ac.OutputSchema.Equal(JSONSchema{}) {
+			t.Fatal("action schemas were empty")
 		}
 	}
-	for _, t := range s.Triggers {
-		if t.InputSchema == nil || t.OutputSchema == nil {
+	for _, tr := range s.Triggers {
+		if tr.InputSchema.Equal(JSONSchema{}) || tr.OutputSchema.Equal(JSONSchema{}) {
 			t.Fatal("trigger schemas were nil")
 		}
 	}
-	if s.ConnectionSchema == nil {
+	if s.ConnectionSchema.Equal(JSONSchema{}) {
 		t.Fatal("connection schema is nil")
 	}
 }
