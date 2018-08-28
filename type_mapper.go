@@ -2,7 +2,6 @@ package sdk
 
 import (
 	"encoding/json"
-	"fmt"
 	"sort"
 	"strings"
 )
@@ -32,7 +31,7 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper {
 			"password":  Password,
 			"array":     Array,
 			"file":      File,
-			"credential_username_password": CredentialAsymmetricKey,
+			"credential_username_password": CredentialUsernamePassword,
 			"credential_token":             CredentialToken,
 			"credential_asymmetric_key":    CredentialAsymmetricKey,
 			"credential_secret_key":        CredentialSecretKey,
@@ -51,16 +50,23 @@ func NewTypeMapper(s *PluginSpec) *TypeMapper {
 			Properties: make(map[string]JSONSchema),
 			BackRef:    true,
 		}
-		fmt.Printf("^^^^^^^^^^^^^^^^^^^^ %s\n", name)
 		t.Types[name] = customSchema
 	}
-	/*for name, typ := range s.RawTypes {
-		// get the existing record
-	}*/
 	return t
 }
 
-// RawTypeToType is
+// ReferenceTypes returns a map of just the builtin composite types and any custom types
+func (t *TypeMapper) ReferenceTypes() map[string]JSONSchema {
+	m := make(map[string]JSONSchema)
+	for k, v := range t.Types {
+		if v.BackRef {
+			m[k] = v
+		}
+	}
+	return m
+}
+
+// RawTypeToType turns raw type data into a more refined sugar substance
 func (t *TypeMapper) RawTypeToType(rawName string, rawData ParamDataCollection) (*TypeData, error) {
 	td := &TypeData{
 		Name:    UpperCamelCase(rawName),
@@ -74,66 +80,125 @@ func (t *TypeMapper) RawTypeToType(rawName string, rawData ParamDataCollection) 
 	return td, nil
 }
 
-// PopulateSchemas pops all the schemas
-func (t *TypeMapper) PopulateSchemas(typs map[string]TypeData) error {
+// PopulateSchemasForTypeDatas pops all the schemas for the typedata
+func (t *TypeMapper) PopulateSchemasForTypeDatas(typs map[string]TypeData) error {
+	// First, build the schemas up
 	for n, td := range typs {
-		if err := t.PopulateSchema(&td); err != nil {
+		if err := t.PopulateSchemaForTypeData(&td); err != nil {
 			return err
 		}
+		typs[n] = td
+	}
+	// now, backfill any definitions
+	for n, td := range typs {
+		td.Schema.AddDefinitions(t.ReferenceTypes())
 		typs[n] = td
 	}
 	return nil
 }
 
-// PopulateSchema is
-func (t *TypeMapper) PopulateSchema(td *TypeData) error {
+// PopulateSchemaForTypeData populates the schema for a single typedata
+func (t *TypeMapper) PopulateSchemaForTypeData(td *TypeData) error {
 	js := t.Types[td.RawName]
 	js.Title = Title(td.RawName)
-	// Now, deep-map it
-	for rawname, pd := range td.Fields {
-		typ := pd.RawType
+	if err := t.populateSchema(&js, td.Fields); err != nil {
+		return err
+	}
+	t.Types[td.RawName] = js
+	td.Schema = js
+	return nil
+}
+
+// PopulateSchemaForPluginHandlerData populates the schemas for input and outputs of the plugin handler data
+func (t *TypeMapper) PopulateSchemaForPluginHandlerData(phd *PluginHandlerData) error {
+	is, err := t.GenerateSchemaForParamDataCollection(phd.Input)
+	if err != nil {
+		return nil
+	}
+	phd.InputSchema = *is
+	os, err := t.GenerateSchemaForParamDataCollection(phd.Output)
+	if err != nil {
+		return nil
+	}
+	phd.OutputSchema = *os
+	return nil
+}
+
+// GenerateSchemaForParamDataCollection generates a schema for a ParamDataCollection object
+func (t *TypeMapper) GenerateSchemaForParamDataCollection(pdc ParamDataCollection) (*JSONSchema, error) {
+	s := t.Types["object"] // Always based off type object
+	s.Title = "Variables"  // Always named Variables
+	s.Properties = make(map[string]JSONSchema)
+	if err := t.populateSchema(&s, pdc); err != nil {
+		return nil, err
+	}
+	s.AddDefinitions(t.ReferenceTypes())
+	return &s, nil
+}
+
+// PopulateSchema is a method to fill in the json schema of a typedata
+func (t *TypeMapper) populateSchema(js *JSONSchema, phd ParamDataCollection) error {
+	// deep-map it
+	for rawname, pd := range phd {
+		typ := pd.RawType // we may need de-array this for certain lookups, so cache a copy of it
 		isArray := false
 		if strings.HasPrefix(typ, "[]") {
+			// Prefixed by [] == it's an array type, we need to treat it + it's item type specially
 			typ = typ[2:]
 			isArray = true
 		}
+		// Make a copy of the schema, start filling it ut
 		fschema := t.Types[typ]
-		fmt.Println(fschema)
-		// fill it out
+		fschema.Title = pd.Title
+		fschema.Required = nil
+		// If this paramdata is required, track it in the parent-schemas list of requireds
+		if pd.Required {
+			if js.Required == nil {
+				js.Required = []string{rawname}
+			} else { // so many elses!
+				js.Required = append(js.Required, rawname)
+			}
+		}
+		// If it needs a backref, fill it out and clear out things we don't use when using references
+		// References should largely be empty, save a few helper props
 		if fschema.BackRef {
 			fschema.Ref = "#/definitions/" + fschema.ID
 			// Get rid of the ID, this isn't the primary record for the type
 			// we copied this schema when pulling it out of the map, so we don't
 			// want 2 copies of the id floating around
 			fschema.ID = ""
+			fschema.Properties = nil
+			fschema.Type = ""
 		}
 		// Set the array type items to be the same as the ID, it will eventually be turned into a ref
 		if isArray {
 			fschema.Type = "array"
-			fschema.Properties = nil // arrays don't have properties
+			fschema.Properties = nil // arrays don't have properties, their items do
 			// Need to see if this is a custom type ie a ref type
 			if fschema.Ref != "" {
 				// This was an array of custom types, not primitives
 				fschema.Items = &JSONSchema{
 					Ref: fschema.Ref,
 				}
-				fschema.Ref = ""
+				fschema.Ref = "" // We copied the ref to the item, so clear out the arrays ref
 			} else { // lol rare time where else is helpful
 				// This was an array of primitves, not customs, so look up the right schema
 				localItem := t.Types[typ]
-				fschema.Items = &localItem
+				fschema.Items = &localItem // This one is easy - just use the primitive as the item type
 			}
 		}
-		fschema.Title = Title(pd.RawName)
+		// If we haven't gotten a proper title on it by now, make our test effort default title
+		if fschema.Title == "" {
+			fschema.Title = Title(pd.RawName)
+		}
+		// Copy the remaining params
 		fschema.Description = pd.Description
 		fschema.Enum = pd.Enum
 		fschema.Default = pd.Default
 		fschema.Order = pd.Order
-		// Store it on the props
+		// Store it on the props so it can be re-used with all this data later
 		js.Properties[rawname] = fschema
 	}
-	t.Types[td.RawName] = js
-	td.Schema = js
 	return nil
 }
 
@@ -146,8 +211,7 @@ func (t *TypeMapper) updateParams(rawData ParamDataCollection) (bool, error) {
 		if !customTypes && strings.Contains(param.Type, "types.") {
 			customTypes = true
 		}
-		for i, e := range param.Enum {
-			//fmt.Printf("--------------------- %T -----------------\n", e) // TODO am i just doing dumbshit here?
+		for i, e := range param.Enum { // TODO i think we can just type assert these to strings? but not sure if it'll always work...
 			// So, here's how we're gonna do this: marshal the interface to json
 			// this will give us a string representation of the value to write out as a literal
 			// then we'll do const X = {{ Literal Value }}
@@ -195,203 +259,8 @@ func (t *TypeMapper) SpecTypeToGoType(specType string) string {
 		// We don't have a remap for it, so use the original
 		return specType
 	}
-
 	if isArr {
 		return "[]" + foundType.GoType
 	}
 	return foundType.GoType
-}
-
-// Boolean is a boolean
-var Boolean = JSONSchema{
-	Type:   "boolean",
-	GoType: "bool",
-}
-
-// Object is an object
-var Object = JSONSchema{
-	Type:   "object",
-	GoType: "interface{}",
-}
-
-// Integer are integers
-var Integer = JSONSchema{
-	Type:   "integer",
-	GoType: "int",
-}
-
-// Bytes are byte strings
-var Bytes = JSONSchema{
-	Type:        "string",
-	GoType:      "[]byte",
-	Format:      "bytes",
-	DisplayType: "bytes",
-}
-
-// Date is a date
-var Date = JSONSchema{
-	Type:        "string",
-	GoType:      "time.Time",
-	Format:      "date-time",
-	DisplayType: "date",
-}
-
-// Float is a floating point number
-var Float = JSONSchema{
-	Type:   "number",
-	GoType: "float64",
-}
-
-// Python is python code
-var Python = JSONSchema{
-	Type:        "string",
-	GoType:      "string",
-	Format:      "python",
-	DisplayType: "python",
-}
-
-// Password is a password type
-var Password = JSONSchema{
-	Type:        "string",
-	GoType:      "string",
-	Format:      "password",
-	DisplayType: "password",
-}
-
-// String is a string
-var String = JSONSchema{
-	Type:   "string",
-	GoType: "string",
-}
-
-// Array is generic array
-var Array = JSONSchema{
-	Type:   "array",
-	GoType: "[]interface{}",
-}
-
-// File is a file
-var File = JSONSchema{
-	ID:          "file",
-	Title:       "File",
-	Description: "File Object",
-	Type:        "object",
-	GoType:      "types.SDKFile",
-	BackRef:     true,
-	Ref:         "#/definitions/file",
-	Properties: map[string]JSONSchema{
-		"filename": JSONSchema{
-			Type:        "string",
-			GoType:      "string",
-			Title:       "Filename",
-			Description: "Name of file",
-		},
-		"content": JSONSchema{
-			Type:        "string",
-			GoType:      "string",
-			Format:      "bytes",
-			Title:       "Content",
-			Description: "File contents",
-		},
-	},
-}
-
-// CredentialUsernamePassword is a CC credential type for managing login names and passwords.
-var CredentialUsernamePassword = JSONSchema{
-	ID:          "credential_username_password",
-	Title:       "Credential: Username and Password",
-	Description: "A username and password combination",
-	Type:        "object",
-	GoType:      "types.CredentialUsernamePassword",
-	Required:    []string{"username", "password"},
-	BackRef:     true,
-	Ref:         "#/definitions/credential_username_password",
-	Properties: map[string]JSONSchema{
-		"username": JSONSchema{
-			Type:        "string",
-			GoType:      "string",
-			Title:       "Username",
-			Description: "The username to log in with",
-		},
-		"password": JSONSchema{
-			Title:       "Password",
-			Description: "The password",
-			Type:        "string",
-			GoType:      "string",
-			Format:      "password",
-			DisplayType: "password",
-		},
-	},
-}
-
-// CredentialAsymmetricKey is a CC credential type for managing access tokens
-var CredentialAsymmetricKey = JSONSchema{
-	ID:          "credential_asymmetric_key",
-	Title:       "Credential: Asymmetric Key",
-	Description: "A shared key",
-	Type:        "object",
-	GoType:      "types.CredentialAsymmetricKey",
-	Required:    []string{"privateKey"},
-	BackRef:     true,
-	Ref:         "#/definitions/credential_asymmetric_key",
-	Properties: map[string]JSONSchema{
-		"privateKey": JSONSchema{
-			Title:       "Private Key",
-			Description: "The private key",
-			Type:        "string",
-			GoType:      "string",
-			Format:      "password",
-			DisplayType: "password",
-		},
-	},
-}
-
-// CredentialToken is a CC credential type for managing a token and an an optional domain
-var CredentialToken = JSONSchema{
-	ID:          "credential_token",
-	Title:       "Credential: Token",
-	Description: "A pair of a token, and an optional domain",
-	Type:        "object",
-	GoType:      "types.CredentialToken",
-	Required:    []string{"token"},
-	BackRef:     true,
-	Ref:         "#/definitions/credential_token",
-	Properties: map[string]JSONSchema{
-		"token": JSONSchema{
-			Title:       "Token",
-			Description: "The shared token",
-			Type:        "string",
-			GoType:      "string",
-			Format:      "password",
-			DisplayType: "password",
-		},
-		"domain": JSONSchema{
-			Type:        "string",
-			GoType:      "string",
-			Title:       "Domain",
-			Description: "The domain for the token",
-		},
-	},
-}
-
-// CredentialSecretKey is a CC credential type for managing access tokens
-var CredentialSecretKey = JSONSchema{
-	ID:          "credential_secret_key",
-	Title:       "Credential: Secret Key",
-	Description: "A shared secret key",
-	Type:        "object",
-	GoType:      "types.CredentialSecretKey",
-	Required:    []string{"secretKey"},
-	BackRef:     true,
-	Ref:         "#/definitions/credential_secret_key",
-	Properties: map[string]JSONSchema{
-		"secretKey": JSONSchema{
-			Title:       "Secret Key",
-			Description: "The shared secret key",
-			Type:        "string",
-			GoType:      "string",
-			Format:      "password",
-			DisplayType: "password",
-		},
-	},
 }

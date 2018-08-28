@@ -6,7 +6,7 @@ import (
 	yaml "gopkg.in/yaml.v2"
 )
 
-func xTestOrdering(t *testing.T) {
+func TestOrdering(t *testing.T) {
 	s := &PluginSpec{}
 	if err := yaml.Unmarshal([]byte(SpecChatBot), s); err != nil {
 		t.Fatal(err)

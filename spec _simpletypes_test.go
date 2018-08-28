@@ -23,4 +23,13 @@ types:
       type: date
     things_n_such:
       type: "[]thing"
+actions:
+  my_action:
+    title: "ACTION!"
+    description: "Lights, Camera"
+    input:
+      stuff:
+        type: thing
+        title: "This is some STUFFFFFF"
+        description: "Things can be stuff, it turns out, and ints?"
 `

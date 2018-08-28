@@ -19,19 +19,19 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	if len(s.Types) == 0 {
 		t.Fatal("parsing actions failed")
 	}
-	for _, t := range s.Types {
-		fmt.Println("------------------")
-		fmt.Println(t.Name)
-		//fmt.Println(t.RawName)
-		b, _ := json.MarshalIndent(t.Schema, "", "    ")
-		fmt.Println(string(b))
-		//for fn, f := range t.Fields {
-		//fmt.Println("\t" + fn)
-		//fmt.Println("\t" + f.Name)
-		//fmt.Println("\t" + f.RawName)
-
-		//}
-		fmt.Println("------------------")
-		//break
+	b, _ := json.MarshalIndent(s.ConnectionSchema, "", "    ")
+	fmt.Println(string(b))
+	for _, t := range s.Actions {
+		if t.InputSchema == nil || t.OutputSchema == nil {
+			t.Fatal("action schemas were nil")
+		}
+	}
+	for _, t := range s.Triggers {
+		if t.InputSchema == nil || t.OutputSchema == nil {
+			t.Fatal("trigger schemas were nil")
+		}
+	}
+	if s.ConnectionSchema == nil {
+		t.Fatal("connection schema is nil")
 	}
 }

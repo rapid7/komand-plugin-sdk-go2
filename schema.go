@@ -1,6 +1,9 @@
 package sdk
 
-import "strings"
+import (
+	"fmt"
+	"strings"
+)
 
 // JSONSchema describes a JSON schema.
 // It's used for marshalling types to and from JSON Schemas.
@@ -24,11 +27,6 @@ type JSONSchema struct {
 	BackRef     bool                  `json:"-"` // only used internally
 }
 
-// IsRefType true if schema is a ref type.
-func (s JSONSchema) IsRefType() bool {
-	return s.Ref != ""
-}
-
 // RefTypeName returns the type name
 func (s JSONSchema) RefTypeName() string {
 	if strings.HasPrefix(s.Ref, "#/definitions/") {
@@ -48,13 +46,13 @@ func (s JSONSchema) IsArrayType() bool {
 }
 
 // Equal compares two schemas, and returns true if they are equivalent
+// copied from old world komand
 func (s JSONSchema) Equal(other JSONSchema) bool {
 	if s.Type != other.Type || s.Format != other.Format {
 		return false
 	}
-
-	if s.IsRefType() {
-		if other.IsRefType() && other.Ref == s.Ref {
+	if s.BackRef {
+		if other.BackRef && other.Ref == s.Ref {
 			return true
 		}
 		return false
@@ -71,21 +69,19 @@ func (s JSONSchema) Equal(other JSONSchema) bool {
 		}
 		return true
 	}
-
 	if s.IsObjectType() {
 		if !other.IsObjectType() {
 			return false
 		}
-
 		if s.Properties == nil && other.Properties == nil {
 			return true
 		}
 		return compareMaps(s.Properties, other.Properties)
 	}
-
 	return true
 }
 
+// copied from old world komand
 func compareMaps(source map[string]JSONSchema, dest map[string]JSONSchema) bool {
 	if source == nil && dest != nil {
 		return false
@@ -96,7 +92,6 @@ func compareMaps(source map[string]JSONSchema, dest map[string]JSONSchema) bool 
 	if len(source) != len(dest) {
 		return false
 	}
-
 	for key, val := range source {
 		destVal, ok := dest[key]
 		if !ok {
@@ -106,18 +101,17 @@ func compareMaps(source map[string]JSONSchema, dest map[string]JSONSchema) bool 
 			return false
 		}
 	}
-
 	return true
 }
 
 // IsSubset compares two schemas, and returns true if s is equivalent or a subset of superset
+// copied from old world komand
 func (s JSONSchema) IsSubset(superset JSONSchema) bool {
 	if s.Type != superset.Type || s.Format != superset.Format {
 		return false
 	}
-
-	if s.IsRefType() {
-		if superset.IsRefType() && superset.Ref == s.Ref {
+	if s.BackRef {
+		if superset.BackRef && superset.Ref == s.Ref {
 			return true
 		}
 		return false
@@ -134,21 +128,19 @@ func (s JSONSchema) IsSubset(superset JSONSchema) bool {
 		}
 		return true
 	}
-
 	if s.IsObjectType() {
 		if !superset.IsObjectType() {
 			return false
 		}
-
 		if s.Properties == nil && superset.Properties == nil {
 			return true
 		}
 		return isMapSubset(s.Properties, superset.Properties)
 	}
-
 	return true
 }
 
+// copied from old world komand
 func isMapSubset(source map[string]JSONSchema, superset map[string]JSONSchema) bool {
 	if source == nil && superset != nil {
 		return true
@@ -159,7 +151,6 @@ func isMapSubset(source map[string]JSONSchema, superset map[string]JSONSchema) b
 	if len(source) > len(superset) {
 		return false
 	}
-
 	for key, val := range source {
 		supersetVal, ok := superset[key]
 		if !ok {
@@ -169,40 +160,44 @@ func isMapSubset(source map[string]JSONSchema, superset map[string]JSONSchema) b
 			return false
 		}
 	}
-
 	return true
 }
 
 // AddDefinitions adds definitions only *if* the schema needs them
+// copied from old world komand
 func (s *JSONSchema) AddDefinitions(defs map[string]JSONSchema) {
 	if s.Definitions == nil {
 		(*s).Definitions = make(map[string]JSONSchema)
 	}
-
 	for _, name := range DetectRefs(s, defs) {
 		def, ok := defs[name]
 		if ok {
+			// We don't set the id in the definition
+			// it's only used while processing to build backrefs where needed
+			def.ID = ""
 			s.Definitions[name] = def
 		}
 	}
 }
 
 // DetectRefs detect json schema references
+// copied from old world komand
 func DetectRefs(s *JSONSchema, defs map[string]JSONSchema) []string {
 	var refs []string
-	if s.IsRefType() {
+	if s.BackRef {
 		ref := s.RefTypeName()
 		refs = append(refs, ref)
 		def, ok := defs[ref]
 		if ok {
+			fmt.Printf("-------------------- %s --------------------\n", def.Ref)
+			fmt.Printf("-------------------- %s --------------------\n", def.ID)
+
 			refs = append(refs, DetectRefs(&def, defs)...)
 		}
 	}
-
 	if s.Items != nil {
 		refs = append(refs, DetectRefs(s.Items, defs)...)
 	}
-
 	if s.Properties != nil {
 		for _, p := range (*s).Properties {
 			refs = append(refs, DetectRefs(&p, defs)...)
