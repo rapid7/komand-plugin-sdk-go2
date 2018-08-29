@@ -1,7 +1,6 @@
 package sdk
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -29,6 +28,14 @@ type JSONSchema struct {
 
 // RefTypeName returns the type name
 func (s JSONSchema) RefTypeName() string {
+	// The ref type name of arrays is their items type, not their type
+	if s.Type == "array" {
+		if strings.HasPrefix(s.Items.Ref, "#/definitions/") {
+			return strings.TrimPrefix(s.Items.Ref, "#/definitions/")
+		}
+		return ""
+	}
+	// the ref type name of normal objects or types is their ref
 	if strings.HasPrefix(s.Ref, "#/definitions/") {
 		return strings.TrimPrefix(s.Ref, "#/definitions/")
 	}
@@ -167,7 +174,7 @@ func isMapSubset(source map[string]JSONSchema, superset map[string]JSONSchema) b
 // copied from old world komand
 func (s *JSONSchema) AddDefinitions(defs map[string]JSONSchema) {
 	if s.Definitions == nil {
-		(*s).Definitions = make(map[string]JSONSchema)
+		s.Definitions = make(map[string]JSONSchema)
 	}
 	for _, name := range DetectRefs(s, defs) {
 		def, ok := defs[name]
@@ -189,9 +196,6 @@ func DetectRefs(s *JSONSchema, defs map[string]JSONSchema) []string {
 		refs = append(refs, ref)
 		def, ok := defs[ref]
 		if ok {
-			fmt.Printf("-------------------- %s --------------------\n", def.Ref)
-			fmt.Printf("-------------------- %s --------------------\n", def.ID)
-
 			refs = append(refs, DetectRefs(&def, defs)...)
 		}
 	}
