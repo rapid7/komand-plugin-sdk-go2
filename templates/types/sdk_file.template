@@ -6,6 +6,6 @@ package types
 // and a field for the contents. It works directly with the Komand Web UI for the best
 // experience
 type SDKFile struct {
-    FileName string `json:"file_name"`
+    FileName string `json:"filename"`
     Contents []byte `json:"contents"`
 }
