@@ -1,33 +1,24 @@
 package sdk
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
+	"github.com/rapid7/komand-plugin-sdk-go2/testspec"
 	yaml "gopkg.in/yaml.v2"
 )
 
 func TestIDRSchemaGeneration(t *testing.T) {
 	s := &PluginSpec{}
-	if err := yaml.Unmarshal([]byte(SpecIDRTrigger), s); err != nil {
+	if err := yaml.Unmarshal([]byte(testspec.SpecIDRTrigger), s); err != nil {
 		t.Fatal(err)
 	}
 	if err := PostProcessSpec(s); err != nil {
 		t.Fatal(err)
 	}
 	if len(s.Types) == 0 {
-		t.Fatal("parsing actions failed")
+		t.Fatal("parsing types failed")
 	}
-	/*for _, ty := range s.Types {
-		b, _ := json.MarshalIndent(ty.Schema, "", "    ")
-		fmt.Println(string(b))
-		fmt.Println("---------------------")
-	}*/
-	for _, tr := range s.Triggers {
-		fmt.Printf("--------------- %s --------------\n", tr.Name)
-		b, _ := json.MarshalIndent(tr.OutputSchema, "", "    ")
-		fmt.Println(string(b))
-		fmt.Println("---------------------")
+	if len(s.Triggers) == 0 {
+		t.Fatal("parsing triggers failed")
 	}
 }

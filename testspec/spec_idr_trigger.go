@@ -1,4 +1,4 @@
-package sdk
+package testspec
 
 const SpecIDRTrigger = `
 plugin_spec_version: v2

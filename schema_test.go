@@ -1,16 +1,16 @@
 package sdk
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	yaml "gopkg.in/yaml.v2"
+
+	"github.com/rapid7/komand-plugin-sdk-go2/testspec"
 )
 
 func TestJSONSchemaGeneration(t *testing.T) {
 	s := &PluginSpec{}
-	if err := yaml.Unmarshal([]byte(SpecBigFix), s); err != nil {
+	if err := yaml.Unmarshal([]byte(testspec.SpecBigFix), s); err != nil {
 		t.Fatal(err)
 	}
 	if err := PostProcessSpec(s); err != nil {
@@ -19,8 +19,6 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	if len(s.Types) == 0 {
 		t.Fatal("parsing actions failed")
 	}
-	b, _ := json.MarshalIndent(s.ConnectionSchema, "", "    ")
-	fmt.Println(string(b))
 	for _, ac := range s.Actions {
 		if ac.InputSchema.Equal(JSONSchema{}) || ac.OutputSchema.Equal(JSONSchema{}) {
 			t.Fatal("action schemas were empty")

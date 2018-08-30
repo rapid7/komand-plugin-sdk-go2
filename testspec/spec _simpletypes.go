@@ -1,4 +1,4 @@
-package sdk
+package testspec
 
 const SpecSimpleTypes = `
 plugin_spec_version: v2

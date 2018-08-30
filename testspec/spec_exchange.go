@@ -1,4 +1,4 @@
-package sdk
+package testspec
 
 const SpecExchange = `
 plugin_spec_version: v2

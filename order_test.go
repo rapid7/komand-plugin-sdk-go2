@@ -3,12 +3,13 @@ package sdk
 import (
 	"testing"
 
+	"github.com/rapid7/komand-plugin-sdk-go2/testspec"
 	yaml "gopkg.in/yaml.v2"
 )
 
 func TestOrdering(t *testing.T) {
 	s := &PluginSpec{}
-	if err := yaml.Unmarshal([]byte(SpecChatBot), s); err != nil {
+	if err := yaml.Unmarshal([]byte(testspec.SpecChatBot), s); err != nil {
 		t.Fatal(err)
 	}
 	if err := PostProcessSpec(s); err != nil {
