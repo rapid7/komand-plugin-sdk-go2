@@ -50,7 +50,7 @@ types:
       description: "Targets to apply to"
 
 triggers:
-  idr_trigger:
+  ivm_trigger:
     output:
       entities:
         type: entity_set
