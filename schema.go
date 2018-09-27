@@ -29,7 +29,7 @@ type JSONSchema struct {
 // RefTypeName returns the type name
 func (s JSONSchema) RefTypeName() string {
 	// The ref type name of arrays is their items type, not their type
-	if s.Type == "array" {
+	if s.Type == "array" && s.Items != nil {
 		if strings.HasPrefix(s.Items.Ref, "#/definitions/") {
 			return strings.TrimPrefix(s.Items.Ref, "#/definitions/")
 		}
