@@ -114,6 +114,7 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 		h.replyWithError(response, w, err)
 		return
 	}
+	response.Meta = body.Meta
 	response.Log = l.String()
 	response.Output = output
 	reply := message.V1{
