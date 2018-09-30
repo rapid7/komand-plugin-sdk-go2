@@ -1,8 +1,6 @@
 package sdk
 
 import (
-	"encoding/json"
-	"fmt"
 	"testing"
 
 	"github.com/rapid7/komand-plugin-sdk-go2/testspec"
@@ -23,8 +21,8 @@ func TestIVMSchemaGeneration(t *testing.T) {
 	if len(s.Triggers) == 0 {
 		t.Fatal("parsing triggers failed")
 	}
-	js := s.Triggers["ivm_trigger"].OutputSchema
+	/*js := s.Triggers["ivm_trigger"].OutputSchema
 	b, _ := json.MarshalIndent(js, "    ", "")
 	fmt.Println(string(b))
-	t.Fatal("e")
+	t.Fatal("e")*/
 }
