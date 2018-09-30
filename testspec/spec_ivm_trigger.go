@@ -68,6 +68,6 @@ triggers:
         type: string
         description: "The unique identifier of an automated workflow instance"
       entities:
-        type: "[]entity"
+        type: "entity"
         description: "Entities that are involved in triggered workflow"
 `

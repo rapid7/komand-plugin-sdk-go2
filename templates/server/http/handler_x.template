@@ -111,6 +111,7 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		h.replyWithError(response, w, err)
 		return
 	}
+	response.Meta = body.Meta
 	response.Log = l.String()
 	response.Output = output
 	reply := message.V1{
