@@ -68,7 +68,6 @@ type PluginSpec struct {
 	Types                         map[string]TypeData            `yaml:"-"`
 	Triggers                      PluginHandlerCollection        `yaml:"triggers"`
 	Actions                       PluginHandlerCollection        `yaml:"actions"`
-
 	// Things that are not part of the spec, but still important
 	PackageRoot string `yaml:"package_root"`
 	HTTP        HTTP   `yaml:"http"`
