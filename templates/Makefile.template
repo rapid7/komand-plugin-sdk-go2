@@ -14,7 +14,7 @@ ifndef REPO
 	REPO=$(NAME)
 endif
 
-all: icon image tarball runner
+all: validate icon image tarball runner
 
 plugin: install
 
@@ -35,7 +35,7 @@ icon:
 tarball:
 	rm -rf build
 	rm -rf $(PKG)
-	tar -cvzf $(PKG) --exclude=$(PKG) --exclude=tests --exclude=run *
+	tar -cvzf $(PKG) --exclude=$(PKG) --exclude=tests --exclude=run.sh *
  
 image:
 	docker build --pull -t $(VENDOR)/$(NAME):$(VERSION) .
@@ -47,17 +47,18 @@ regenerate:
 	@which komand-plugin 1>/dev/null && komand-plugin generate go plugin.spec.yaml --path $(CWD) --repo "{{ .PackageRoot }}"
 
 runner:
-	@ln -f -s ../tools/run run
+	@ln -f -s ../tools/run.sh run.sh
 
 help:
-	@test -f ../tools/help.py || echo "Check spec tool not included in customer installs!"
-	@test -f ../tools/help.py && python2 ../tools/help.py ./plugin.spec.yaml
+	@test -x ../tools/help.py && ../tools/help.py ./plugin.spec.yaml || true
+	@test -f ../tools/help_md_gen.py && python ../tools/help_md_gen.py ./plugin.spec.yaml || true
 
 validate:
-	@test -f ../tools/check_spec.py || echo "Check spec tool not included in customer installs!"
-	@test -f ../tools/check_spec.py && python2 ../tools/check_spec.py ./plugin.spec.yaml
-	@test -d ../0_ci || echo "Plugin validators not included in customer installs, exiting"
-	@test -d ../0_ci && echo "Validating plugin..." && make -C ../ install-ci &> /dev/null && komand-plugin-ci validate . || true
+	@test -x ../tools/check_spec.py && ../tools/check_spec.py ./plugin.spec.yaml || true
+	@test -d ../0_ci && make -C ../ install-ci &> /dev/null && komand-plugin-ci validate . || true
+	@test -x ../tools/mdl.sh && ../tools/mdl.sh || true
+	@test -x ../tools/flake8.sh && ../tools/flake8.sh || true
+	@test -x ../tools/bandit.sh && ../tools/bandit.sh || true
 
 deps:
 	go get -u honnef.co/go/tools/cmd/gosimple

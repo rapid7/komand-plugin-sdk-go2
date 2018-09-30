@@ -30,6 +30,10 @@ func NewCache() *Cache {
 // will need to return a string that is composed of connection data such that It
 // can uniquely identify the connection we want to look up.
 func (c *Cache) Get(cd *Data, l plog.Logger) (*Connection, error) {
+	// Caching is disabled for now until we identify a way to safely
+	// enable it
+	return Connect(cd, l)
+	/*
 	var s *Connection
 	var ok bool
 	c.Lock()
@@ -46,4 +50,5 @@ func (c *Cache) Get(cd *Data, l plog.Logger) (*Connection, error) {
 	c.data[cd.Key()] = s
 	c.Unlock()
 	return s, nil
+	*/
 }
