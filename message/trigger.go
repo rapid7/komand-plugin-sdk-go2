@@ -20,7 +20,7 @@ type TriggerEvent struct {
 // TriggerEventMeta is the base information needed to run a step. It contains information both for
 // single and multi-cast triggers. The type of trigger will determine if it uses the TriggerConfigID
 // or the Step/Workflow information. THIS IS ONLY USED IN OLD KOMAND, DO NOT RELY ON IT
-// FOR NEW KOMAND, OR INSIDE OF ANY PLUGINS DIRECTLY. WE RELY ON MAP[STRING]INTERFACE{} INTERNALLY
+// FOR NEW KOMAND, OR INSIDE OF ANY PLUGINS DIRECTLY. WE RELY ON JSON.RAWMESSAGE INTERNALLY
 // SO THERE IS NEVER ANY DATA LOSS, SINCE WE DO NOT INTROSPECT ON THE META AT ALL
 type TriggerEventMeta struct {
 	// TriggerConfigID is used for multi-cast triggers
