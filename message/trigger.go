@@ -5,16 +5,16 @@ import "encoding/json"
 // TriggerEvent This an event type for triggering a single workflow.
 // Used for API triggers and Republishing events.
 type TriggerEvent struct {
-	Type            string           `json:"type"`     // Is it a single trigger or a multi-cast trigger? AFAIK this never actually gets set? Plus it means the full message body has Type in it twice.
-	ID              string           `json:"id"`       // This will become the JobID for the resulting job
-	GroupID         string           `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
-	UserID          int              `json:"user_id"`
-	InvestigationID string           `json:"investigation_id"`
-	Meta            TriggerEventMeta `json:"meta"`
-	Output          interface{}      `json:"output"`
-	Log             string           `json:"string"`
-	Error           string           `json:"error"`  // Error identifies any error that occured during the Trigger - only used in testing currently
-	Status          string           `json:"status"` // Status identifies the result status from the Trigger - only used in testing currently
+	Type            string          `json:"type"`     // Is it a single trigger or a multi-cast trigger? AFAIK this never actually gets set? Plus it means the full message body has Type in it twice.
+	ID              string          `json:"id"`       // This will become the JobID for the resulting job
+	GroupID         string          `json:"group_id"` // This is the id of the originating job, in the event a job has been re-run multiple times.
+	UserID          int             `json:"user_id"`
+	InvestigationID string          `json:"investigation_id"`
+	Meta            json.RawMessage `json:"meta"`
+	Output          interface{}     `json:"output"`
+	Log             string          `json:"string"`
+	Error           string          `json:"error"`  // Error identifies any error that occured during the Trigger - only used in testing currently
+	Status          string          `json:"status"` // Status identifies the result status from the Trigger - only used in testing currently
 }
 
 // TriggerEventMeta is the base information needed to run a step. It contains information both for
