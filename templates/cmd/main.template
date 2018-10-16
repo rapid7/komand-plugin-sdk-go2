@@ -233,11 +233,6 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDeb
 	if err != nil {
 		return err
 	}
-	// Serialize the meta data about the trigger into the meta struct
-	meta := message.TriggerEventMeta{}
-	if err := json.Unmarshal(b.Meta, &meta); err != nil {
-		return err
-	}
 	switch b.Trigger {
 	{{- range $n, $p := .Triggers }}
 	case "{{ $p.RawName }}":
@@ -247,7 +242,7 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDeb
 			return err
 		}
 		// Build the trigger
-		t := triggers.New{{ $p.Name }}Trigger(d, meta)
+		t := triggers.New{{ $p.Name }}Trigger(d, b.Meta)
 		if mode == "test" { // Test mode, use the test method
 			// Since the test method doesn't need a run or read loop
 			// we do the boring work of packaging the result here

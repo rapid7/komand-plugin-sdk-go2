@@ -57,11 +57,11 @@ type {{ .Name }}TriggerOutput struct {
 type {{ .Name }}Trigger struct {
     queue chan *{{ .Name }}TriggerOutput
     dispatcher dispatcher.Dispatcher
-    meta message.TriggerEventMeta
+    meta json.RawMessage
 }
 
 // New{{ .Name }}Trigger returns a new {{.Name }}Trigger properly initialized and ready to run.
-func New{{ .Name }}Trigger(d dispatcher.Dispatcher, meta message.TriggerEventMeta) *{{ .Name }}Trigger {
+func New{{ .Name }}Trigger(d dispatcher.Dispatcher, meta json.RawMessage) *{{ .Name }}Trigger {
     return &{{ .Name }}Trigger{
         queue: make(chan *{{ .Name }}TriggerOutput, 1),
         dispatcher: d,
