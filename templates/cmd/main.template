@@ -9,7 +9,6 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/rapid7/komand-plugin-sdk-go2/cli"
 	"github.com/rapid7/komand-plugin-sdk-go2/dispatcher"
 	plog "github.com/rapid7/komand-plugin-sdk-go2/log"
