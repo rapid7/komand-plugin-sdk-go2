@@ -9,9 +9,10 @@ import (
 	"os"
 	"time"
 
+	"gopkg.in/alecthomas/kingpin.v2"
 	"github.com/rapid7/komand-plugin-sdk-go2/cli"
 	"github.com/rapid7/komand-plugin-sdk-go2/dispatcher"
-    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
+	plog "github.com/rapid7/komand-plugin-sdk-go2/log"
 	"github.com/rapid7/komand-plugin-sdk-go2/message"
 
 	{{- if .Actions }}
@@ -28,9 +29,9 @@ var (
 	// Vendor plugin vendor
 	Vendor = "{{ .Vendor }}"
 	// Version plugin version
-    Version = "{{ .Version }}"
+	Version = "{{ .Version }}"
 	// Description plugin description
-    Description = "{{ .Description }}"
+	Description = "{{ .Description }}"
 	// DefaultPort is the default port to use
 	DefaultPort = "10001"
 )
@@ -179,12 +180,12 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 		if err = json.Unmarshal(b.Input, input); err != nil {
 			return err
 		}
- 		for _, err = range input.Validate(l) {
-        	log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
-   		}
-   		if err != nil {
-       		return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
-   		}
+		for _, err = range input.Validate(l) {
+			log.Println(fmt.Sprintf("Error while validating {{ .Name}}TriggerInput: %s", err.Error()))
+		}
+		if err != nil {
+			return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
+		}
 		a := &actions.{{ $p.Name }}Action{}
 		runMethod := a.Run
 		if mode == "test" {
