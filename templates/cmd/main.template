@@ -214,7 +214,7 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDebug bool) error {
 	{{- if .Triggers }}
 	// Make a logger
-	l := plog.NewNormalLogger(plog.Error)
+	l := plog.NewBufferedLogger(plog.Error)
 	if mode == "test" || isDebug {
 		l.SetLevel(plog.Info)
 	}
