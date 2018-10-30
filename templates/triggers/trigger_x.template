@@ -110,6 +110,7 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
         buf := new(bytes.Buffer) // new is not recommended in most cases - it's correct here
         _, _ = l.Flush(buf) // Explicitly ignoring bytes length and err
         output.log = buf.String()
+        os.Stderr.WriteString(output.log)
         t.Send(output) // Leave this untouched line, it will submit the trigger output to the Komand system.
 
         select {
