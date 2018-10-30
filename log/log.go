@@ -29,6 +29,7 @@ type Logger interface {
 	Errorf(string, ...interface{})
 	Warnf(string, ...interface{})
 	Infof(string, ...interface{})
+	Flush(io.Writer) (int64, error)
 	SetLevel(Level)
 }
 
@@ -160,6 +161,9 @@ func (l *NormalLogger) Infof(line string, vals ...interface{}) {
 		log.Printf(line, vals...)
 	}
 }
+
+// Flush is a noop for the normal logger
+func (l *NormalLogger) Flush(_ io.Writer) {}
 
 // SetLevel will change the level of the logger. This call is not threadsafe - by design it is never called in a location
 // where multiple threads would touch it.

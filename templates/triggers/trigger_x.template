@@ -51,6 +51,8 @@ type {{ .Name }}TriggerOutput struct {
     {{- range $n , $p := .Output }}
     {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
+
+    log string // only used to transfer the log elsewhere
 }
 
 // {{ .Name }}Trigger a trigger
@@ -70,8 +72,8 @@ func New{{ .Name }}Trigger(d dispatcher.Dispatcher, meta json.RawMessage) *{{ .N
 }
 
 // Send will submit a {{ .Name }}TriggerOutput onto the internal queue, which then buffers to the external queue
-func (t *{{ .Name }}Trigger) Send(o interface{}) {
-    t.queue <- o.(*{{ .Name}}TriggerOutput)
+func (t *{{ .Name }}Trigger) Send(o *{{ .Name}}TriggerOutput) {
+    t.queue <- o
 }
 
 // Stop will close the internal queue, which will prevent new jobs from entering.
@@ -105,6 +107,9 @@ func (t *{{ .Name }}Trigger) RunLoop(ctx context.Context, conn *connection.Conne
             log.Errorf("Error while running trigger action for {{ .Name }}Trigger: %s\n", err.Error())
             continue
         }
+        buf := new(bytes.Buffer) // new is not recommended in most cases - it's correct here
+        _, _ = l.Flush(buf) // Explicitly ignoring bytes length and err
+        output.log = buf.String()
         t.Send(output) // Leave this untouched line, it will submit the trigger output to the Komand system.
 
         select {
@@ -133,11 +138,14 @@ func (t *{{ .Name }}Trigger) ReadLoop(ctx context.Context, log plog.Logger) erro
                 // The channel was closed, we got an empty-closed-read, so we bail out with no issues
                 return nil
             }
+            lOut := output.log
+            output.log = ""
             response := message.TriggerEvent{
                 Type: "", // We did not set the type in the SDK before, seems to only be for testing or legacy needs
                 ID: "", // We did not set the ID in the SDK before
                 GroupID: "", // We did not set the GroupID in the SDK before
                 Output: output,
+                Log: lOut,
                 Meta: t.meta, // Copy the incoming meta to pass it along to the outgoing message
             }
             m := message.V1{
