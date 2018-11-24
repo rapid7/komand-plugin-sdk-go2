@@ -1,0 +1,5 @@
+package connection
+
+type ConnectionTester interface {
+	test() bool
+}
