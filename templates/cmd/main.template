@@ -168,7 +168,7 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 		return err
 	}
 
-	// Determine if we are interacting with a new-style Connection test
+    // Determine if we are interacting with a new-style Connection test
     newStyleConnTest := false
     if _, ok := interface{}(conn).(ConnectionTester); ok {
         newConnTest = true
