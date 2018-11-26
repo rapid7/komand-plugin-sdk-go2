@@ -167,6 +167,17 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 	if err != nil {
 		return err
 	}
+
+	// Determine if we are interacting with a new-style Connection test
+    newStyleConnTest := false
+    if _, ok := interface{}(conn).(ConnectionTester); ok {
+    		newConnTest = true
+    }
+
+    if mode == "test" && newStyleConnTest {
+        // TODO: Switch to new connection test functionality here
+    }
+
 	// Unmarshal the body into the right struct
 	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
 	// but in this case, the performance gain is not that great, and it's less generator code to maintain
