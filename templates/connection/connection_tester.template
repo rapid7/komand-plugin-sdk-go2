@@ -1,5 +1,5 @@
 package connection
 
 type ConnectionTester interface {
-	Test() bool
+	Test() error
 }
