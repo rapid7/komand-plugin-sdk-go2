@@ -46,7 +46,7 @@ func (c *Data) Key() string {
 	return {{ .ConnectionDataKey }}
 }
 
-func (c *Connection) Test() error {
+func (c Connection) Test(log plog.Logger) error {
     // Your connection test code here.
     // This code should verify that the plugin can interact properly based on the configured plugin connection.
 }
