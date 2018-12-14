@@ -168,7 +168,7 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 		return err
 	}
 
-    // Determine if we are interacting with a new-style Connection test
+    // Determine if we are interacting with a new-style Connection test. If not, fallback to per-action/trigger tests
     if _, ok := interface{}(conn).(ConnectionTester); ok && mode == "test" {
         // If connection supports a Test function (new style) and test mode is active, just call that Test function
         err = conn.Test(l)
