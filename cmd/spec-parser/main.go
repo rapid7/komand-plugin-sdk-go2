@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -12,6 +13,8 @@ import (
 )
 
 func main() {
+	fmt.Print("Args are: %v", os.Args)
+
 	if len(os.Args) < 2 {
 		log.Fatal("Error, must provide path to spec file, including name of spec")
 	}
