@@ -1,20 +1,17 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
 
-	sdk "github.com/rapid7/komand-plugin-sdk-go2"
-	yaml "gopkg.in/yaml.v2"
+	"github.com/rapid7/komand-plugin-sdk-go2"
+	"gopkg.in/yaml.v2"
 )
 
 func main() {
-	fmt.Print("Args are: %v", os.Args)
-
 	if len(os.Args) < 2 {
 		log.Fatal("Error, must provide path to spec file, including name of spec")
 	}

@@ -2,14 +2,11 @@ package main
 
 import (
 	"flag"
+	"github.com/rapid7/komand-plugin-sdk-go2"
 	"log"
-	"os"
-
-	sdk "github.com/rapid7/komand-plugin-sdk-go2"
 )
 
 func main() {
-	log.Print("Args are: %v", os.Args)
 	specLoc := flag.String("spec", "", "The path to the spec file")
 	packageRoot := flag.String("package", "", "The go package root for this plugin. Ex: github.com/<company_name>/plugins/<plugin_name>")
 	flag.Parse()
