@@ -358,7 +358,7 @@ func (g *Generator) runGoImports() error {
 	for _, p := range fileList {
 		cmd := exec.Command("goimports", "-w", "-srcdir", g.spec.PackageRoot, p)
 		if b, err := cmd.CombinedOutput(); err != nil {
-			return fmt.Errorf("Error while running go imports on %s: %s", p, string(b))
+			return fmt.Errorf("error while running go imports on %s: %s", p, string(b))
 		}
 	}
 	return nil

@@ -34,9 +34,9 @@ test: clean build
 	go test ./... -count=1
 
 check:
-	staticcheck $$(go list ./... | grep -v /vendor/)
-	gosimple $$(go list ./... | grep -v /vendor/)
-	unused $$(go list ./... | grep -v /vendor/)
+	staticcheck $$(go list ./... | grep -v /vendor/ | grep -v /bindata/)
+	gosimple $$(go list ./... | grep -v /vendor/ | grep -v /bindata/)
+	unused $$(go list ./... | grep -v /vendor/ | grep -v /bindata/)
 
 deploy:
 	@echo deploying "$(VERSION)", "$(MINOR_VERSION)", "$(MAJOR_VERSION)" to dockerhub

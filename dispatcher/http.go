@@ -37,18 +37,18 @@ func (d *HTTP) Send(e interface{}) error {
 	}
 	req, err := http.NewRequest("POST", d.URL, bytes.NewBuffer(messageBytes))
 	if err != nil {
-		return fmt.Errorf("Unable to POST to dispatcher: %s", err.Error())
+		return fmt.Errorf("unable to POST to dispatcher: %s", err.Error())
 	}
 	req.Header.Set("Content-Type", "application/json")
 	resp, err := d.client.Do(req)
 	if err != nil {
-		return fmt.Errorf("Unable to send event to http dispatcher: %s", err.Error())
+		return fmt.Errorf("unable to send event to http dispatcher: %s", err.Error())
 	}
 	// Since we don't even touch the body, the Close call will fast-track an ioutil.Discard copy
 	// this will never return an error we need to care about here afaik. Explicitly _-ing the error by design
 	_ = resp.Body.Close()
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("Response failed, stopping trigger: %s %+v", resp.Status, resp.Header)
+		return fmt.Errorf("response failed, stopping trigger: %s %+v", resp.Status, resp.Header)
 	}
 	return nil
 }
