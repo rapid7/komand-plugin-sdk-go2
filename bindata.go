@@ -163,7 +163,7 @@ func templatesActionsAction_x_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1541183365, 0)}
+	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1547054136, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
