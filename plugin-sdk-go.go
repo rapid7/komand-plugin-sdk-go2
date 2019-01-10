@@ -219,7 +219,7 @@ func (g *Generator) generateConnections() error {
 	}
 	pathToTemplate = "templates/connection/cache.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/cache.go")
-	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
+	return runTemplate(pathToTemplate, newFilePath, nil, false)
 }
 
 func (g *Generator) generateTriggers() error {
