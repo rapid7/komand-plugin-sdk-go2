@@ -192,8 +192,11 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
            		return fmt.Errorf("Error while validating {{ .Name}}TriggerInput. Check logs for details")
        		}
     		a := &actions.{{ $p.Name }}Action{}
-
-    		response.Output, err = a.Run(conn, input, l)
+    		runMethod := a.Run
+    		if mode == "test" {
+    			runMethod = a.Test
+    		}
+    		response.Output, err = runMethod(conn, input, l)
     	{{- end }}
     	default:
     		return fmt.Errorf("unknown action %s", b.Action)

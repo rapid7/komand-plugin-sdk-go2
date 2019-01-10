@@ -163,7 +163,11 @@ func templatesActionsAction_x_customTemplate() (*asset, error) {
 		return nil, err
 	}
 
+<<<<<<< HEAD
 	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1547137184, 0)}
+=======
+	info := bindataFileInfo{name: "templates/actions/action_x_custom.template", size: 2817, mode: os.FileMode(420), modTime: time.Unix(1541183365, 0)}
+>>>>>>> parent of b52b1b8... Remove usage of action Test from main.go template
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
