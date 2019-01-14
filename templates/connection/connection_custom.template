@@ -48,7 +48,7 @@ func (c *Data) Key() string {
 
 // Test will test plugin connectivity and functionality over the given connection.
 // All functionality within this test should be non-mutating.
-func (c Connection) Test(log plog.Logger) error {
+func (c *Connection) Test(log plog.Logger) error {
     // Your connection test code here.
     return nil
 }

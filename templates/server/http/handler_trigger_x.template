@@ -102,8 +102,8 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	var output *triggers.{{ .Name }}TriggerOutput
 	if strings.HasSuffix(r.URL.String(), "test") {
 		// Use new connection test style if available, otherwise fall back to traditional per-trigger tests
-        if _, ok := interface{}(conn).(connection.ConnectionTester); ok {
-            err = connection.CallConnectionTest(conn, l)
+        if ct, ok := interface{}(conn).(connection.ConnectionTester); ok {
+            err = ct.Test(l)
             output = &triggers.{{ .Name }}TriggerOutput{}
         } else {
             output, err = trigger.Test(conn, input, l)

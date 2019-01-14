@@ -169,8 +169,8 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 	}
 
     // Determine if we are interacting with a new-style Connection test. If not, fallback to per-action/trigger tests
-    if _, ok := interface{}(conn).(connection.ConnectionTester); ok && mode == "test" {
-        err = connection.CallConnectionTest(conn, l)
+    if ct, ok := interface{}(conn).(connection.ConnectionTester); ok && mode == "test" {
+        err = ct.Test(l)
     } else {
     	// Unmarshal the body into the right struct
     	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
@@ -255,8 +255,8 @@ func runTriggerDaemon(ctx context.Context, mode string, b *message.BodyV1, isDeb
 			// we do the boring work of packaging the result here
 			// Invoke the test, pass the results to the message helper func
 			// then pass that message into the dispatcher
-			if _, ok := interface{}(conn).(connection.ConnectionTester); ok {
-                err = connection.CallConnectionTest(conn, l)
+			if ct, ok := interface{}(conn).(connection.ConnectionTester); ok {
+                err = ct.Test(l)
                 o := &triggers.{{ .Name }}TriggerOutput{}
                 d.Send(cli.WrapTriggerTestResult(l, o, err))
 
