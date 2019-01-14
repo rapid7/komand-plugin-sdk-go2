@@ -4,6 +4,7 @@ package connection
 
 {{- if .ConnectionRequiresCustomTypes }}
 import (
+    plog "github.com/rapid7/komand-plugin-sdk-go2/log"
 	"{{ .PackageRoot }}/types"
 )
 {{- end }}
