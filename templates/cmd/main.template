@@ -137,6 +137,25 @@ func main() {
 	}
 }
 
+// callConnectionTest calls a connection test via reflection. Older Go plugins will not contain this function,
+// therefore reflection is used to avoid compiler errors
+func callConnectionTest(conn *connection.Connection, logger plog.Logger) error {
+	method := reflect.ValueOf(conn).MethodByName("Test")
+
+	params := make([]reflect.Value, 0)
+	params = append(params, reflect.ValueOf(logger))
+
+	rError := method.Call(params)
+
+	// Ensure that a) we have data to work with and b) whether or not we need to process an error
+	if len(rError) < 1 || rError[0].Interface() == nil {
+		return nil
+	}
+
+	err := rError[0].Interface().(error)
+	return err
+}
+
 func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 	{{- if .Actions }}
 	// Set up all the standard data structures we need to process an action
@@ -170,8 +189,7 @@ func runOneOffAction(mode string, b *message.BodyV1, isDebug bool) error {
 
     // Determine if we are interacting with a new-style Connection test. If not, fallback to per-action/trigger tests
     if _, ok := interface{}(conn).(connection.ConnectionTester); ok && mode == "test" {
-        // If connection supports a Test function (new style) and test mode is active, just call that Test function
-        err = conn.Test(l)
+        err = callConnectionTest(conn, l)
     } else {
     	// Unmarshal the body into the right struct
     	// We could avoid the 2 excess json marshal calls in here with a lot of switch-casing on types
