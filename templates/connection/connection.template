@@ -28,3 +28,22 @@ type Data struct {
         {{ $p.Name }} {{ $p.Type }} `json:"{{ $p.RawName }}"`
     {{- end }}
 }
+
+// CallConnectionTest calls a connection test via reflection. Older Go plugins will not contain this function,
+// therefore reflection is used to avoid compiler errors
+func CallConnectionTest(conn *Connection, logger plog.Logger) error {
+	method := reflect.ValueOf(conn).MethodByName("Test")
+
+	params := make([]reflect.Value, 0)
+	params = append(params, reflect.ValueOf(logger))
+
+	rError := method.Call(params)
+
+	// Ensure that a) we have data to work with and b) whether or not we need to process an error
+	if len(rError) < 1 || rError[0].Interface() == nil {
+		return nil
+	}
+
+	err := rError[0].Interface().(error)
+	return err
+}

@@ -101,7 +101,13 @@ func (h *{{ .Name }}Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	action := actions.{{ .Name }}Action{}
 	var output *actions.{{ .Name }}Output
 	if isTest {
-		output, err = action.Test(conn, input, l)
+		// Use new-style connection test when possible. Otherwise, fallback to the old per-action tests
+        if _, ok := interface{}(conn).(connection.ConnectionTester); ok {
+            err = connection.CallConnectionTest(conn, l)
+            output = &actions.{{ .Name }}Output{}
+        } else {
+            output, err = action.Test(conn, input, l)
+        }
 	} else {
 		output, err = action.Run(conn, input, l)
 	}

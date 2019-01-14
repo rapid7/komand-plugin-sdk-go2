@@ -101,7 +101,13 @@ func (h *{{ .Name }}TriggerHandler) ServeHTTP(w http.ResponseWriter, r *http.Req
 	trigger := triggers.New{{ .Name }}Trigger(nil, response.Meta)
 	var output *triggers.{{ .Name }}TriggerOutput
 	if strings.HasSuffix(r.URL.String(), "test") {
-		output, err = trigger.Test(conn, input, l)
+		// Use new connection test style if available, otherwise fall back to traditional per-trigger tests
+        if _, ok := interface{}(conn).(connection.ConnectionTester); ok {
+            err = connection.CallConnectionTest(conn, l)
+            output = &triggers.{{ .Name }}TriggerOutput{}
+        } else {
+            output, err = trigger.Test(conn, input, l)
+        }
 	} else {
 		// Triggers can ONLY be tested via proxy, never invoked
 		w.WriteHeader(http.StatusBadRequest)
