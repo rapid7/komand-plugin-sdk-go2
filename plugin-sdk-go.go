@@ -214,12 +214,12 @@ func (g *Generator) generateConnections() error {
 	}
 	pathToTemplate = "templates/connection/connection_tester.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/connection_tester.go")
-	if err := runTemplate(pathToTemplate, newFilePath, g.spec, true); err != nil {
+	if err := runTemplate(pathToTemplate, newFilePath, nil, true); err != nil {
 		return err
 	}
 	pathToTemplate = "templates/connection/cache.template"
 	newFilePath = path.Join(os.Getenv("GOPATH"), "/src/", g.spec.PackageRoot, "/connection/cache.go")
-	return runTemplate(pathToTemplate, newFilePath, nil, false)
+	return runTemplate(pathToTemplate, newFilePath, g.spec, false)
 }
 
 func (g *Generator) generateTriggers() error {
