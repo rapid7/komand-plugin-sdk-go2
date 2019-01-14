@@ -66,6 +66,7 @@ func (t *{{ .Name }}Trigger) Run(conn *connection.Connection, input *{{ .Name}}T
     
 
 // Test runs the trigger, but does not block and only runs the trigger polling one time
+// Deprecated: Developers should implement Test in connection_custom instead
 func (t *{{ .Name }}Trigger) Test(conn *connection.Connection, input *{{ .Name}}TriggerInput, log plog.Logger) (*{{ .Name }}TriggerOutput, error) {
     output := &{{ .Name }}TriggerOutput{}
     // Your code here
