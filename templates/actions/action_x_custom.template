@@ -57,6 +57,8 @@ func (a *{{ .Name }}Action) Run(conn *connection.Connection, input *{{ .Name }}I
 // Test will test the action with the given input over the given connection.
 // For this, you should design the output result to be used with the tests in the test/ directory.
 // You do not need to / should not need to invoke the actual API, this is just for testing.
+//
+// Deprecated: Developers should implement Test in connection_custom instead
 func (a *{{ .Name }}Action) Test(conn *connection.Connection, input *{{ .Name }}Input, log plog.Logger) (*{{ .Name }}Output, error) {
     output := &{{ .Name }}Output{}
     // Your code here
