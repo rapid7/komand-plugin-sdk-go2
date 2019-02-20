@@ -11,4 +11,7 @@ ADD ./plugin.spec.yaml /plugin.spec.yaml
 
 RUN make plugin
 
+# User to run plugin code. The two supported users are: root, nobody
+USER root
+
 ENTRYPOINT ["/komand/plugins/bin/{{.Name}}"]
