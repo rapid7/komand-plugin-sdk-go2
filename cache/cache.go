@@ -82,8 +82,8 @@ func LockCacheFile(name string) (bool, error) {
 			// This was another error, some legitimate problem went wrong
 			return false, err
 		}
-		f.Close()
-		break // if it ever actually gets to the end of the for loop, it means we got the exclusive lock
+		_ = f.Close() // nolint: gas
+		break         // if it ever actually gets to the end of the for loop, it means we got the exclusive lock
 	}
 	// If we got here, we got the lock
 	return true, nil
