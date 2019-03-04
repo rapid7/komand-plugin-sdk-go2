@@ -307,7 +307,6 @@ func printSampleInput(action string) error {
 		return err
 	}
 	b := &message.BodyV1{
-		Action: action,
 		Connection: connBytes,
 		Meta: []byte(`{}`),
 		Dispatcher: []byte(`{}`),
@@ -316,10 +315,13 @@ func printSampleInput(action string) error {
 		Version: "v1",
 		Body: b,
 	}
+
+	// 'action' here is just the name of the component (regardless of whether or not it is a trigger or action)
 	switch action {
 	{{- range $i, $a := .Actions }}
 	case "{{ $a.RawName }}":
 		m.Type = "action_start"
+		b.Action = action
 		actionBytes, err := json.Marshal(actions.{{ $a.Name }}Input{})
 		if err != nil {
 			return err
@@ -329,6 +331,7 @@ func printSampleInput(action string) error {
 	{{- range $i, $t := .Triggers }}
 	case "{{ $t.RawName }}":
 		m.Type = "trigger_start"
+		b.Trigger = action
 		triggerBytes, err := json.Marshal(triggers.{{ $t.Name }}TriggerInput{})
 		if err != nil {
 			return err
