@@ -1,3 +1,4 @@
+//lint:file-ignore ST1005 Error messages are user-facing and should utilize proper stentence structure
 package dispatcher
 
 import (
