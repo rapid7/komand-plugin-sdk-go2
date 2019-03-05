@@ -33,21 +33,21 @@ func (phc *PluginHandlerCollection) UnmarshalYAML(unmarshal func(v interface{}) 
 	}
 	m := make(map[string]PluginHandlerData)
 	if err := unmarshal(&m); err != nil {
-		return fmt.Errorf("Unable to unmarshal yaml into PluginHandlerCollection: %s", err)
+		return fmt.Errorf("unable to unmarshal yaml into PluginHandlerCollection: %s", err)
 	}
 	// Unmarshal again into an ordered list (in order to set Order property)
 	op := make(yaml.MapSlice, 0)
 	if err := unmarshal(&op); err != nil {
-		return fmt.Errorf("Unable to unmarshal yaml into ordered parameters: %s", err)
+		return fmt.Errorf("unable to unmarshal yaml into ordered parameters: %s", err)
 	}
 	for i, p := range op {
 		key, ok := p.Key.(string)
 		if !ok {
-			return fmt.Errorf("Unable to unmarshal yaml parameters: Parameter name was not a string")
+			return fmt.Errorf("unable to unmarshal yaml parameters: Parameter name was not a string")
 		}
 		val, ok := m[key]
 		if !ok {
-			return fmt.Errorf("Could not unmarshal yaml parameter: %s key was somehow not in PluginHandlerCollection", key)
+			return fmt.Errorf("could not unmarshal yaml parameter: %s key was somehow not in PluginHandlerCollection", key)
 		}
 		val.RawName = key
 		val.Name = UpperCamelCase(key)
