@@ -35,7 +35,7 @@ test: clean build
 
 check:
 	# bindata.go is codegenerated and out of our control, yet it fails staticcheck. Ignore it.
-	staticcheck -ignore github.com/rapid7/komand-plugin-sdk-go2/bindata.go:ST1005 $$(go list ./... | grep -v /vendor/)
+	CGO_ENABLED=0 staticcheck -ignore github.com/rapid7/komand-plugin-sdk-go2/bindata.go:ST1005 $$(go list ./... | grep -v /vendor/)
 
 deploy:
 	@echo deploying "$(VERSION)", "$(MINOR_VERSION)", "$(MAJOR_VERSION)" to dockerhub
