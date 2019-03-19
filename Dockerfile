@@ -9,4 +9,4 @@ ENV REQUESTS_CA_BUNDLE  /etc/ssl/certs/ca-certificates.crt
 
 WORKDIR /go/src/github.com/rapid7/komand-plugin-sdk-go2
 
-RUN make build && make check && make test
+RUN make deps build && make check && make test
