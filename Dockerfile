@@ -13,4 +13,5 @@ RUN apk add --no-cache make && \
     make deps && \
     make build && \
     make check && \
-    make test
+    make test && \
+    apk del make
