@@ -9,4 +9,8 @@ ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt \
 
 WORKDIR /go/src/github.com/rapid7/komand-plugin-sdk-go2
 
-RUN make deps && make build && make check && make test
+RUN apk add --no-cache make && \
+    make deps && \
+    make build && \
+    make check && \
+    make test
