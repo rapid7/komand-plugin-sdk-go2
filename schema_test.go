@@ -3,6 +3,8 @@ package sdk
 import (
 	"testing"
 
+	"github.com/davecgh/go-spew/spew"
+
 	yaml "gopkg.in/yaml.v2"
 
 	"github.com/rapid7/komand-plugin-sdk-go2/testspec"
@@ -10,13 +12,13 @@ import (
 
 func TestJSONSchemaGeneration(t *testing.T) {
 	s := &PluginSpec{}
-	if err := yaml.Unmarshal([]byte(testspec.SpecBigFix), s); err != nil {
+	if err := yaml.Unmarshal([]byte(testspec.SpecREST), s); err != nil {
 		t.Fatal(err)
 	}
 	if err := PostProcessSpec(s); err != nil {
 		t.Fatal(err)
 	}
-	if len(s.Types) == 0 {
+	/*if len(s.Types) == 0 {
 		t.Fatal("parsing actions failed")
 	}
 	for _, ac := range s.Actions {
@@ -31,5 +33,6 @@ func TestJSONSchemaGeneration(t *testing.T) {
 	}
 	if s.ConnectionSchema.Equal(JSONSchema{}) {
 		t.Fatal("connection schema is nil")
-	}
+	}*/
+	spew.Dump(s.ConnectionSchema)
 }

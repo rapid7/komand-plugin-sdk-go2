@@ -182,7 +182,7 @@ func templatesCmdMainTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/cmd/main.template", size: 10895, mode: os.FileMode(420), modTime: time.Unix(1539728422, 0)}
+	info := bindataFileInfo{name: "templates/cmd/main.template", size: 10895, mode: os.FileMode(420), modTime: time.Unix(1542660104, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -322,7 +322,7 @@ func templatesTriggersTrigger_xTemplate() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "templates/triggers/trigger_x.template", size: 6471, mode: os.FileMode(420), modTime: time.Unix(1539728422, 0)}
+	info := bindataFileInfo{name: "templates/triggers/trigger_x.template", size: 6471, mode: os.FileMode(420), modTime: time.Unix(1542660104, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

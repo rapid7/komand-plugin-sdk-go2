@@ -2,6 +2,7 @@ package sdk
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"strings"
 )
@@ -153,11 +154,17 @@ func (t *TypeMapper) populateSchema(js *JSONSchema, phd ParamDataCollection) err
 		fschema.Required = nil
 		// If this paramdata is required, track it in the parent-schemas list of requireds
 		if pd.Required {
+
 			if js.Required == nil {
 				js.Required = []string{rawname}
 			} else { // so many elses!
 				js.Required = append(js.Required, rawname)
 			}
+			fmt.Println("---------")
+			fmt.Println(pd.Title)
+			fmt.Println("---------")
+			fmt.Println(js.Required)
+			fmt.Println("---------")
 		}
 		// If it needs a backref, fill it out and clear out things we don't use when using references
 		// References should largely be empty, save a few helper props
