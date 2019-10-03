@@ -65,7 +65,7 @@ check:
 	unused $$(go list ./... | grep -v /vendor/)
 
 export: image
-	@printf "\n ---> Exporting Docker image to ./$(NAME).img\n"
-	@docker save $(VENDOR)/$(NAME):$(VERSION) | gzip > $(NAME)_$(VERSION).img
+	@printf "\n ---> Exporting Docker image to ./$(VENDOR)_$(NAME)_$(VERSION).tar\n"
+	@docker save $(VENDOR)/$(NAME):$(VERSION) | gzip > $(VENDOR)_$(NAME)_$(VERSION).tar
 
 .PHONY: all build package image plugin regenerate deps check
