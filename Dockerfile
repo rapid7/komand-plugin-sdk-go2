@@ -1,4 +1,4 @@
-FROM golang:1.9.7
+FROM golang:1.11
 
 ENV BASE=/go/src/github.com/rapid7/komand-plugin-sdk-go2
 ADD . /go/src/github.com/rapid7/komand-plugin-sdk-go2
