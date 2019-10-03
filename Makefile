@@ -7,6 +7,7 @@ MAJOR_VERSION=$(shell git describe --abbrev=0 --tags | cut -d"." -f1)
 
 build:
 	go-bindata -pkg sdk templates/...
+	sed -i '1s/^/ \/\/lint:file-ignore ST1005 Code Generated\n/' bindata.go
 	go build -o cmd/plugin-sdk-go/plugin-sdk-go github.com/rapid7/komand-plugin-sdk-go2/cmd/plugin-sdk-go
 	go build -o cmd/spec-parser/spec-parser github.com/rapid7/komand-plugin-sdk-go2/cmd/spec-parser
 
@@ -25,9 +26,9 @@ tag: image
 deps:
 	go build -o $(GOPATH)/bin/go-bindata ./vendor/github.com/rapid7/go-bindata/go-bindata
 	go get golang.org/x/tools/cmd/goimports
-	go get -u honnef.co/go/tools/cmd/gosimple
+	go get -u honnef.co/go/tools/simple
 	go get -u honnef.co/go/tools/cmd/staticcheck
-	go get -u honnef.co/go/tools/cmd/unused
+	go get -u honnef.co/go/tools/unused
 	go get -u github.com/golang/dep/cmd/dep
 
 test: clean build
@@ -35,7 +36,7 @@ test: clean build
 
 check:
 	# bindata.go is codegenerated and out of our control, yet it fails staticcheck. Ignore it.
-	CGO_ENABLED=0 staticcheck -ignore github.com/rapid7/komand-plugin-sdk-go2/bindata.go:ST1005 $$(go list ./... | grep -v /vendor/)
+	CGO_ENABLED=0 staticcheck $$(go list ./... | grep -v /vendor/)
 
 deploy:
 	@echo deploying "$(VERSION)", "$(MINOR_VERSION)", "$(MAJOR_VERSION)" to dockerhub
