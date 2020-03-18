@@ -108,6 +108,7 @@ var CredentialUsernamePassword = JSONSchema{
 			GoType:      "string",
 			Title:       "Username",
 			Description: "The username to log in with",
+			Order:       1,
 		},
 		"password": JSONSchema{
 			Title:       "Password",
@@ -116,6 +117,7 @@ var CredentialUsernamePassword = JSONSchema{
 			GoType:      "string",
 			Format:      "password",
 			DisplayType: "password",
+			Order:       2,
 		},
 	},
 }
@@ -158,12 +160,14 @@ var CredentialToken = JSONSchema{
 			GoType:      "string",
 			Format:      "password",
 			DisplayType: "password",
+			Order:       2,
 		},
 		"domain": JSONSchema{
 			Type:        "string",
 			GoType:      "string",
 			Title:       "Domain",
 			Description: "The domain for the token",
+			Order:       1,
 		},
 	},
 }
