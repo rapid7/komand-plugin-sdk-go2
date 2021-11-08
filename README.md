@@ -4,6 +4,8 @@
 
 Official documentation is maintained at [docs.komand.com](https://docs.komand.com/docs/plugin-development).
 
+**Note: This SDK is no longer supported!**
+
 ## Generating a Plugin
 
 To generate a plugin using only the SDK alone, and not a part of the Komand Platform, you can use the following steps:
